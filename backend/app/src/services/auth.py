@@ -1,5 +1,5 @@
 # backend/app/src/services/auth.py
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt, JWTError
 from passlib.context import CryptContext
 from fastapi import HTTPException
@@ -34,7 +34,7 @@ class AuthService:
             return None
 
     def generate_token(self, user_data: dict):
-        expire = datetime.utcnow() + timedelta(seconds=ACCESS_TOKEN_EXPIRE_SECONDS)
+        expire = datetime.now(timezone.utc) + timedelta(seconds=ACCESS_TOKEN_EXPIRE_SECONDS)
         to_encode = {
             "id": user_data["id"],
             "username": user_data["username"],
