@@ -50,7 +50,7 @@ function App() {
 
   return (
     <div style={{ padding: '2rem' }}>
-      <h1>เพิ่ม User ใหม่ Test commit</h1>
+      <h1>เพิ่ม User ใหม่</h1>
 
       <div style={{ marginBottom: '1rem' }}>
         <input
