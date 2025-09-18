@@ -1,81 +1,54 @@
-
-// ========== App.jsx (เฉพาะ Add User) ==========
 import { useState } from 'react'
 import apiClient from './service/client'
-import './App.css'
+import { TextInput, Button, Box, Heading } from '@primer/react'
 
 function App() {
   const [loading, setLoading] = useState(false)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
-  // ฟังก์ชันสร้าง user ใหม่
   const createUser = async () => {
-    if (!username || !password) {
-      alert('กรุณากรอก username และ password')
-      return
-    }
-
+    if (!username || !password) return alert('กรุณากรอก username และ password')
+    setLoading(true)
     try {
-      setLoading(true)
-      const response = await apiClient.post('/api/users', {
-        user_name: username,      
-        user_password: password   
+      const { data } = await apiClient.post('/api/users', {
+        user_name: username,
+        user_password: password
       })
-      
-      console.log('Created user:', response.data)
-      alert(`สร้าง user เรียบร้อย: ${response.data.user_name}`)
-
-      // ล้างฟอร์ม
+      alert(`สร้าง user เรียบร้อย: ${data.user_name}`)
       setUsername('')
       setPassword('')
-      
-    } catch (error) {
-      console.error('Error creating user:', error)
-      
-      if (error.response) {
-        // Server ตอบกลับมาแต่ status code ผิด
-        alert(`เกิดข้อผิดพลาด: ${error.response.data.detail || 'ไม่สามารถสร้าง user ได้'}`)
-      } else if (error.request) {
-        // Request ไม่ได้ถูกส่งหรือไม่ได้รับ response
-        alert('ไม่สามารถเชื่อมต่อกับ server ได้')
-      } else {
-        // Error อื่นๆ
-        alert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ')
-      }
+    } catch (err) {
+      const msg = err.response?.data?.detail || (err.request ? 'ไม่สามารถเชื่อมต่อ server' : 'เกิดข้อผิดพลาดไม่ทราบสาเหตุ')
+      alert(msg)
+      console.error(err)
     } finally {
       setLoading(false)
     }
   }
 
   return (
-    <div style={{ padding: '2rem' }}>
-      <h1>เพิ่ม User ใหม่</h1>
-
-      <div style={{ marginBottom: '1rem' }}>
-        <input
-          type="text"
+    <Box p={3}>
+      <Heading>เพิ่ม User ใหม่</Heading>
+      <Box mt={3} display="flex" alignItems="center">
+        <TextInput
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          style={{ marginRight: '10px', padding: '8px' }}
+          sx={{ mr: 2 }}
         />
-        <input
+        <TextInput
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{ marginRight: '10px', padding: '8px' }}
+          sx={{ mr: 2 }}
         />
-        <button 
-          onClick={createUser} 
-          disabled={loading}
-          style={{ padding: '8px 16px' }}
-        >
+        <Button onClick={createUser} disabled={loading} variant="primary">
           {loading ? 'กำลังสร้าง...' : 'สร้าง User'}
-        </button>
-      </div>
-    </div>
+        </Button>
+      </Box>
+    </Box>
   )
 }
 
