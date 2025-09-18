@@ -1,8 +1,40 @@
 # backend/app/src/repositories/user.py
 from src.connection.oracle import OracleConnection
+from src.connection.postgres import PostgresConnection
+
 import logging
 
 logger = logging.getLogger(__name__)
+
+def insert_user(username: str, hashed_password: str):
+    """Insert user ใหม่ลง Postgres"""
+    conn = PostgresConnection()
+    try:
+        with conn.get_connection() as connection:
+            with connection.cursor() as cursor:
+                # ตรวจสอบ username ซ้ำ
+                cursor.execute(
+                    "SELECT user_id FROM users WHERE user_name = %s",
+                    (username,)
+                )
+                if cursor.fetchone():
+                    return None  # ให้ controller ไปจัดการ error เอง
+
+                # Insert user
+                cursor.execute(
+                    """
+                    INSERT INTO users (user_name, user_password)
+                    VALUES (%s, %s)
+                    RETURNING user_id, user_name, user_create_at
+                    """,
+                    (username, hashed_password)
+                )
+                user = cursor.fetchone()
+                connection.commit()
+                return user
+    except Exception as e:
+        print("Insert user error:", str(e))
+        raise
 
 def get_all_user():
     """ดึงข้อมูล users จาก Oracle database"""
