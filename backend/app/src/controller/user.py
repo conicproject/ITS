@@ -1,32 +1,47 @@
 # backend/app/src/controller/user.py
-from fastapi import HTTPException, Depends
-from src.repositories import user as user_repo
-from src.models.user import UserResponse, SingleUserResponse
 from fastapi import HTTPException
-from passlib.context import CryptContext
-from src.models.user import CreateUserRequest  
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from src.services.user import UserService
+from src.models.user import CreateUserRequest, UserResponse, SingleUserResponse
 
 class UserController:
-    def insert_user(self, data: CreateUserRequest):
-        username = data.user_name
-        password = data.user_password
-        hashed_password = pwd_context.hash(password)
+    def __init__(self):
+        self.user_service = UserService()
 
-        user = user_repo.insert_user(username, hashed_password)
+    def create_user(self, data: CreateUserRequest):
+        """Create new user"""
+        try:
+            user = self.user_service.create_user(data.user_name, data.user_password)
+            if user is None:
+                raise HTTPException(status_code=400, detail="Username already exists")
 
-        if user is None:
-            raise HTTPException(status_code=400, detail="Username already exists")
-
-        return {
-            "user_id": user[0],
-            "user_name": user[1],
-            "user_create_at": user[2]
-        }
+            return {
+                "user_id": user[0],
+                "user_name": user[1],
+                "user_create_at": user[2]
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            print("Create user error:", str(e))
+            raise HTTPException(status_code=500, detail="Internal server error")
     
-    def get_all_user(self) -> UserResponse:
-        return user_repo.get_all_user()
+    def get_all_users(self) -> UserResponse:
+        """Get all users"""
+        try:
+            return self.user_service.get_all_users()
+        except Exception as e:
+            print("Get all users error:", str(e))
+            raise HTTPException(status_code=500, detail="Internal server error")
     
     def get_user_by_id(self, user_id: int) -> SingleUserResponse:
-        return user_repo.get_user_by_id(user_id)
+        """Get user by ID"""
+        try:
+            user = self.user_service.get_user_by_id(user_id)
+            if user is None:
+                raise HTTPException(status_code=404, detail="User not found")
+            return user
+        except HTTPException:
+            raise
+        except Exception as e:
+            print("Get user by ID error:", str(e))
+            raise HTTPException(status_code=500, detail="Internal server error")

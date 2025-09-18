@@ -1,3 +1,5 @@
+
+// ========== App.jsx (เฉพาะ Add User) ==========
 import { useState } from 'react'
 import apiClient from './service/client'
 import './App.css'
@@ -16,19 +18,31 @@ function App() {
 
     try {
       setLoading(true)
-      const response = await apiClient.post('/api/insert-user', {
-        user_name: username,      // ต้องตรงกับ Pydantic model
-        user_password: password   // ต้องตรงกับ Pydantic model
+      const response = await apiClient.post('/api/users', {
+        user_name: username,      
+        user_password: password   
       })
+      
       console.log('Created user:', response.data)
       alert(`สร้าง user เรียบร้อย: ${response.data.user_name}`)
 
       // ล้างฟอร์ม
       setUsername('')
       setPassword('')
+      
     } catch (error) {
       console.error('Error creating user:', error)
-      alert('สร้าง user ไม่สำเร็จ')
+      
+      if (error.response) {
+        // Server ตอบกลับมาแต่ status code ผิด
+        alert(`เกิดข้อผิดพลาด: ${error.response.data.detail || 'ไม่สามารถสร้าง user ได้'}`)
+      } else if (error.request) {
+        // Request ไม่ได้ถูกส่งหรือไม่ได้รับ response
+        alert('ไม่สามารถเชื่อมต่อกับ server ได้')
+      } else {
+        // Error อื่นๆ
+        alert('เกิดข้อผิดพลาดไม่ทราบสาเหตุ')
+      }
     } finally {
       setLoading(false)
     }
@@ -44,14 +58,20 @@ function App() {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          style={{ marginRight: '10px', padding: '8px' }}
         />
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          style={{ marginRight: '10px', padding: '8px' }}
         />
-        <button onClick={createUser} disabled={loading}>
+        <button 
+          onClick={createUser} 
+          disabled={loading}
+          style={{ padding: '8px 16px' }}
+        >
           {loading ? 'กำลังสร้าง...' : 'สร้าง User'}
         </button>
       </div>

@@ -8,10 +8,10 @@ user_controller = UserController()
 auth_controller = AuthController()
 
 # Auth endpoints
-router.add_api_route("/user-login", auth_controller.user_login, methods=["POST"])
-router.add_api_route("/auth-verify-token", auth_controller.auth_verify_token, methods=["POST"])
+router.add_api_route("/auth/login", auth_controller.login, methods=["POST"], tags=["Authentication"])
+router.add_api_route("/auth/verify-token", auth_controller.verify_token, methods=["POST"], tags=["Authentication"])
 
-# User endpoints
-router.add_api_route("/insert-user", user_controller.insert_user, methods=["POST"])
-router.add_api_route("/get-all-user", user_controller.get_all_user, methods=["GET"])
-router.add_api_route("/get-user-by-id/{user_id}", user_controller.get_user_by_id, methods=["GET"])
+# User endpoints - รองรับทั้ง RESTful และ endpoint เดิม
+router.add_api_route("/users", user_controller.create_user, methods=["POST"], tags=["Users"])
+router.add_api_route("/users", user_controller.get_all_users, methods=["GET"], tags=["Users"])
+router.add_api_route("/users/{user_id}", user_controller.get_user_by_id, methods=["GET"], tags=["Users"])
