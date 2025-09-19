@@ -1,6 +1,14 @@
 import { Link } from "react-router-dom";
 
-function Sidebar({ sidebarOpen, sidebarLocked, sidebarHover, isMobile, setSidebarOpen, overlayMode }) {
+function Sidebar({
+  sidebarOpen,
+  sidebarLocked,
+  sidebarHover,
+  setSidebarHover,
+  isMobile,
+  setSidebarOpen,
+  overlayMode,
+}) {
   const showSidebar = sidebarLocked || sidebarOpen || sidebarHover;
   const width = showSidebar ? "200px" : "0";
 
@@ -20,6 +28,8 @@ function Sidebar({ sidebarOpen, sidebarLocked, sidebarHover, isMobile, setSideba
         display: "flex",
         flexDirection: "column",
       }}
+      onMouseEnter={() => !isMobile && !sidebarLocked && setSidebarHover(true)}
+      onMouseLeave={() => !isMobile && !sidebarLocked && setSidebarHover(false)}
     >
       <div style={{ margin: "1rem", fontSize: "1.5rem", fontWeight: "bold" }}>
         {showSidebar ? "My App" : "MA"}

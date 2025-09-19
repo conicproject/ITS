@@ -18,8 +18,8 @@ function DefaultLayout({ children }) {
   useEffect(() => {
     if (!isMobile) {
       const handleMouseMove = (e) => {
-        if (!sidebarLocked) {
-          setSidebarHover(e.clientX <= 10); // เมาส์อยู่ซ้ายสุด
+        if (!sidebarLocked && e.clientX <= 10) {
+          setSidebarHover(true);
         }
       };
       window.addEventListener("mousemove", handleMouseMove);
@@ -45,6 +45,7 @@ function DefaultLayout({ children }) {
         sidebarOpen={sidebarOpen}
         sidebarLocked={sidebarLocked}
         sidebarHover={sidebarHover}
+        setSidebarHover={setSidebarHover}
         isMobile={isMobile}
         setSidebarOpen={setSidebarOpen}
         overlayMode={isMobile} // overlay เฉพาะ mobile
