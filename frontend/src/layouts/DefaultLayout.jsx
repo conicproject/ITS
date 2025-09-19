@@ -22,9 +22,8 @@ function DefaultLayout({ children }) {
   };
 
   // กำหนด style ของ content สำหรับ desktop
-  const desktopContentStyle = !isMobile && sidebarLocked
-    ? { transition: "margin-left 0.3s" }
-    : {};
+  const desktopContentStyle =
+    !isMobile && sidebarLocked ? { transition: "margin-left 0.3s" } : {};
 
   return (
     <div style={{ display: "flex", height: "100vh", position: "relative" }}>
@@ -52,7 +51,16 @@ function DefaultLayout({ children }) {
         />
       )}
 
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", ...desktopContentStyle }}>
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          ...desktopContentStyle,
+          position: "relative",
+          zIndex: 0,
+        }}
+      >
         <Navbar onHamburgerClick={toggleSidebar} />
         <main style={{ flex: 1, padding: "1rem", overflowY: "auto" }}>
           {children}
