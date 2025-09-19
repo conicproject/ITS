@@ -31,27 +31,44 @@ function Sidebar({
       onMouseEnter={() => !isMobile && !sidebarLocked && setSidebarHover(true)}
       onMouseLeave={() => !isMobile && !sidebarLocked && setSidebarHover(false)}
     >
-      <div style={{ margin: "1rem", fontSize: "1.5rem", fontWeight: "bold" }}>
-        {showSidebar ? "My App" : "MA"}
+      <div
+        style={{
+          margin: "1rem 0",
+          fontSize: "1.5rem",
+          fontWeight: "bold",
+          textAlign: "center",
+        }}
+      >
+        My App
       </div>
 
-      <ul style={{ listStyle: "none", padding: 0 }}>
+      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
         <li style={{ marginBottom: "1rem" }}>
           <Link
             to="/"
-            style={{ color: "#fff", textDecoration: "none" }}
+            style={{
+              color: "#fff",
+              textDecoration: "none",
+              paddingLeft: "1rem",
+              display: "block",
+            }}
             onClick={() => isMobile && setSidebarOpen(false)}
           >
-            {showSidebar ? "Home" : "H"}
+            Home
           </Link>
         </li>
         <li>
           <Link
             to="/create-user"
-            style={{ color: "#fff", textDecoration: "none" }}
+            style={{
+              color: "#fff",
+              textDecoration: "none",
+              paddingLeft: "1rem",
+              display: "block",
+            }}
             onClick={() => isMobile && setSidebarOpen(false)}
           >
-            {showSidebar ? "Create User" : "CU"}
+            Create User
           </Link>
         </li>
       </ul>
