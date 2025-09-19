@@ -1,26 +1,20 @@
 import { Link } from "react-router-dom";
 
-function Sidebar({
-  sidebarOpen,
-  sidebarLocked,
-  isMobile,
-  setSidebarOpen,
-  overlayMode,
-}) {
-  const showSidebar = sidebarLocked || sidebarOpen;
+function Sidebar({ sidebarOpen, sidebarLocked, sidebarHover, isMobile, setSidebarOpen, overlayMode }) {
+  const showSidebar = sidebarLocked || sidebarOpen || sidebarHover;
   const width = showSidebar ? "200px" : "0";
 
   return (
     <aside
       style={{
-        width: showSidebar ? "200px" : "0",
+        width,
         overflow: "hidden",
         transition: "width 0.3s",
-        position: overlayMode ? "fixed" : "relative",
-        top: overlayMode ? 0 : 0,
+        position: overlayMode || sidebarHover ? "fixed" : "relative",
+        top: 0,
         left: 0,
         height: "100vh",
-        zIndex: overlayMode ? 50 : "auto",
+        zIndex: overlayMode || sidebarHover ? 50 : 10,
         background: "#24292f",
         color: "#fff",
         display: "flex",

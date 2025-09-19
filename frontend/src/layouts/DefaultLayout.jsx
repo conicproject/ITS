@@ -6,12 +6,26 @@ function DefaultLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarLocked, setSidebarLocked] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [sidebarHover, setSidebarHover] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  // Desktop hover for sidebar
+  useEffect(() => {
+    if (!isMobile) {
+      const handleMouseMove = (e) => {
+        if (!sidebarLocked) {
+          setSidebarHover(e.clientX <= 10); // เมาส์อยู่ซ้ายสุด
+        }
+      };
+      window.addEventListener("mousemove", handleMouseMove);
+      return () => window.removeEventListener("mousemove", handleMouseMove);
+    }
+  }, [isMobile, sidebarLocked]);
 
   const toggleSidebar = () => {
     if (isMobile) {
@@ -30,6 +44,7 @@ function DefaultLayout({ children }) {
       <Sidebar
         sidebarOpen={sidebarOpen}
         sidebarLocked={sidebarLocked}
+        sidebarHover={sidebarHover}
         isMobile={isMobile}
         setSidebarOpen={setSidebarOpen}
         overlayMode={isMobile} // overlay เฉพาะ mobile
