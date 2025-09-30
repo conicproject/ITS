@@ -1,8 +1,35 @@
+// src/layouts/DefaultLayout.jsx
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { jwtDecode } from "jwt-decode";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
 
 function DefaultLayout({ children }) {
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkToken = () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      try {
+        const decoded = jwtDecode(token);
+        if (decoded.exp && Date.now() >= decoded.exp * 1000) {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          alert("Session หมดอายุ โปรด login ใหม่");
+          navigate("/");
+        }
+      } catch (err) {
+        console.error("JWT decode error:", err);
+      }
+    };
+
+    const intervalId = setInterval(checkToken, 1000);
+    return () => clearInterval(intervalId);
+  }, [navigate]);
+
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarLocked, setSidebarLocked] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
@@ -14,7 +41,6 @@ function DefaultLayout({ children }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Desktop hover for sidebar
   useEffect(() => {
     if (!isMobile) {
       const handleMouseMove = (e) => {
@@ -28,14 +54,10 @@ function DefaultLayout({ children }) {
   }, [isMobile, sidebarLocked]);
 
   const toggleSidebar = () => {
-    if (isMobile) {
-      setSidebarOpen((prev) => !prev); // mobile toggle
-    } else {
-      setSidebarLocked((prev) => !prev); // desktop lock
-    }
+    if (isMobile) setSidebarOpen((prev) => !prev);
+    else setSidebarLocked((prev) => !prev);
   };
 
-  // กำหนด style ของ content สำหรับ desktop
   const desktopContentStyle =
     !isMobile && sidebarLocked ? { transition: "margin-left 0.3s" } : {};
 
@@ -48,10 +70,9 @@ function DefaultLayout({ children }) {
         setSidebarHover={setSidebarHover}
         isMobile={isMobile}
         setSidebarOpen={setSidebarOpen}
-        overlayMode={isMobile} // overlay เฉพาะ mobile
+        overlayMode={isMobile}
       />
 
-      {/* Overlay สำหรับมือถือ */}
       {isMobile && sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}

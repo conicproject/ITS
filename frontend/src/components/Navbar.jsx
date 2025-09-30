@@ -1,4 +1,4 @@
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import routes from "../routes";
 import AvatarImage from "../assets/avatar.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -7,8 +7,15 @@ import "./Navbar.css";
 
 function Navbar({ onHamburgerClick }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const currentRoute = routes.find((route) => route.path === location.pathname);
   const title = currentRoute ? currentRoute.name : "My App";
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+  };
 
   return (
     <nav className="navbar">
@@ -23,10 +30,10 @@ function Navbar({ onHamburgerClick }) {
       <h3 className="navbar-title">{title}</h3>
 
       <div className="navbar-right">
-        <span className="navbar-version">v.1.0.0b</span>
-        <div className="navbar-user">
-          <span>Hi, User</span>
+        {/* <span className="navbar-version">v.1.0.0b</span> */}
+        <div className="navbar-user" onClick={handleLogout} style={{cursor: "pointer"}}>
           <img src={AvatarImage} alt="User Avatar" className="navbar-avatar" />
+          <p>LOGOUT</p>
         </div>
       </div>
     </nav>

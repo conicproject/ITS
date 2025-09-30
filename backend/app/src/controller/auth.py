@@ -1,17 +1,19 @@
-# backend/app/src/controller/auth.py
 from fastapi import HTTPException, Depends, Header
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError
 from src.services.auth import AuthService
+from src.models.user import LoginRequest
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 class AuthController:
     def __init__(self):
         self.auth_service = AuthService()
 
-    def login(self, form_data: OAuth2PasswordRequestForm = Depends()):
-        """User login endpoint"""
+    def login(self, request: LoginRequest):
         try:
-            username = form_data.username
-            password = form_data.password
+            username = request.username
+            password = request.password
 
             user = self.auth_service.authenticate_user(username, password)
             if not user:
@@ -27,11 +29,10 @@ class AuthController:
             raise HTTPException(status_code=500, detail="Internal server error")
 
     def verify_token(self, authorization: str = Header(...)):
-        """Verify JWT token endpoint"""
         try:
             if not authorization.startswith("Bearer "):
                 raise HTTPException(status_code=401, detail="Invalid authorization header")
-            
+
             token = authorization.split(" ")[1]
             payload = self.auth_service.decode_token(token)
             return {"user": payload}
@@ -41,3 +42,10 @@ class AuthController:
         except Exception as e:
             print("Verify token error:", str(e))
             raise HTTPException(status_code=401, detail="Invalid token")
+
+    def get_current_user(self, token: str = Depends(oauth2_scheme)):
+        try:
+            payload = self.auth_service.decode_token(token)
+            return payload
+        except JWTError:
+            raise HTTPException(status_code=401, detail="Invalid or expired token")

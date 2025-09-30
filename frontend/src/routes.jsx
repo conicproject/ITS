@@ -1,14 +1,27 @@
 import Home from "./pages/Home";
-import CreateUsers from "./pages/CreateUsers";
+import ManageUser from "./pages/ManageUser";
 import Login from "./pages/Login";
 import DefaultLayout from "./layouts/DefaultLayout";
+import AppLayout from "./layouts/AppLayout";
 
 const routes = [
   {
     path: "/",
     name: "Login",
     element: (
-      <Login />
+      <AppLayout>
+        <Login />
+      </AppLayout>)
+  },
+  {
+    path: "/manageUser",
+    name: "ManageUser",
+    element: (
+      <DefaultLayout>
+        <AppLayout>
+          <ManageUser />
+        </AppLayout>
+      </DefaultLayout>
     ),
   },
   {
@@ -19,16 +32,7 @@ const routes = [
         <Home />
       </DefaultLayout>
     ),
-  },
-  {
-    path: "/create-user",
-    name: "Create User",
-    element: (
-      <DefaultLayout>
-        <CreateUsers />
-      </DefaultLayout>
-    ),
-  },
+  }
 ];
 
 export default routes;
