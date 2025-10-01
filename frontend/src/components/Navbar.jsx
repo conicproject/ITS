@@ -3,7 +3,7 @@ import routes from "../routes";
 import AvatarImage from "../assets/avatar.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
-import "./Navbar.css";
+import "../css/Navbar.css";
 
 function Navbar({ onHamburgerClick }) {
   const location = useLocation();
@@ -17,11 +17,20 @@ function Navbar({ onHamburgerClick }) {
     navigate("/");
   };
 
+  const handleHamburgerClick = () => {
+    console.log("Hamburger clicked!");
+    if (onHamburgerClick) {
+      onHamburgerClick();
+    } else {
+      console.warn("onHamburgerClick is not defined");
+    }
+  };
+
   return (
     <nav className="navbar">
       <button
         className="navbar-hamburger"
-        onClick={onHamburgerClick}
+        onClick={handleHamburgerClick}
         aria-label="Menu"
       >
         <FontAwesomeIcon icon={faBars} />

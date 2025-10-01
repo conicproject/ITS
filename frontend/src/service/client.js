@@ -22,7 +22,7 @@ apiClient.interceptors.response.use(
       localStorage.removeItem("token");
       localStorage.removeItem("user");
       alert("Session หมดอายุ โปรด login ใหม่");
-      window.location.href = "/login";
+      window.location.href = "/";
     }
     return Promise.reject(error);
   }

@@ -1,3 +1,5 @@
+/* แก้ไข Navbar.css ของคุณ - เปลี่ยนส่วนนี้ */
+
 html, body {
   margin: 0;
   padding: 0;
@@ -11,7 +13,8 @@ html, body {
   padding: 0.5rem 1rem;
   background-color: #24292f;
   color: #fff;
-  z-index: 60;
+  position: relative;  /* เพิ่มบรรทัดนี้ */
+  z-index: 100;  /* เพิ่มค่า z-index ให้สูงกว่า Sidebar */
 }
 
 .navbar-hamburger {
@@ -20,6 +23,8 @@ html, body {
   cursor: pointer;
   font-size: 1.5rem;
   color: #fff;
+  position: relative;
+  z-index: 200;  /* ให้สูงกว่า Sidebar */
 }
 
 .navbar-title {
@@ -48,4 +53,12 @@ html, body {
   width: 32px;
   height: 32px;
   border-radius: 50%;
+}
+
+button.navbar-hamburger {
+  outline: unset !important;
+}
+
+button.navbar-hamburger:focus-visible {
+  outline: unset;
 }

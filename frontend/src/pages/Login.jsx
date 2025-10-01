@@ -15,11 +15,7 @@ function Login() {
         setLoading(true);
 
         try {
-            // ส่ง JSON แทน formData
-            const { data } = await apiClient.post("/api/auth/login", {
-                username,
-                password,
-            });
+            const { data } = await apiClient.post("/api/auth/login", {username, password});
 
             localStorage.setItem("token", data.token);
             localStorage.setItem("user", JSON.stringify(data.user));
@@ -38,21 +34,28 @@ function Login() {
     return (
         <>
             <h2 className={`text-3xl font-bold mb-6 ${colors.text} text-center`}>
-                Welcome Back
+                LOGIN
             </h2>
-            <form className="space-y-5" onSubmit={handleSubmit}>
+            <form className="space-y-5" onSubmit={handleSubmit} autoComplete="off">
                 <input
                     type="text"
+                    name="search"
                     placeholder="Username"
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
+                    autoComplete="off"
+                    data-form-type="other"
                     className={`w-full px-4 py-3 rounded-lg border ${colors.inputBorder} ${colors.inputBg} ${colors.text} ${colors.placeholder} focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                 />
                 <input
-                    type="password"
+                    type="text"
+                    name="search-password"
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="off"
+                    data-form-type="other"
+                    style={{ WebkitTextSecurity: 'disc' }}
                     className={`w-full px-4 py-3 rounded-lg border ${colors.inputBorder} ${colors.inputBg} ${colors.text} ${colors.placeholder} focus:outline-none focus:ring-2 focus:ring-indigo-500`}
                 />
                 <button

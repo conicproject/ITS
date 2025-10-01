@@ -1,35 +1,80 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import apiClient from "../service/client";
 
 function Sidebar({
   sidebarOpen,
-  sidebarLocked,
-  sidebarHover,
-  setSidebarHover,
-  isMobile,
   setSidebarOpen,
+  sidebarLocked,
+  isMobile,
   overlayMode,
 }) {
-  const showSidebar = sidebarLocked || sidebarOpen || sidebarHover;
-  const width = showSidebar ? "200px" : "0";
+  const [menus, setMenus] = useState([]);
+  const [loaded, setLoaded] = useState(false);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  // fetch menu จาก backend
+  useEffect(() => {
+    const fetchMenus = async () => {
+      try {
+        const res = await apiClient.get("/api/menus");
+        setMenus(res.data);
+        setLoaded(true);
+      } catch (err) {
+        console.error("Failed to fetch menus", err);
+      }
+    };
+    fetchMenus();
+  }, []);
+
+  // เปิด sidebar เมื่อโหลดครั้งแรกเสร็จ (ถ้าไม่ใช่ mobile)
+  useEffect(() => {
+    if (loaded && isInitialLoad && !isMobile) {
+      setSidebarOpen(true);
+      setIsInitialLoad(false);
+    }
+  }, [loaded, isInitialLoad, isMobile, setSidebarOpen]);
+
+  // showSidebar: แสดงเมื่อ locked หรือ open
+  const showSidebar = (sidebarLocked || sidebarOpen) && loaded;
+
+  const renderMenu = (nodes) => (
+    <ul style={{ listStyle: "none", paddingLeft: 12, margin: 0 }}>
+      {nodes.map((node) => (
+        <li key={node.id} style={{ margin: "6px 0" }}>
+          {node.path ? (
+            <Link
+              to={node.path}
+              style={{ color: "#fff", textDecoration: "none", display: "block", whiteSpace: "nowrap" }}
+              onClick={() => isMobile && setSidebarOpen(false)}
+            >
+              {node.label}
+            </Link>
+          ) : (
+            <span style={{ color: "#fff", display: "block" }}>{node.label}</span>
+          )}
+          {node.children && node.children.length > 0 && renderMenu(node.children)}
+        </li>
+      ))}
+    </ul>
+  );
 
   return (
     <aside
       style={{
-        width,
-        overflow: "hidden",
-        transition: "width 0.3s",
-        position: overlayMode || sidebarHover ? "fixed" : "relative",
-        top: 0,
-        left: 0,
+        width: showSidebar ? 200 : 0,
         height: "100vh",
-        zIndex: overlayMode || sidebarHover ? 50 : 10,
         background: "#24292f",
         color: "#fff",
         display: "flex",
         flexDirection: "column",
+        position: overlayMode ? "fixed" : "relative",
+        top: 0,
+        left: 0,
+        zIndex: overlayMode ? 50 : 10,
+        transition: "width 0.3s ease-in-out",
+        overflow: "hidden",
       }}
-      onMouseEnter={() => !isMobile && !sidebarLocked && setSidebarHover(true)}
-      onMouseLeave={() => !isMobile && !sidebarLocked && setSidebarHover(false)}
     >
       <div
         style={{
@@ -37,41 +82,22 @@ function Sidebar({
           fontSize: "1.5rem",
           fontWeight: "bold",
           textAlign: "center",
+          opacity: showSidebar ? 1 : 0,
+          transition: "opacity 0.3s ease-in-out",
+          whiteSpace: "nowrap",
         }}
       >
-        My App
+        ITS
       </div>
 
-      <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
-        <li style={{ marginBottom: "1rem" }}>
-          <Link
-            to="/"
-            style={{
-              color: "#fff",
-              textDecoration: "none",
-              paddingLeft: "1rem",
-              display: "block",
-            }}
-            onClick={() => isMobile && setSidebarOpen(false)}
-          >
-            Home
-          </Link>
-        </li>
-        <li>
-          <Link
-            to="/create-user"
-            style={{
-              color: "#fff",
-              textDecoration: "none",
-              paddingLeft: "1rem",
-              display: "block",
-            }}
-            onClick={() => isMobile && setSidebarOpen(false)}
-          >
-            Create User
-          </Link>
-        </li>
-      </ul>
+      <div style={{ 
+        overflowY: "auto", 
+        flex: 1,
+        opacity: showSidebar ? 1 : 0,
+        transition: "opacity 0.3s ease-in-out 0.1s",
+      }}>
+        {loaded && renderMenu(menus)}
+      </div>
     </aside>
   );
 }

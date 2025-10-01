@@ -54,8 +54,8 @@ function DefaultLayout({ children }) {
   }, [isMobile, sidebarLocked]);
 
   const toggleSidebar = () => {
-    if (isMobile) setSidebarOpen((prev) => !prev);
-    else setSidebarLocked((prev) => !prev);
+    console.log("Toggle sidebar clicked, current sidebarOpen:", sidebarOpen);
+    setSidebarOpen((prev) => !prev);
   };
 
   const desktopContentStyle =
