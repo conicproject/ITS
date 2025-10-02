@@ -7,7 +7,7 @@ from src.repositories.auth import AuthRepository
 
 SECRET_KEY = "your-secret-key"  # ควรเก็บใน .env
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_SECONDS = 300
+ACCESS_TOKEN_EXPIRE_SECONDS = 15 * 60  # 15 นาที
 
 class AuthService:
     def __init__(self):
@@ -18,17 +18,11 @@ class AuthService:
         try:
             user_data = self.auth_repository.get_user_by_username(username)
             
-            if not user_data:
-                return None
+            if not user_data: return None
+            if not self.pwd_context.verify(password, user_data["password"]): return None
 
-            # ตรวจสอบ password
-            if not self.pwd_context.verify(password, user_data["password"]):
-                return None
-
-            return {
-                "id": user_data["id"],
-                "username": user_data["username"]
-            }
+            return {"id": user_data["id"], "username": user_data["username"]}
+        
         except Exception as e:
             print("Authentication error:", e)
             return None
@@ -43,7 +37,6 @@ class AuthService:
         return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
     def decode_token(self, token: str):
-        """Decode and validate JWT token"""
         try:
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             return payload

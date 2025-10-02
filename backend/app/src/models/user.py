@@ -18,3 +18,8 @@ class UserResponse(BaseModel):
 
 class SingleUserResponse(BaseModel):
     user: User
+
+# 👇 เพิ่มสำหรับ Login
+class LoginRequest(BaseModel):
+    username: str
+    password: str
