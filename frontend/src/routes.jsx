@@ -17,9 +17,8 @@ const routes = [
     path: "/",
     name: "Login",
     element: (
-      <AppLayout>
         <Login />
-      </AppLayout>)
+    ),
   },
   {
     path: "/manageUser",
