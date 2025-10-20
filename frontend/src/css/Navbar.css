@@ -11,10 +11,10 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 0.5rem 1rem;
-  background-color: #24292f;
+  background-color: #02754B;
   color: #fff;
-  position: relative;  /* เพิ่มบรรทัดนี้ */
-  z-index: 100;  /* เพิ่มค่า z-index ให้สูงกว่า Sidebar */
+  position: relative;
+  z-index: 100;
 }
 
 .navbar-hamburger {
@@ -24,7 +24,7 @@ html, body {
   font-size: 1.5rem;
   color: #fff;
   position: relative;
-  z-index: 200;  /* ให้สูงกว่า Sidebar */
+  z-index: 200;
 }
 
 .navbar-title {
@@ -57,6 +57,7 @@ html, body {
 
 button.navbar-hamburger {
   outline: unset !important;
+  padding: 0;
 }
 
 button.navbar-hamburger:focus-visible {

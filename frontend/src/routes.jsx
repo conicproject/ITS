@@ -1,6 +1,7 @@
 import Home from "./pages/Home";
 import ManageUser from "./pages/ManageUser";
 import Login from "./pages/Login";
+import Overview from "./pages/Overview";
 import DefaultLayout from "./layouts/DefaultLayout";
 import AppLayout from "./layouts/AppLayout";
 import EnforcementDashboard from "./pages/Enforcement/dashboard";
@@ -37,6 +38,15 @@ const routes = [
     element: (
       <DefaultLayout>
         <Home />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/overview",
+    name: "Overview",
+    element: (
+      <DefaultLayout>
+        <Overview />
       </DefaultLayout>
     ),
   },

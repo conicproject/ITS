@@ -19,10 +19,16 @@ apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user");
-      alert("Session หมดอายุ โปรด login ใหม่");
-      window.location.href = "/";
+      // เช็คว่าไม่ใช่หน้า login
+      const isLoginPage = window.location.pathname === "/" || 
+                          window.location.pathname === "/login";
+      
+      if (!isLoginPage) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        alert("Session หมดอายุ โปรด login ใหม่");
+        window.location.href = "/";
+      }
     }
     return Promise.reject(error);
   }

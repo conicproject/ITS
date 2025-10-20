@@ -36,10 +36,9 @@ function Navbar({ onHamburgerClick }) {
         <FontAwesomeIcon icon={faBars} />
       </button>
 
-      <h3 className="navbar-title">{title}</h3>
+      {/* <h3 className="navbar-title">{title}</h3> */}
 
       <div className="navbar-right">
-        {/* <span className="navbar-version">v.1.0.0b</span> */}
         <div className="navbar-user" onClick={handleLogout} style={{cursor: "pointer"}}>
           <img src={AvatarImage} alt="User Avatar" className="navbar-avatar" />
           <p>LOGOUT</p>
