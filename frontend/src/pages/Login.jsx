@@ -24,7 +24,7 @@ function Login() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/home");
+      navigate("/overview   ");
     } catch (err) {
       const msg =
         err.response?.data?.detail || "เกิดข้อผิดพลาด ไม่สามารถ login ได้";
@@ -61,9 +61,12 @@ function Login() {
             <FaUser className="text-white opacity-80 mr-2" />
             <input
               type="text"
+              name="search"
               placeholder="USERNAME"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              autoComplete="off"
+              data-form-type="other"
               className="w-full py-3 bg-transparent text-white placeholder-gray-300 focus:outline-none"
             />
           </div>
@@ -72,10 +75,14 @@ function Login() {
           <div className="flex items-center border border-white/70 rounded px-3 bg-transparent focus-within:ring-2 focus-within:ring-green-400">
             <FaLock className="text-white opacity-80 mr-2" />
             <input
-              type="password"
+              type="text"
+              name="search-password"
               placeholder="PASSWORD"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="off"
+              data-form-type="other"
+              style={{ WebkitTextSecurity: 'disc' }}
               className="w-full py-3 bg-transparent text-white placeholder-gray-300 focus:outline-none"
             />
           </div>

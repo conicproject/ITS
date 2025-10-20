@@ -99,9 +99,9 @@ function DefaultLayout({ children }) {
         }}
       >
         <Navbar onHamburgerClick={toggleSidebar} />
-        <main style={{ flex: 1, padding: "1rem", overflowY: "auto" }}>
+        {/* <main style={{ flex: 1, padding: "1rem", overflowY: "auto" }}> */}
           {children}
-        </main>
+        {/* </main> */}
       </div>
     </div>
   );

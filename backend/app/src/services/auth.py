@@ -7,7 +7,7 @@ from src.repositories.auth import AuthRepository
 
 SECRET_KEY = "your-secret-key"  # ควรเก็บใน .env
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_SECONDS = 15 * 60  # 15 นาที
+ACCESS_TOKEN_EXPIRE_SECONDS = 60 * 60  # 60 นาที
 
 class AuthService:
     def __init__(self):
