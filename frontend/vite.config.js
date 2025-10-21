@@ -14,7 +14,7 @@ export default defineConfig({
     watch: { usePolling: true },
     proxy: {
       '/api': {
-        target: 'http://backend:50001', // ใช้ service name ของ Docker Compose
+        target: process.env.VITE_API_URL,
         changeOrigin: true,
       },
     },
