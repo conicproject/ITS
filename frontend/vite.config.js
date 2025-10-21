@@ -6,15 +6,17 @@ import path from 'path'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './src'),  // ✅ เพิ่ม alias
-    },
+    alias: { '@': path.resolve(__dirname, './src') },
   },
   server: {
     host: '0.0.0.0',
     port: 50000,
-    watch: {
-      usePolling: true,
+    watch: { usePolling: true },
+    proxy: {
+      '/api': {
+        target: 'http://backend:50001', // ใช้ service name ของ Docker Compose
+        changeOrigin: true,
+      },
     },
   },
 })
