@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../service/client";
-import bgLogin from "../assets/bg_login.jpg";
 import { FaUser, FaLock } from "react-icons/fa";
 
 function Login() {
@@ -38,7 +37,7 @@ function Login() {
   return (
     <div
       className="min-h-screen flex items-center justify-center bg-cover bg-center"
-      style={{ backgroundImage: `url(${bgLogin})` }}
+      style={{ backgroundImage: "url('/assets/bg_login.jpg')" }}
     >
       <div className="w-full max-w-md p-8 rounded-lg">
         {/* LOGO */}

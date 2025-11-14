@@ -1,7 +1,11 @@
+// frontend/src/components/GenericFunctionPage.jsx
 import { Card, CardContent } from "@/components/ui/card";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 function GenericFunctionPage({ title, items = [] }) {
+  const navigate = useNavigate();
+
   return (
     <div className="h-screen bg-gray-50 p-8">
       <div className="mb-8">
@@ -12,9 +16,10 @@ function GenericFunctionPage({ title, items = [] }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-8 justify-items-center">
         {items.map((item, index) => (
           <motion.div
-            key={index} 
+            key={index}
             whileHover={{ scale: 1.05 }}
-            className="w-40 flex flex-col items-center"
+            className="w-40 flex flex-col items-center cursor-pointer"
+            onClick={() => navigate(item.path)} // 👈 เพิ่ม navigate ตรงนี้
           >
             <Card className="w-32 h-32 flex items-center justify-center shadow-md hover:shadow-lg transition bg-white">
               <CardContent className="flex items-center justify-center p-4">

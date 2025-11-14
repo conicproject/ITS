@@ -1,4 +1,4 @@
-# backend/app/src/models/oracle.py
+# backend/app/src/schemas/oracle.py
 from pydantic import BaseModel
 from datetime import datetime
 from typing import List

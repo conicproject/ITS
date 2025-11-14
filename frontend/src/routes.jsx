@@ -12,6 +12,7 @@ import OperationManagementDashboard from "./pages/OperationManagement/dashboard"
 import OperationManagementFunction from "./pages/OperationManagement/function";
 import IncidentAccidentDashboard from "./pages/IncidentAccident/dashboard";
 import IncidentAccidentFunction from "./pages/IncidentAccident/function";
+import EnforcementReportFunction from "./pages/Enforcement/function/report-vehicle";
 
 const routes = [
   {
@@ -122,6 +123,15 @@ const routes = [
       </DefaultLayout>
     ),
   },
+  {
+  path: "/enforcement/function/report-vehicle",
+  name: "EnforcementReportVehicle",
+  element: (
+    <DefaultLayout>
+      <EnforcementReportFunction />
+    </DefaultLayout>
+  ),
+},
 ];
 
 export default routes;

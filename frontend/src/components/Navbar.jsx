@@ -1,6 +1,5 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import routes from "../routes";
-import AvatarImage from "../assets/avatar.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBars } from "@fortawesome/free-solid-svg-icons";
 import "../css/Navbar.css";
@@ -40,7 +39,7 @@ function Navbar({ onHamburgerClick }) {
 
       <div className="navbar-right">
         <div className="navbar-user" onClick={handleLogout} style={{cursor: "pointer"}}>
-          <img src={AvatarImage} alt="User Avatar" className="navbar-avatar" />
+          <img src="/assets/avatar.jpg" alt="User Avatar" className="navbar-avatar" />
           <p>LOGOUT</p>
         </div>
       </div>

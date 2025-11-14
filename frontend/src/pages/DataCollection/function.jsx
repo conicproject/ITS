@@ -2,10 +2,10 @@ import GenericFunctionPage from "../../components/GenericFunctionPage";
 
 function DataCollectionFunction() {
   const items = [
-    { name: "DataCollection_1", icon: "/icons/license.png" },
-    { name: "DataCollection_2", icon: "/icons/camera.png" },
-    { name: "DataCollection_3", icon: "/icons/map.png" },
-    { name: "DataCollection_4", icon: "/icons/report.png" },
+    { name: "DataCollection_1", icon: "/assets/icons/icon-cross.png" },
+    { name: "DataCollection_2", icon: "/assets/icons/icon-cross.png" },
+    { name: "DataCollection_3", icon: "/assets/icons/icon-cross.png" },
+    { name: "DataCollection_4", icon: "/assets/icons/icon-cross.png" },
   ];
 
   return (

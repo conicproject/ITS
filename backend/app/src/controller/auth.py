@@ -2,7 +2,7 @@ from fastapi import HTTPException, Depends, Header
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 from src.services.auth import AuthService
-from src.models.user import LoginRequest
+from src.schemas.user import LoginRequest
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 

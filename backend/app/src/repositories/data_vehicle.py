@@ -1,39 +1,193 @@
 # backend/app/src/repositories/data_vehicle.py
-from src.connection.oracle import OracleConnection
-import logging
 
+import json
+import logging
+from datetime import datetime, timedelta
+from src.connection.oracle import OracleConnection
+from src.connection.postgres import PostgresConnection
+
+# ตั้งค่า logging ให้แสดงระดับ DEBUG ทั้งใน console และ log file
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s | %(levelname)s | %(message)s",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("sync_debug.log", mode="a", encoding="utf-8"),
+    ],
+)
 logger = logging.getLogger(__name__)
 
+
 class DataVehicleRepository:
+    """ดึงข้อมูลจาก Oracle และบันทึกลง Postgres แบบ Realtime (batch 5 นาที, split sub-batch)"""
+
+    BATCH_LIMIT = 5000  # จำกัดขนาด sub-batch เพื่อไม่ให้ JSON ใหญ่เกินไป
+
     def __init__(self):
-        self.conn = OracleConnection()
+        logger.info("🚀 Initializing DataVehicleRepository...")
+        self.oracle_conn = OracleConnection()
+        self.postgres_conn = PostgresConnection()
+        self.last_time = self._get_last_time_from_db()
+        logger.info(f"🕓 Initial last_time = {self.last_time}")
 
-    def get_data_vehicle(self):
-        """
-        ดึง 5 แถวแรกจาก XVOT_XVOTDB_USER.VEHICLE_PASS
-        """
+    # ---------------- Oracle ----------------
+    def _open_oracle(self):
+        logger.debug("🔌 Opening Oracle connection...")
+        self.oracle_connection = self.oracle_conn.get_connection()
+        self.oracle_cursor = self.oracle_connection.cursor()
+
+    def _close_oracle(self):
+        logger.debug("🔌 Closing Oracle connection...")
         try:
-            with self.conn.get_connection() as connection:
-                with connection.cursor() as cursor:
-                    sql = """
-                        SELECT PASS_ID, CROSSING_ID, LANE_NO, DIRECTION_INDEX, PLATE_NO, PASS_TIME
-                        FROM XVOT_XVOTDB_USER.VEHICLE_PASS
-                        WHERE ROWNUM <= 5
-                    """
-                    cursor.execute(sql)
-                    rows = cursor.fetchall()
-
-                    results = []
-                    for r in rows:
-                        results.append({
-                            "pass_id": r[0],
-                            "crossing_id": r[1],
-                            "lane_no": r[2],
-                            "direction_index": r[3],
-                            "plate_no": r[4],
-                            "pass_time": r[5].strftime("%Y-%m-%d %H:%M:%S") if r[5] else None
-                        })
-                    return results
+            if hasattr(self, "oracle_cursor") and self.oracle_cursor:
+                self.oracle_cursor.close()
+            if hasattr(self, "oracle_connection") and self.oracle_connection:
+                self.oracle_connection.close()
         except Exception as e:
-            logger.error(f"Error fetching vehicle data: {e}")
-            raise
+            logger.warning(f"⚠️ Error closing Oracle connection: {e}")
+        finally:
+            self.oracle_cursor, self.oracle_connection = None, None
+
+    # ---------------- Postgres ----------------
+    def _get_last_time_from_db(self):
+        """อ่านเวลาล่าสุดจากข้อมูลที่บันทึกใน Postgres"""
+        conn = None
+        cursor = None
+        try:
+            conn = self.postgres_conn.get_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT MAX(last_pass_time) FROM extract_data")
+            result = cursor.fetchone()
+            last_time = result[0] if result and result[0] else None
+            now = datetime.now()
+
+            if last_time and last_time.date() < now.date():
+                last_time = now.replace(hour=0, minute=0, second=0, microsecond=0)
+                logger.info("🌅 New day detected → reset last_time = 00:00 today")
+
+            if not last_time:
+                last_time = now - timedelta(minutes=5)
+                logger.info(f"🔰 No last sync → start from {last_time}")
+
+            return last_time
+
+        except Exception as e:
+            logger.exception("❌ Error reading last sync time from Postgres:")
+            return datetime.now() - timedelta(minutes=5)
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+    def _save_to_postgres(self, data_rows):
+        """บันทึกข้อมูลลง Postgres แบ่งเป็น sub-batch"""
+        if not data_rows:
+            logger.info("⏳ No data to save in this batch.")
+            return
+
+        logger.info(f"📝 Preparing to save {len(data_rows)} total rows to Postgres.")
+
+        for i in range(0, len(data_rows), self.BATCH_LIMIT):
+            sub_batch = data_rows[i:i + self.BATCH_LIMIT]
+            latest_time = max(row["PASS_TIME"] for row in sub_batch)
+            logger.debug(f"📦 Sub-batch {i // self.BATCH_LIMIT + 1} → {len(sub_batch)} rows (latest_time={latest_time})")
+
+            conn = None
+            cursor = None
+            try:
+                conn = self.postgres_conn.get_connection()
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO extract_data (extract_data_text, extract_data_timestamp, last_pass_time)
+                    VALUES (%s, %s, %s)
+                """, (
+                    json.dumps(sub_batch, default=str),
+                    datetime.now(),
+                    latest_time
+                ))
+                conn.commit()
+                logger.info(f"💾 Saved {len(sub_batch)} records to Postgres (last_pass_time={latest_time})")
+                self.last_time = latest_time
+
+            except Exception as e:
+                logger.exception("❌ Failed to save sub-batch to Postgres:")
+                if conn:
+                    conn.rollback()
+            finally:
+                if cursor:
+                    cursor.close()
+                if conn:
+                    conn.close()
+
+    # ---------------- Oracle Fetch ----------------
+    def get_data_vehicle(self):
+        """ดึงข้อมูลใหม่จาก Oracle (เฉพาะของวันนั้น และหลัง last_time)"""
+        try:
+            self._open_oracle()
+
+            logger.info(f"🔍 Fetching Oracle data since {self.last_time}")
+
+            sql = """
+                SELECT pr.PROJECT_NAME, ch.CHECKPOINT_ID, ch.CHECKPOINT_NICKNAME, la.ROAD_DIRECTION,
+                       dt.DISTRICT_NAME, vt.TYPE_NAMETH, vp.PLATE_NO, p.PROVINCE_NAMETH,
+                       vu.PLATE_PIC_URL, vu.IMAGE_PATH,
+                       ch.LATITUDE, ch.LONGTITUDE, vp.LANE_NO, rd.ROAD_NAME,
+                       vc.COLOR_NAMETH, vp.VEHICLE_SPEED, vp.PASS_TIME
+                FROM XVOT_XVOTDB_USER.VEHICLE_PASS vp
+                JOIN CHECKPOINT ch ON ch.AREA_CODE = vp.AREA_CODE 
+                JOIN VEHICLE_TYPE vt ON vt.TYPE_NAME = vp.VEHICLE_TYPE
+                JOIN VEHICLE_COLOR vc ON vc.COLOR_NAME = vp.VEHICLE_COLOR
+                JOIN PROJECT pr ON pr.PROJECT_ID = ch.PROJECT_ID 
+                JOIN LANE la ON la.CHECKPOINT_ID = ch.CHECKPOINT_ID AND la.LANE_CODE = vp.LANE_NO
+                JOIN DISTRICT dt ON dt.DISTRICT_ID = ch.DISTRICT_ID
+                JOIN ROAD rd ON rd.ROAD_ID = ch.ROAD_ID
+                JOIN CAMERA c ON c.CAMERA_ID = la.CAMERA_ID
+                JOIN XVOT_XVOTDB_USER.VEHICLE_URL vu ON vu.PASS_ID = vp.PASS_ID
+                JOIN PROVINCE p ON p.PROVINCE_ID = vp.PLATE_PROVINCE
+                WHERE vp.PASS_TIME >= TRUNC(SYSDATE)
+                  AND vp.PASS_TIME < TRUNC(SYSDATE) + 1
+                  AND vp.PASS_TIME > TO_TIMESTAMP(:last_time, 'YYYY-MM-DD HH24:MI:SS')
+                ORDER BY vp.PASS_TIME
+            """
+
+            params = {"last_time": self.last_time.strftime("%Y-%m-%d %H:%M:%S")}
+            self.oracle_cursor.execute(sql, params)
+            columns = [col[0] for col in self.oracle_cursor.description]
+            rows = [dict(zip(columns, row)) for row in self.oracle_cursor.fetchall()]
+
+            logger.info(f"📊 Oracle returned {len(rows)} rows.")
+            if rows:
+                latest_time = rows[-1]["PASS_TIME"]
+                logger.info(f"✅ Found {len(rows)} new records → latest PASS_TIME = {latest_time}")
+                self.last_time = latest_time
+            else:
+                logger.info("⏳ No new data found in Oracle.")
+            return rows
+
+        except Exception as e:
+            logger.exception("❌ Error querying Oracle:")
+            return []
+        finally:
+            self._close_oracle()
+
+    # ---------------- Combined ----------------
+    def sync_to_postgres(self):
+        """ดึงข้อมูลจาก Oracle แล้วบันทึกเป็น batch 5 นาที"""
+        logger.info("🔁 Starting sync_to_postgres()")
+        rows = self.get_data_vehicle()
+        self._save_to_postgres(rows)
+
+
+# ---------------- Run Realtime ----------------
+if __name__ == "__main__":
+    import time
+    repo = DataVehicleRepository()
+    try:
+        while True:
+            
+            repo.sync_to_postgres()
+            print("✅ Synced data from Oracle to Postgres.")
+            time.sleep(30)  # ดึงทุก 30 วินาที
+    except KeyboardInterrupt:
+        print("⏹️ Stop by user")

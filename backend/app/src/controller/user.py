@@ -1,7 +1,7 @@
 # backend/app/src/controller/user.py
 from fastapi import HTTPException
 from src.services.user import UserService
-from src.models.user import CreateUserRequest, UserResponse, SingleUserResponse
+from src.schemas.user import CreateUserRequest, UserResponse, SingleUserResponse
 
 class UserController:
     def __init__(self):

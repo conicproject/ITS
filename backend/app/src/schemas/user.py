@@ -1,4 +1,4 @@
-# backend/app/src/models/user.py
+# backend/app/src/schemas/user.py
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
