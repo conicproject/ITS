@@ -1,3 +1,4 @@
+// frontend/src/components/Navbar.jsx
 import { useLocation, useNavigate } from "react-router-dom";
 import routes from "../routes";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

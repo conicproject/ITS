@@ -1,3 +1,4 @@
+// frontend/src/components/Sidebar.jsx
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import apiClient from "../service/client";

@@ -7,7 +7,7 @@ function GenericFunctionPage({ title, items = [] }) {
   const navigate = useNavigate();
 
   return (
-    <div className="h-screen bg-gray-50 p-8">
+    <div className="h-screen p-8">
       <div className="mb-8">
         <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
         <hr className="mt-2 border-gray-300" />

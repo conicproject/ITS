@@ -13,13 +13,14 @@ import OperationManagementFunction from "./pages/OperationManagement/function";
 import IncidentAccidentDashboard from "./pages/IncidentAccident/dashboard";
 import IncidentAccidentFunction from "./pages/IncidentAccident/function";
 import EnforcementReportFunction from "./pages/Enforcement/function/report-vehicle";
+import DetailReportVehicle from "./pages/Enforcement/function/detail-report-vehicle";
 
 const routes = [
   {
     path: "/",
     name: "Login",
     element: (
-        <Login />
+      <Login />
     ),
   },
   {
@@ -124,14 +125,23 @@ const routes = [
     ),
   },
   {
-  path: "/enforcement/function/report-vehicle",
-  name: "EnforcementReportVehicle",
-  element: (
-    <DefaultLayout>
-      <EnforcementReportFunction />
-    </DefaultLayout>
-  ),
-},
+    path: "/enforcement/function/report-vehicle",
+    name: "EnforcementReportVehicle",
+    element: (
+      <DefaultLayout>
+        <EnforcementReportFunction />
+      </DefaultLayout>
+    ),
+  },
+  {
+    path: "/enforcement/function/detail-report-vehicle",
+    name: "DetailReportVehicle",
+    element: (
+      <DefaultLayout>
+        <DetailReportVehicle />
+      </DefaultLayout>
+    ),
+  }
 ];
 
 export default routes;

@@ -33,7 +33,7 @@ router.add_api_route("/traffic_truck_pass_yesterday", oracle_controller.get_traf
 router.add_api_route("/menus", menu_controller.get_menus, methods=["GET"], tags=["Menu"], dependencies=[Depends(auth_controller.get_current_user)])
 
 router.add_api_route("/camera-status", camera_controller.get_camera, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
-router.add_api_route("/vehicle_by/{record_type}",  vehicle_controller.get_traffic_detail, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+router.add_api_route("/traffic-detail/{record_type}",  vehicle_controller.get_traffic_detail, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
 
 # break : pull data vehicle
 # api data_vehicle
