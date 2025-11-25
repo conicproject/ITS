@@ -1,0 +1,77 @@
+import React, { useState } from 'react';
+import { FaSearch } from 'react-icons/fa';
+
+/**
+ * Component แถบค้นหา
+ * @param {Function} onSearch - callback เมื่อกดค้นหา
+ * @param {string} placeholder - ข้อความ placeholder
+ */
+export const SearchBar = ({ 
+  onSearch, 
+  placeholder = "ค้นหาเลขทะเบียน",
+  showDateRange = true 
+}) => {
+  const [searchText, setSearchText] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+
+  const handleSearch = () => {
+    if (onSearch) {
+      onSearch({
+        searchText,
+        startDate,
+        endDate
+      });
+    }
+  };
+
+  return (
+    <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
+      <div className="flex items-center gap-2 mb-3">
+        <FaSearch className="w-5 h-5 text-gray-400" />
+        <span className="font-medium">{placeholder}</span>
+      </div>
+      
+      <div className="grid grid-cols-3 gap-3">
+        <input
+          type="text"
+          placeholder="ค้นหาเลขทะเบียน"
+          value={searchText}
+          onChange={(e) => setSearchText(e.target.value)}
+          className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+        />
+        
+        {showDateRange && (
+          <>
+            <select 
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">Select Date</option>
+              <option value="2025-01-24">24/01/2025</option>
+              <option value="2025-01-23">23/01/2025</option>
+            </select>
+            
+            <select 
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            >
+              <option value="">Select Date</option>
+              <option value="2025-01-24">24/01/2025</option>
+              <option value="2025-01-23">23/01/2025</option>
+            </select>
+          </>
+        )}
+      </div>
+      
+      <button 
+        onClick={handleSearch}
+        className="mt-3 bg-green-700 text-white px-6 py-2 rounded text-sm hover:bg-green-800 transition-colors"
+      >
+        ค้นหา
+      </button>
+    </div>
+  );
+};

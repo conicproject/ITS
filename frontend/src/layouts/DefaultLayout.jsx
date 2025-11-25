@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
+import Navbar from "../components/bar/Navbar";
+import Sidebar from "../components/bar/Sidebar";
 
 function DefaultLayout({ children }) {
   const navigate = useNavigate();

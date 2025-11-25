@@ -1,18 +1,15 @@
-import GenericFunctionPage from "../../components/GenericFunctionPage";
+import GenericFunction from "../../components/ui/GenericFunction";
 
 function OperationManagementFunction() {
   const items = [
-    { name: "OperationManagem_1", icon: "/assets/icons/icon-cross.png" },
-    { name: "OperationManagem_2", icon: "/assets/icons/icon-cross.png" },
-    { name: "OperationManagem_3", icon: "/assets/icons/icon-cross.png" },
-    { name: "OperationManagem_4", icon: "/assets/icons/icon-cross.png" },
+    { name: "สัญญาณไฟจราจร", icon: "/assets/icons/icon-cross.png", path: "/operation-management/function/traffic-signal" },
+    { name: "Ambulance", icon: "/assets/icons/icon-cross.png", path: "/operation-management/function/ambulance" },
+    { name: "V.I.P", icon: "/assets/icons/icon-cross.png", path: "/operation-management/function/vip" },
+    { name: "Sequence", icon: "/assets/icons/icon-cross.png", path: "/operation-management/function/sequence" }
   ];
 
   return (
-    <GenericFunctionPage
-      title="Operation Management Function"
-      items={items}
-    />
+    <GenericFunction title="Operation Management Function" items={items} />
   );
 }
 

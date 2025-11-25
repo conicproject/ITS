@@ -1,7 +1,9 @@
 // frontend/src/components/Sidebar.jsx
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
-import apiClient from "../service/client";
+import { BiSolidCube } from "react-icons/bi";
+
+import apiClient from "../../service/client";
 
 function Sidebar({
   sidebarOpen,
@@ -168,7 +170,7 @@ function Sidebar({
           onMouseLeave={(e) => !isActive && (e.currentTarget.style.backgroundColor = "transparent")}
           onClick={() => isMobile && setSidebarOpen(false)}
         >
-          {level === 0 && <span style={{ fontSize: "1.2rem", opacity: 0.7 }}>{node.icon || "📋"}</span>}
+          <BiSolidCube />
           <span>{node.label}</span>
         </Link>
       );
@@ -192,7 +194,7 @@ function Sidebar({
             onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
           >
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              {level === 0 && <span style={{ fontSize: "1.2rem", opacity: 0.7 }}>{node.icon || "📋"}</span>}
+              <BiSolidCube />
               <span>{node.label}</span>
             </div>
             <span style={{ 
