@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../service/client";
 import { FaUser, FaLock } from "react-icons/fa";
@@ -8,6 +8,14 @@ function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  // ตรวจสอบ token ตอน mount
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      navigate("/overview"); // ถ้ามี token ให้ไปหน้า overview เลย
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,7 +31,7 @@ function Login() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/overview   ");
+      navigate("/overview");
     } catch (err) {
       const msg =
         err.response?.data?.detail || "เกิดข้อผิดพลาด ไม่สามารถ login ได้";

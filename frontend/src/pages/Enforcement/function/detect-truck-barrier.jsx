@@ -1,6 +1,6 @@
 // frontend/src/pages/Enforcement/function/detect-truck-barrier.jsx
 import React, { useState } from 'react';
-import { SearchBar } from '../../../components/ui/SearchBar';
+import { Filter } from '../../../components/ui/Filter';
 import { ViolationList } from '../../../components/ui/ViolationList';
 import { MapSidebar } from '../../../components/ui/MapSidebar';
 
@@ -10,57 +10,50 @@ import { MapSidebar } from '../../../components/ui/MapSidebar';
 const DetectTruckBarrier = () => {
   const [violations, setViolations] = useState([
     {
-      round: '1xn-1234',
-      camera: 'กล้อง4',
-      status: 'รอชำระค่าปรับ',
-      licensePlate: '2025-01-24 14:25',
-      datetime: '2025-01-24 14:25',
-      location: 'หมู่ที่1/ก.หมู่บ้าน',
-      exitLocation: 'หมู่ที่1/ก.หมู่บ้าน',
-      time: '23-07-2545 G:58',
-      additionalInfo: 'คำอธิบาย: ผ่านแผงกั้นจราจรโดยไม่ได้รับอนุญาต'
+      lpr: '1กก-1234',
+      camera: 'CAM-002',
+      type: 'รถยนต์',
+      date: '2025-01-24 14:25',
+      status: 'No Green List',
+      location: 'แยกรัชดา-ห้วยขวาง',
+      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
     },
     {
-      round: '1xn-1234',
-      camera: 'กล้อง4',
-      status: 'ชำระแล้ว',
-      licensePlate: '2025-01-24 14:25',
-      datetime: '2025-01-24 14:25',
-      location: 'หมู่ที่1/ก.หมู่บ้าน',
-      exitLocation: 'หมู่ที่1/ก.หมู่บ้าน',
-      time: '23-07-2545 H:58'
+      lpr: '1กก-1234',
+      camera: 'CAM-002',
+      type: 'รถยนต์',
+      date: '2025-01-24 14:25',
+      status: 'No Green List',
+      location: 'แยกรัชดา-ห้วยขวาง',
+      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
     },
     {
-      round: '1xn-1234',
-      camera: 'กล้อง4',
-      status: 'ชำระแล้ว',
-      licensePlate: '2025-01-24 14:25',
-      datetime: '2025-01-24 14:25',
-      location: 'หมู่ที่1/ก.หมู่บ้าน',
-      exitLocation: 'หมู่ที่1/ก.หมู่บ้าน',
-      time: '23-07-2545 H:04'
+      lpr: '1กก-1234',
+      camera: 'CAM-002',
+      type: 'รถยนต์',
+      date: '2025-01-24 14:25',
+      status: 'Green List',
+      location: 'แยกรัชดา-ห้วยขวาง',
+      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
     },
     {
-      round: '1xn-1234',
-      camera: 'กล้อง4',
-      status: 'รอชำระค่าปรับ',
-      licensePlate: '2025-01-24 14:25',
-      datetime: '2025-01-24 14:25',
-      location: 'หมู่ที่1/ก.หมู่บ้าน',
-      exitLocation: 'หมู่ที่1/ก.หมู่บ้าน',
-      time: '23-07-2545 H:08'
+      lpr: '1กก-1234',
+      camera: 'CAM-002',
+      type: 'รถยนต์',
+      date: '2025-01-24 14:25',
+      status: 'Green List',
+      location: 'แยกรัชดา-ห้วยขวาง',
+      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
     },
     {
-      round: '1xn-1234',
-      camera: 'กล้อง4',
-      status: 'รอชำระค่าปรับ',
-      licensePlate: '2025-01-24 14:25',
-      datetime: '2025-01-24 14:25',
-      location: 'หมู่ที่1/ก.หมู่บ้าน',
-      exitLocation: 'หมู่ที่1/ก.หมู่บ้าน',
-      time: '23-07-2545 H:18',
-      additionalInfo: 'คำอธิบาย: ผ่านแผงกั้นจราจรโดยไม่ได้รับอนุญาต'
-    }
+      lpr: '1กก-1234',
+      camera: 'CAM-002',
+      type: 'รถยนต์',
+      date: '2025-01-24 14:25',
+      status: 'Green List',
+      location: 'แยกรัชดา-ห้วยขวาง',
+      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
+    },
   ]);
 
   const handleSearch = (searchParams) => {
@@ -86,33 +79,31 @@ const DetectTruckBarrier = () => {
               <span className="text-xs">!</span>
             </div>
             <span className="text-sm">
-              ระบบตรวจจับการรุก ในช่วงเวลาห้ามเข้าเขตรอบ
+              ระบบตรวจจับการฝ่าสัญญาณไฟ
             </span>
           </div>
-          <div className="text-sm text-gray-500">
-            วันจันทร์ที่ 24 November 2568
-          </div>
         </div>
+
+        {/* Search Bar - เต็มความกว้างด้านบนสุด */}
+        <Filter
+          onSearch={handleSearch}
+          placeholder="ค้นหาเลขทะเบียน"
+          showDateRange={true}
+        />
 
         <div className="grid grid-cols-3 gap-6">
           {/* Main Content - 2 columns */}
           <div className="col-span-2">
-            <SearchBar 
-              onSearch={handleSearch}
-              placeholder="ค้นหาเลขทะเบียน/หมู่ที่"
-            />
-            
             <ViolationList
               title="รายการ"
               violations={violations}
-              type="barrier"
-              timeRange="ช่วงเวลาเกิดเหตุ 06:00 - 20:00 น."
+              type="redlight"
             />
           </div>
 
           {/* Sidebar - 1 column */}
           <div>
-            <MapSidebar 
+            <MapSidebar
               cameraId="1xn-2345"
               position={[13.7563, 100.5018]} // ตำแหน่ง Bangkok
               stats={sidebarStats}

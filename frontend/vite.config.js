@@ -1,7 +1,7 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import tailwindcss from '@tailwindcss/vite'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import tailwindcss from '@tailwindcss/vite';
+import path from 'path';
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -12,11 +12,13 @@ export default defineConfig({
     host: '0.0.0.0',
     port: 50000,
     watch: { usePolling: true },
+    allowedHosts: ['conic.ddns.net'],
     proxy: {
       '/api': {
-        target: process.env.VITE_API_URL || "http://192.168.1.111:50001",
+        target: 'http://backend:50001',
         changeOrigin: true,
+        secure: false,
       },
     },
   },
-})
+});
