@@ -1,126 +1,59 @@
+// frontend/src/pages/DataCollectionDashboard.jsx
 import React, { useEffect, useState } from "react";
-import ApexCharts from "react-apexcharts";
 import * as am5 from "@amcharts/amcharts5";
 import * as am5percent from "@amcharts/amcharts5/percent";
 import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
+import { BarChart } from "../../components/ui/BarChart";
 
 const DataCollectionDashboard = () => {
-  const [chartData, setChartData] = useState({
-    series: [
+  // ข้อมูลสำหรับ BarChart Component
+  const trafficData = Array.from({ length: 24 }, (_, i) => ({
+    hour: `${i.toString().padStart(2, '0')}:00`,
+    vehicles: [10, 8, 5, 7, 18, 60, 82, 72, 65, 50, 48, 45, 42, 38, 45, 68, 82, 72, 60, 45, 32, 20, 15, 18][i],
+    speed: [65, 68, 66, 64, 62, 58, 48, 42, 38, 36, 35, 38, 42, 45, 48, 52, 55, 58, 60, 62, 61, 63, 65, 68][i]
+  }));
+
+  // Config สำหรับ BarChart
+  const barChartConfig = {
+    seriesConfig: [
       {
         name: 'จำนวนรถเคริ่ม',
         type: 'column',
-        data: [10, 8, 5, 7, 18, 60, 82, 72, 65, 50, 48, 45, 42, 38, 45, 68, 82, 72, 60, 45, 32, 20, 15, 18]
+        data: trafficData.map(d => d.vehicles)
       },
       {
         name: 'การนเคริ่ถดำนต์(ค้นที่ห้น้า)',
         type: 'line',
-        data: [65, 68, 66, 64, 62, 58, 48, 42, 38, 36, 35, 38, 42, 45, 48, 52, 55, 58, 60, 62, 61, 63, 65, 68]
+        data: trafficData.map(d => d.speed)
       }
     ],
-    options: {
-      chart: {
-        height: 350,
-        type: 'line',
-        toolbar: {
-          show: false
-        },
-        animations: {
-          enabled: true,
-          dynamicAnimation: {
-            enabled: true,
-            speed: 350
-          }
-        },
-        parentHeightOffset: 0
-      },
-      stroke: {
-        width: [0, 2],
-        curve: 'smooth'
-      },
-      plotOptions: {
-        bar: {
-          columnWidth: '50%',
-          borderRadius: 4,
-          distributed: false
-        }
-      },
-      colors: ['#A78BFA', '#FF6B6B'],
-      dataLabels: {
-        enabled: false
-      },
-      labels: ['00:00', '01:00', '02:00', '03:00', '04:00', '05:00', '06:00', '07:00', '08:00', '09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00', '21:00', '22:00', '23:00'],
-      xaxis: {
-        type: 'category',
-        labels: {
-          style: {
-            fontSize: '9px'
-          },
-          rotate: 0,
-          rotateAlways: false,
-          hideOverlappingLabels: true,
-          trim: true,
-          offsetY: 0
-        },
-        tickPlacement: 'on',
-        tickAmount: 23,
-        axisBorder: {
-          show: true
-        },
-        axisTicks: {
-          show: true
-        }
-      },
+    colors: ['#A78BFA', '#FF6B6B'],
+    customOptions: {
       yaxis: {
+        min: 0,
+        max: 100,
         labels: {
           style: {
             fontSize: '11px'
           }
-        },
-        min: 0,
-        max: 100
-      },
-      legend: {
-        position: 'top',
-        horizontalAlign: 'center',
-        fontSize: '12px'
-      },
-      grid: {
-        strokeDashArray: 3,
-        padding: {
-          left: 10,
-          right: 10,
-          top: 0,
-          bottom: 0
-        },
-        xaxis: {
-          lines: {
-            show: true
-          }
-        }
-      },
-      states: {
-        hover: {
-          filter: {
-            type: 'lighten',
-            value: 0.04
-          }
         }
       }
+    },
+    legendConfig: {
+      position: 'top',
+      horizontalAlign: 'center',
+      fontSize: '12px'
     }
-  });
+  };
 
   // Initialize Pie Chart with amCharts
   useEffect(() => {
-    // Create root element
     let root = am5.Root.new("pieChartDiv");
 
-    // Set themes
     root.setThemes([
       am5themes_Animated.new(root)
     ]);
 
-    // Create chart
     let chart = root.container.children.push(
       am5percent.PieChart.new(root, {
         layout: root.verticalLayout,
@@ -128,7 +61,6 @@ const DataCollectionDashboard = () => {
       })
     );
 
-    // Create series
     let series = chart.series.push(
       am5percent.PieSeries.new(root, {
         valueField: "value",
@@ -140,7 +72,6 @@ const DataCollectionDashboard = () => {
     series.labels.template.set("visible", false);
     series.ticks.template.set("visible", false);
 
-    // Set data
     let data = [
       { category: "จักรยาน-มอเตอร์ไซค์-สามล้อ", value: 30, color: am5.color(0xFF6B6B) },
       { category: "รถเก๋ง-กระบะ-วินแอนด์ปิคอัพ", value: 35, color: am5.color(0x4ECDC4) },
@@ -151,12 +82,10 @@ const DataCollectionDashboard = () => {
 
     series.data.setAll(data);
 
-    // Set colors
     series.slices.template.adapters.add("fill", function(fill, target) {
       return target.dataItem.dataContext.color;
     });
 
-    // Add center label
     let label = chart.seriesContainer.children.push(
       am5.Label.new(root, {
         text: "525",
@@ -175,7 +104,6 @@ const DataCollectionDashboard = () => {
     };
   }, []);
 
-  // Vehicle type data for legend
   const vehicleTypes = [
     { name: 'จักรยาน-มอเตอร์ไซค์-สามล้อ', color: '#FF6B6B' },
     { name: 'รถเก๋ง-กระบะ-วินแอนด์ปิคอัพ', color: '#4ECDC4' },
@@ -184,7 +112,6 @@ const DataCollectionDashboard = () => {
     { name: 'อื่นเทาอื่น', color: '#F38181' }
   ];
 
-  // Alert data
   const alerts = [
     {
       id: 1,
@@ -262,20 +189,18 @@ const DataCollectionDashboard = () => {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* ApexCharts - Bar and Line Chart */}
-        <div className="lg:col-span-2 bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-            📊 ปริมาณจราจรแบบเรียลไทม์
-          </h2>
-          <div className="w-full overflow-hidden">
-            <ApexCharts
-              options={chartData.options}
-              series={chartData.series}
-              type="line"
-              height={350}
-              width="100%"
-            />
-          </div>
+        {/* BarChart Component - แทนที่ ApexCharts เดิม */}
+        <div className="lg:col-span-2">
+          <BarChart
+            data={trafficData}
+            height={350}
+            title="📊 ปริมาณจราจรแบบเรียลไทม์"
+            showTitle={true}
+            seriesConfig={barChartConfig.seriesConfig}
+            colors={barChartConfig.colors}
+            customOptions={barChartConfig.customOptions}
+            legendConfig={barChartConfig.legendConfig}
+          />
         </div>
 
         {/* amCharts - Pie Chart */}

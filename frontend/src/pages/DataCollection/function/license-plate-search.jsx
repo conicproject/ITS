@@ -4,7 +4,6 @@ import { Filter } from '../../../components/ui/Filter';
 import { ViolationList } from '../../../components/ui/ViolationList';
 import { MapSidebar } from '../../../components/ui/MapSidebar';
 
-
 function LicensePlateSearch() {
     const [violations, setViolations] = useState([
         {
@@ -54,9 +53,9 @@ function LicensePlateSearch() {
         },
     ]);
 
-    const handleSearch = (searchParams) => {
-        console.log('Search params:', searchParams);
-        // TODO: เรียก API หรือ filter ข้อมูลตาม searchParams
+    const handleSearch = (params) => {
+        console.log("SEARCH PARAMS:", params);
+        // TODO: connect API
     };
 
     const sidebarStats = {
@@ -69,48 +68,45 @@ function LicensePlateSearch() {
 
     return (
         <div className="min-h-screen bg-gray-50">
+
             <div className="max-w-7xl mx-auto p-6">
+
                 {/* Header */}
-                <div className="mb-6">
-                    <div className="flex items-center gap-2 text-red-600 mb-2">
-                        <div className="w-6 h-6 rounded-full border-2 border-red-600 flex items-center justify-center">
-                            <span className="text-xs">!</span>
-                        </div>
-                        <span className="text-sm">
-                            ระบบตรวจจับการฝ่าสัญญาณไฟ
-                        </span>
+                <div className="flex items-center gap-2 text-red-600 mb-4">
+                    <div className="w-6 h-6 rounded-full border-2 border-red-600 flex items-center justify-center">
+                        <span className="text-xs">!</span>
                     </div>
+                    <span className="text-sm">ระบบตรวจจับการฝ่าสัญญาณไฟ</span>
                 </div>
 
-                {/* Search Bar - เต็มความกว้างด้านบนสุด */}
-                <Filter
-                    onSearch={handleSearch}
-                    placeholder="ค้นหาเลขทะเบียน"
-                    showDateRange={true}
-                />
+                {/* Filter */}
+                <Filter type="license" onSearch={handleSearch} />
 
+                {/* Layout 2 + 1 */}
                 <div className="grid grid-cols-3 gap-6">
-                    {/* Main Content - 2 columns */}
+
+                    {/* Main Content */}
                     <div className="col-span-2">
                         <ViolationList
                             title="รายการ"
                             violations={violations}
-                            type="redlight"
+                            type="lprsearch"
                         />
                     </div>
 
-                    {/* Sidebar - 1 column */}
+                    {/* Sidebar */}
                     <div>
                         <MapSidebar
-                            cameraId="1xn-2345"
-                            position={[13.7563, 100.5018]} // ตำแหน่ง Bangkok
+                            cameraId="CAM-002"
+                            position={[13.7563, 100.5018]}
                             stats={sidebarStats}
                         />
                     </div>
+
                 </div>
             </div>
         </div>
     );
-};
+}
 
 export default LicensePlateSearch;

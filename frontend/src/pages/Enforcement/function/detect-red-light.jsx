@@ -1,11 +1,12 @@
-// frontend/src/pages/Enforcement/function/detect-speeding.jsx
+// frontend/src/pages/Enforcement/function/detect-red-light.jsx
+// frontend/src/pages/Enforcement/function/detect-red-light.jsx
 import React, { useState } from 'react';
 import { Filter } from '../../../components/ui/Filter';
 import { ViolationList } from '../../../components/ui/ViolationList';
 import { MapSidebar } from '../../../components/ui/MapSidebar';
 
 /**
- * หน้าระบบตรวจจับความเร็ว
+ * หน้าระบบตรวจจับการฝ่าสัญญาณไฟแดง
  */
 const DetectRedlight = () => {
   const [violations, setViolations] = useState([
@@ -16,44 +17,9 @@ const DetectRedlight = () => {
       date: '2025-01-24 14:25',
       status: 'สูง',
       location: 'แยกรัชดา-ห้วยขวาง',
-      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
+      detail: 'รถยนต์สีแดง ทะเบียน 1กก-1234 ฝ่าสัญญาณไฟแดง',
     },
-    {
-      lpr: '1กก-1234',
-      camera: 'CAM-002',
-      type: 'รถยนต์',
-      date: '2025-01-24 14:25',
-      status: 'สูง',
-      location: 'แยกรัชดา-ห้วยขวาง',
-      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
-    },
-    {
-      lpr: '1กก-1234',
-      camera: 'CAM-002',
-      type: 'รถยนต์',
-      date: '2025-01-24 14:25',
-      status: 'สูง',
-      location: 'แยกรัชดา-ห้วยขวาง',
-      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
-    },
-    {
-      lpr: '1กก-1234',
-      camera: 'CAM-002',
-      type: 'รถยนต์',
-      date: '2025-01-24 14:25',
-      status: 'สูง',
-      location: 'แยกรัชดา-ห้วยขวาง',
-      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
-    },
-    {
-      lpr: '1กก-1234',
-      camera: 'CAM-002',
-      type: 'รถยนต์',
-      date: '2025-01-24 14:25',
-      status: 'สูง',
-      location: 'แยกรัชดา-ห้วยขวาง',
-      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
-    },
+    // สามารถเพิ่ม dummy data ได้ตามต้องการ
   ]);
 
   const handleSearch = (searchParams) => {
@@ -65,7 +31,7 @@ const DetectRedlight = () => {
     totalDays: 3,
     hasViolation: true,
     violations: [
-      { camera: 'CAM-002', datetime: '2025-01-24 08:01', type: 'ฝ่าฝืนจราจร' }
+      { camera: 'CAM-002', datetime: '2025-01-24 08:01', type: 'ฝ่าฝืนไฟแดง' }
     ]
   };
 
@@ -79,23 +45,24 @@ const DetectRedlight = () => {
               <span className="text-xs">!</span>
             </div>
             <span className="text-sm">
-              ระบบตรวจจับการฝ่าสัญญาณไฟ
+              ระบบตรวจจับการฝ่าสัญญาณไฟแดง
             </span>
           </div>
         </div>
 
-        {/* Search Bar - เต็มความกว้างด้านบนสุด */}
+        {/* Search Bar */}
         <Filter
+          type="redlight"
           onSearch={handleSearch}
           placeholder="ค้นหาเลขทะเบียน"
           showDateRange={true}
         />
 
-        <div className="grid grid-cols-3 gap-6">
+        <div className="grid grid-cols-3 gap-6 mt-4">
           {/* Main Content - 2 columns */}
           <div className="col-span-2">
             <ViolationList
-              title="รายการ"
+              title="รายการฝ่าฝืนไฟแดง"
               violations={violations}
               type="redlight"
             />
@@ -104,8 +71,8 @@ const DetectRedlight = () => {
           {/* Sidebar - 1 column */}
           <div>
             <MapSidebar
-              cameraId="1xn-2345"
-              position={[13.7563, 100.5018]} // ตำแหน่ง Bangkok
+              cameraId={violations[0]?.camera || ''}
+              position={[13.7563, 100.5018]} // Bangkok
               stats={sidebarStats}
             />
           </div>

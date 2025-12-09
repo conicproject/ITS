@@ -1,7 +1,7 @@
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import apiClient from "../../../service/client"; // ปรับ path ตามโครงสร้างคุณ
-import DonutChart from "../../../components/ui/DonutChart"; // React component ต้องตั้งตัวแรกเป็นตัวใหญ่
+import { DonutChart } from "../../../components/ui/DonutChart";
 
 function DetailReportVehicle() {
   const location = useLocation();

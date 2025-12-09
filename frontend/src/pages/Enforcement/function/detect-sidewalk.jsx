@@ -5,7 +5,7 @@ import { ViolationList } from '../../../components/ui/ViolationList';
 import { MapSidebar } from '../../../components/ui/MapSidebar';
 
 /**
- * หน้าระบบตรวจจับความเร็ว
+ * หน้าระบบตรวจจับการใช้ทางเท้า/ฝ่าฝืนบนทางเท้า
  */
 const DetectSidewalk = () => {
   const [violations, setViolations] = useState([
@@ -16,58 +16,16 @@ const DetectSidewalk = () => {
       date: '2025-01-24 14:25',
       status: 'สูง',
       location: 'แยกรัชดา-ห้วยขวาง',
-      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
+      detail: 'รถยนต์สีแดง ทะเบียน 1กก-1234 ฝ่าฝืนบนทางเท้า',
     },
-    {
-      lpr: '1กก-1234',
-      camera: 'CAM-002',
-      type: 'รถยนต์',
-      date: '2025-01-24 14:25',
-      status: 'สูง',
-      location: 'แยกรัชดา-ห้วยขวาง',
-      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
-    },
-    {
-      lpr: '1กก-1234',
-      camera: 'CAM-002',
-      type: 'รถยนต์',
-      date: '2025-01-24 14:25',
-      status: 'สูง',
-      location: 'แยกรัชดา-ห้วยขวาง',
-      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
-    },
-    {
-      lpr: '1กก-1234',
-      camera: 'CAM-002',
-      type: 'รถยนต์',
-      date: '2025-01-24 14:25',
-      status: 'สูง',
-      location: 'แยกรัชดา-ห้วยขวาง',
-      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
-    },
-    {
-      lpr: '1กก-1234',
-      camera: 'CAM-002',
-      type: 'รถยนต์',
-      date: '2025-01-24 14:25',
-      status: 'สูง',
-      location: 'แยกรัชดา-ห้วยขวาง',
-      detail: ' รถยนต์สีแดง ทะเบียน 1กก-1234 ใช้ความเร็วเกินกำหนด',
-    },
+    // ... เพิ่ม dummy data
   ]);
 
   const handleSearch = (searchParams) => {
     console.log('Search params:', searchParams);
-    // TODO: เรียก API หรือ filter ข้อมูลตาม searchParams
   };
 
-  const sidebarStats = {
-    totalDays: 3,
-    hasViolation: true,
-    violations: [
-      { camera: 'CAM-002', datetime: '2025-01-24 08:01', type: 'ฝ่าฝืนจราจร' }
-    ]
-  };
+  const sidebarStats = { totalDays: 3, hasViolation: true, violations: [] };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -78,36 +36,18 @@ const DetectSidewalk = () => {
             <div className="w-6 h-6 rounded-full border-2 border-red-600 flex items-center justify-center">
               <span className="text-xs">!</span>
             </div>
-            <span className="text-sm">
-              ระบบตรวจจับการฝ่าสัญญาณไฟ
-            </span>
+            <span className="text-sm">ระบบตรวจจับการฝ่าฝืนบนทางเท้า</span>
           </div>
         </div>
 
-        {/* Search Bar - เต็มความกว้างด้านบนสุด */}
-        <Filter
-          onSearch={handleSearch}
-          placeholder="ค้นหาเลขทะเบียน"
-          showDateRange={true}
-        />
+        <Filter type="sidewalk" onSearch={handleSearch} placeholder="ค้นหาเลขทะเบียน" showDateRange={true} />
 
-        <div className="grid grid-cols-3 gap-6">
-          {/* Main Content - 2 columns */}
+        <div className="grid grid-cols-3 gap-6 mt-4">
           <div className="col-span-2">
-            <ViolationList
-              title="รายการ"
-              violations={violations}
-              type="redlight"
-            />
+            <ViolationList title="รายการฝ่าฝืนบนทางเท้า" violations={violations} type="sidewalk" />
           </div>
-
-          {/* Sidebar - 1 column */}
           <div>
-            <MapSidebar
-              cameraId="1xn-2345"
-              position={[13.7563, 100.5018]} // ตำแหน่ง Bangkok
-              stats={sidebarStats}
-            />
+            <MapSidebar cameraId={violations[0]?.camera || ""} position={[13.7563, 100.5018]} stats={sidebarStats} />
           </div>
         </div>
       </div>
@@ -115,4 +55,4 @@ const DetectSidewalk = () => {
   );
 };
 
-export default DetectSidewalk;		
+export default DetectSidewalk;

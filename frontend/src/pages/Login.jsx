@@ -9,12 +9,23 @@ function Login() {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // ตรวจสอบ token ตอน mount
+  // ⭐ ตรวจสอบ token ตอน mount (ปรับปรุง)
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      navigate("/overview"); // ถ้ามี token ให้ไปหน้า overview เลย
-    }
+    const checkAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (token) {
+        try {
+          // ⭐ ทดสอบว่า token ยังใช้งานได้หรือไม่
+          await apiClient.get("/api/menus");
+          navigate("/overview", { replace: true });
+        } catch (err) {
+          // Token หมดอายุ -> ล้างข้อมูล
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+        }
+      }
+    };
+    checkAuth();
   }, [navigate]);
 
   const handleSubmit = async (e) => {
@@ -29,9 +40,12 @@ function Login() {
         password,
       });
 
+      // ⭐ บันทึก token และ user
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      navigate("/overview");
+      
+      // ⭐ Navigate พร้อม replace เพื่อไม่ให้กด back กลับมาหน้า login
+      navigate("/overview", { replace: true });
     } catch (err) {
       const msg =
         err.response?.data?.detail || "เกิดข้อผิดพลาด ไม่สามารถ login ได้";
@@ -47,6 +61,9 @@ function Login() {
       className="min-h-screen flex items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: "url('/assets/bg_login.jpg')" }}
     >
+      <div className="absolute top-4 right-4 text-white text-sm bg-black/40 px-3 py-1 rounded">
+        user = admin | pass = 1234
+      </div>
       <div className="w-full max-w-md p-8 rounded-lg">
         {/* LOGO */}
         <div className="flex flex-col items-center mb-6">

@@ -1,3 +1,4 @@
+// frontend/src/components/ui/MapSidebar.jsx
 import React from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import { FaMapMarkerAlt } from 'react-icons/fa';
