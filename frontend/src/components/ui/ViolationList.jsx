@@ -1,4 +1,4 @@
-import React from 'react';
+// frontend/src/components/ui/ViolationList.jsx
 import { ViolationCard } from './ViolationCard';
 
 /**
