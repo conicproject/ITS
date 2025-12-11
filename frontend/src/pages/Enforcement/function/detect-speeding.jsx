@@ -65,7 +65,7 @@ const DetectSpeeding = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="fix-function-page-y-auto bg-gray-50">
       <div className="w-full mx-auto p-6">
 
         {/* Header */}

@@ -1,0 +1,4 @@
+.fix-function-page-y-auto{
+    max-height: calc(100vh - 52px);
+    overflow-y: auto;
+}

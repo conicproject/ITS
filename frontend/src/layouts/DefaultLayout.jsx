@@ -62,7 +62,7 @@ function DefaultLayout({ children }) {
     !isMobile && sidebarLocked ? { transition: "margin-left 0.3s" } : {};
 
   return (
-    <div style={{ display: "flex", height: "100vh", position: "relative", backgroundColor: "#f9fafb" }}>
+    <div style={{ display: "flex", height: "100vh", overflow: "hidden", position: "relative", backgroundColor: "#f9fafb" }}>
       <Sidebar
         sidebarOpen={sidebarOpen}
         sidebarLocked={sidebarLocked}

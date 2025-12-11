@@ -84,7 +84,7 @@ function EnforcementDashboard() {
   ];
 
   return (
-    <div className="min-h-screen p-6 bg-white flex flex-col gap-6">
+    <div className="fix-function-page-y-auto p-6 bg-white flex flex-col gap-6">
 
       {/* Header */}
       <div className="flex justify-between items-center">

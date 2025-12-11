@@ -141,7 +141,7 @@ const DataCollectionDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="fix-function-page-y-auto bg-gray-50 p-6">
       {/* Header */}
       <div className="bg-white rounded-lg shadow-sm p-4 mb-6 flex items-center justify-between">
         <div className="flex items-center gap-3">

@@ -78,7 +78,7 @@ const InstallationPoint = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="fix-function-page-y-auto bg-gray-50">
       <div className="max-w-7xl mx-auto p-6">
         
         {/* Header */}
