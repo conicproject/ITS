@@ -399,7 +399,7 @@ function EnforcementReportFunction() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6 max-w-xl mx-auto">
+    <div className="fix-function-page-y-auto bg-gray-50 p-6 max-w-xl mx-auto">
       <h1 className="text-2xl font-bold mb-6 text-green-700 text-center">รายงานข้อมูลจราจร</h1>
 
       {/* ชนิดข้อมูล */}

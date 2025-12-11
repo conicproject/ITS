@@ -160,7 +160,7 @@ function RouteAnalysis() {
   }));
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="fix-function-page-y-auto bg-gray-50 p-6">
       <div className="max-w-7xl mx-auto">
         <h1 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
           <FaSearch className="w-6 h-6" />

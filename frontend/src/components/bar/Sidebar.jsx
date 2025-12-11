@@ -255,7 +255,7 @@ function Sidebar({
       </style>
       <aside
         style={{
-          width: showSidebar ? 250 : 0,
+          width: showSidebar ? 270 : 0,
           height: "100vh",
           background: "#F5F6FA",
           display: "flex",
