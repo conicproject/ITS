@@ -271,7 +271,7 @@ function IncidentAccidentDashboard() {
           {/* <div className="bg-gray-800 text-white p-3 flex items-center gap-2">
             <FaMapMarkerAlt />
             <span className="text-sm font-medium">แผนที่จุด - กรุงเทพมหานคร</span>
-          </div> */}0
+          </div> */}
 
           <div className="h-full">
             <MapContainer
