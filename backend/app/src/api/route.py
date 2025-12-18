@@ -6,7 +6,7 @@ from src.controller.oracle import OracleController
 from src.controller.menu import MenuController
 from src.controller.camera import CameraController
 from src.controller.vehicle import VehicleController
-#from src.controller.data_vehicle import DataVehicleController
+from src.controller.data_vehicle import DataVehicleController
 
 router = APIRouter()
 user_controller = UserController()
@@ -15,13 +15,13 @@ oracle_controller = OracleController()
 menu_controller = MenuController()
 camera_controller = CameraController()
 vehicle_controller = VehicleController()
-#data_vehicle_controller = DataVehicleController()
+data_vehicle_controller = DataVehicleController()
 
 # Auth endpoints
 router.add_api_route("/auth/login", auth_controller.login, methods=["POST"], tags=["Authentication"])
 
 # User endpoints - protected
-router.add_api_route("/users", user_controller.create_user, methods=["POST"], tags=["Users"], dependencies=[Depends(auth_controller.get_current_user)])
+router.add_api_route("/users", user_controller.create_user, methods=["POST"], tags=["Users"],)
 router.add_api_route("/users", user_controller.get_all_users, methods=["GET"], tags=["Users"], dependencies=[Depends(auth_controller.get_current_user)])
 router.add_api_route("/users/{user_id}", user_controller.get_user_by_id, methods=["GET"], tags=["Users"], dependencies=[Depends(auth_controller.get_current_user)])
 
@@ -37,4 +37,4 @@ router.add_api_route("/traffic-detail/{record_type}",  vehicle_controller.get_tr
 
 # break : pull data vehicle
 # api data_vehicle
-# router.add_api_route("/data_vehicle", data_vehicle_controller.get_data_vehicle, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+router.add_api_route("/data_vehicle", data_vehicle_controller.get_data_vehicle, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
