@@ -146,7 +146,7 @@ function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-white text-green-700 py-3 rounded font-semibold hover:bg-gray-100 transition duration-300 disabled:opacity-50"
+            className="w-full bg-white text-green-700 py-3 rounded font-semibold hover:bg-gray-100 transition duration-300 disabled:opacity-50 cursor-pointer"
           >
             {loading ? "กำลังเข้าสู่ระบบ..." : "LOGIN"}
           </button>

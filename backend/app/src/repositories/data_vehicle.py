@@ -149,6 +149,7 @@ class DataVehicleRepository:
                   AND vp.PASS_TIME < TRUNC(SYSDATE) + 1
                   AND vp.PASS_TIME > TO_TIMESTAMP(:last_time, 'YYYY-MM-DD HH24:MI:SS')
                 ORDER BY vp.PASS_TIME
+                LIMIT 100
             """
 
             params = {"last_time": self.last_time.strftime("%Y-%m-%d %H:%M:%S")}
