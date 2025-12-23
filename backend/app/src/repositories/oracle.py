@@ -1,6 +1,6 @@
 # backend/app/src/repositories/oracle.py
 from src.connection.oracle import OracleConnection
-from src.models.oracle import Record, TrafficResponse
+from src.schemas.oracle import Record, TrafficResponse
 from datetime import datetime, timedelta
 import re
 import logging

@@ -1,6 +1,5 @@
 // src/components/AppLayout.jsx
 import React from "react";
-import { colors } from "../theme";
 
 export default function AppLayout({ children }) {
     return (

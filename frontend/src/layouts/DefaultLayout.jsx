@@ -2,8 +2,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
-import Navbar from "../components/Navbar";
-import Sidebar from "../components/Sidebar";
+import Navbar from "../components/bar/Navbar";
+import Sidebar from "../components/bar/Sidebar";
 
 function DefaultLayout({ children }) {
   const navigate = useNavigate();
@@ -62,7 +62,7 @@ function DefaultLayout({ children }) {
     !isMobile && sidebarLocked ? { transition: "margin-left 0.3s" } : {};
 
   return (
-    <div style={{ display: "flex", height: "100vh", position: "relative" }}>
+    <div style={{ display: "flex", height: "100vh", overflow: "hidden", position: "relative", backgroundColor: "#f9fafb" }}>
       <Sidebar
         sidebarOpen={sidebarOpen}
         sidebarLocked={sidebarLocked}

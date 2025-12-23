@@ -1,6 +1,6 @@
 import datetime
 from src.repositories.oracle import OracleRepository
-from src.models.oracle import TrafficResponse
+from src.schemas.oracle import TrafficResponse
 
 class OracleService:
     def __init__(self):

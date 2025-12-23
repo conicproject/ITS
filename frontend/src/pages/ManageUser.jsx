@@ -1,7 +1,6 @@
 // file: frontend/src/pages/ManageUser.jsx
 import { useState } from "react";
 import apiClient from "../service/client";
-import { colors } from "../theme";
 
 function ManageUser() {
   const [loading, setLoading] = useState(false);

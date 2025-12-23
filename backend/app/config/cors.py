@@ -1,3 +1,4 @@
+# backend/app/config/cors.py
 from fastapi.middleware.cors import CORSMiddleware
 
 origins = ["http://192.168.1.111:50000",]
@@ -9,4 +10,5 @@ def setup_cors(app):
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["X-New-Token"]
     )
