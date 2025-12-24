@@ -10,12 +10,12 @@ export default defineConfig({
   },
   server: {
     host: '0.0.0.0',
-    port: 50000,
+    port: 5400,
     watch: { usePolling: true },
     allowedHosts: ['conic.ddns.net'],
     proxy: {
       '/api': {
-        target: 'http://backend:50001',
+        target: 'http://backend:5401',
         changeOrigin: true,
         secure: false,
       },
