@@ -38,7 +38,7 @@ ENV TZ=Asia/Bangkok
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 # Expose port
-EXPOSE 50001
+EXPOSE 5401
 
 # สร้าง user ธรรมดา
 RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
@@ -48,4 +48,4 @@ USER appuser
 ENV PYTHONPATH=/app/app
 
 # Run server
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "50001", "--reload"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5401", "--reload"]

@@ -1,5 +1,11 @@
 // src/layouts/DefaultLayout.jsx
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+  Children,
+  cloneElement,
+  isValidElement,
+} from "react";
 import { useNavigate } from "react-router-dom";
 import { jwtDecode } from "jwt-decode";
 import Navbar from "../components/bar/Navbar";
@@ -8,6 +14,7 @@ import Sidebar from "../components/bar/Sidebar";
 function DefaultLayout({ children }) {
   const navigate = useNavigate();
 
+  // ================== CHECK TOKEN ==================
   useEffect(() => {
     const checkToken = () => {
       const token = localStorage.getItem("token");
@@ -31,9 +38,7 @@ function DefaultLayout({ children }) {
   }, [navigate]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarLocked, setSidebarLocked] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [sidebarHover, setSidebarHover] = useState(false);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -41,36 +46,23 @@ function DefaultLayout({ children }) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    if (!isMobile) {
-      const handleMouseMove = (e) => {
-        if (!sidebarLocked && e.clientX <= 10) {
-          setSidebarHover(true);
-        }
-      };
-      window.addEventListener("mousemove", handleMouseMove);
-      return () => window.removeEventListener("mousemove", handleMouseMove);
-    }
-  }, [isMobile, sidebarLocked]);
-
   const toggleSidebar = () => {
-    console.log("Toggle sidebar clicked, current sidebarOpen:", sidebarOpen);
     setSidebarOpen((prev) => !prev);
   };
 
-  const desktopContentStyle =
-    !isMobile && sidebarLocked ? { transition: "margin-left 0.3s" } : {};
-
   return (
-    <div style={{ display: "flex", height: "100vh", overflow: "hidden", position: "relative", backgroundColor: "#f9fafb" }}>
+    <div
+      style={{
+        display: "flex",
+        height: "100vh",
+        overflow: "hidden",
+        backgroundColor: "#f9fafb",
+      }}
+    >
       <Sidebar
         sidebarOpen={sidebarOpen}
-        sidebarLocked={sidebarLocked}
-        sidebarHover={sidebarHover}
-        setSidebarHover={setSidebarHover}
         isMobile={isMobile}
         setSidebarOpen={setSidebarOpen}
-        overlayMode={isMobile}
       />
 
       {isMobile && sidebarOpen && (
@@ -78,12 +70,9 @@ function DefaultLayout({ children }) {
           onClick={() => setSidebarOpen(false)}
           style={{
             position: "fixed",
-            top: 0,
-            left: 0,
-            width: "100vw",
-            height: "100vh",
+            inset: 0,
             backgroundColor: "rgba(0,0,0,0.3)",
-            zIndex: 10,
+            zIndex: 40,
           }}
         />
       )}
@@ -93,15 +82,16 @@ function DefaultLayout({ children }) {
           flex: 1,
           display: "flex",
           flexDirection: "column",
-          ...desktopContentStyle,
-          position: "relative",
-          zIndex: 0,
+          minWidth: 0, // 🔥 สำคัญมาก (แก้ ApexCharts width=0)
         }}
       >
         <Navbar onHamburgerClick={toggleSidebar} />
-        {/* <main style={{ flex: 1, padding: "1rem", overflowY: "auto" }}> */}
-          {children}
-        {/* </main> */}
+
+        {Children.map(children, (child) =>
+          isValidElement(child)
+            ? cloneElement(child, { sidebarOpen })
+            : child
+        )}
       </div>
     </div>
   );
