@@ -1,332 +1,424 @@
-import { useState } from 'react';
-import { MapContainer, TileLayer } from 'react-leaflet';
-import { Line } from 'react-chartjs-2';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip } from 'chart.js';
-import { FaCamera, FaMapMarkerAlt, FaDirections, FaClock, FaAmbulance, FaMapPin, FaPlay, FaCar, FaExclamationTriangle } from 'react-icons/fa';
-import 'leaflet/dist/leaflet.css';
+import React, { useState, useEffect } from "react";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Popup,
+  Polyline,
+} from "react-leaflet";
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler,
+  Legend,
+} from "chart.js";
+import {
+  FaCamera,
+  FaMapMarkerAlt,
+  FaDirections,
+  FaClock,
+  FaAmbulance,
+  FaMapPin,
+  FaPlay,
+  FaCar,
+  FaExclamationTriangle,
+  FaRoad,
+  FaVideo,
+  FaSearch,
+} from "react-icons/fa";
+import "leaflet/dist/leaflet.css";
+import L from "leaflet";
 
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Tooltip);
+// --- Leaflet Icon Fix ---
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png",
+  iconUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png",
+  shadowUrl:
+    "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png",
+});
+
+// --- Chart Registration ---
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler,
+  Legend
+);
 
 function OperationManagementDashboard() {
-  const [selectedAlert, setSelectedAlert] = useState(null);
-
-  // Mock data
+  // --- Mock Data: General ---
   const stats = [
-    { label: 'ทั้งหมด', value: '12 ครั้อง', sublabel: 'วันนี้ทั้งหมด', color: 'bg-blue-500', icon: FaCamera },
-    { label: 'คันทางการ', value: '1,820', sublabel: 'คันทางเฉลี่ย', unit: 'คัน/ชม', color: 'bg-green-500', icon: FaCar },
-    { label: 'เหตุการณ์', value: '7 ครั้ง', sublabel: 'เหตุการณ์ทั้งหมด', color: 'bg-orange-500', icon: FaMapMarkerAlt },
-    { label: 'รายการ', value: '1 รายการ', sublabel: 'รอดำเนินการ', color: 'bg-red-500', icon: FaExclamationTriangle },
+    {
+      label: "กล้องทั้งหมด",
+      value: "12 กล้อง",
+      sublabel: "View All Results",
+      color: "bg-blue-600",
+      icon: FaCamera,
+    },
+    {
+      label: "รถผ่านเข้า-ออก",
+      value: "1,820 คัน/ชม.",
+      sublabel: "+12% จากเมื่อวาน",
+      color: "bg-emerald-500",
+      icon: FaCar,
+    },
+    {
+      label: "แจ้งเตือน",
+      value: "7 คัน",
+      sublabel: "รอตรวจสอบ",
+      color: "bg-orange-500",
+      icon: FaMapMarkerAlt,
+    },
+    {
+      label: "ฝ่าฝืน",
+      value: "1 รายการ",
+      sublabel: "รอดำเนินการ",
+      color: "bg-red-500",
+      icon: FaExclamationTriangle,
+    },
   ];
 
-  const alerts = Array(7).fill(null).map((_, i) => ({
-    id: i,
-    type: 'Ambulance detected',
-    camera: `@CAM-001`,
-    time: '14:20:39',
-    location: 'ถนนพระราม 5 กทม กรุงเทพมหานคร'
-  }));
+  const alerts = Array(15)
+    .fill(null)
+    .map((_, i) => ({
+      id: i,
+      title: "Ambulance detected",
+      camId: `#CAM-0${(i % 5) + 1}`,
+      time: "14:20:39",
+      location: "ถนนพระราม 5",
+    }));
 
   const trafficData = {
-    labels: Array.from({ length: 24 }, (_, i) => `${String(i).padStart(2, '0')}:00`),
-    datasets: [{
-      data: [250, 300, 400, 600, 800, 1200, 1400, 1500, 1400, 1300, 1200, 1300, 1400, 1500, 1600, 1800, 1900, 1700, 1400, 1100, 900, 700, 600, 500],
-      fill: true,
-      backgroundColor: 'rgba(147, 51, 234, 0.2)',
-      borderColor: 'rgba(147, 51, 234, 0.8)',
-      tension: 0.4,
-      pointRadius: 0,
-    }]
+    labels: Array.from(
+      { length: 24 },
+      (_, i) => `${String(i).padStart(2, "0")}:00`
+    ),
+    datasets: [
+      {
+        label: "ปริมาณจราจร",
+        data: [
+          200, 150, 100, 80, 120, 400, 800, 1500, 1400, 1100, 900, 1000, 1100,
+          1200, 1400, 1600, 1800, 1600, 1000, 600, 400, 300, 250, 200,
+        ],
+        fill: true,
+        backgroundColor: "rgba(147, 51, 234, 0.1)",
+        borderColor: "#9333ea",
+        tension: 0.4,
+        pointRadius: 0,
+      },
+    ],
   };
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
-    plugins: { legend: { display: false }, tooltip: { enabled: false } },
+    plugins: { legend: { display: false } },
     scales: {
-      x: { display: true, grid: { display: false } },
-      y: { display: true, grid: { color: 'rgba(0,0,0,0.05)' }, ticks: { stepSize: 250 } }
-    }
+      x: { grid: { display: false }, ticks: { font: { size: 10 } } },
+      y: { grid: { color: "#f3f4f6" }, ticks: { stepSize: 500 } },
+    },
   };
 
-  const pcuData = [
-    { lane: 'เลน 1', label: 'เหนือ', value: 80, status: 'ปกติ', color: 'bg-green-100 text-green-800' },
-    { lane: 'เลน 2', label: 'ใต้', value: 75, status: 'ปกติ', color: 'bg-green-100 text-green-800' },
-    { lane: 'เลน 3', label: 'ตะวันออก', value: 90, status: 'พอใช้', color: 'bg-yellow-100 text-yellow-800' },
-    { lane: 'เลน 4', label: 'ตะวันตก', value: 85, status: 'ปานกลาง', color: 'bg-orange-100 text-orange-800' },
+  const laneData = [
+    {
+      name: "เหนือ",
+      pcu: 80,
+      status: "ปกติ",
+      color: "text-green-500",
+      cam: "CAM-01 Ratchada",
+    },
+    {
+      name: "กลาง",
+      pcu: 45,
+      status: "คล่องตัว",
+      color: "text-blue-500",
+      cam: "CAM-05 Center Hub",
+    },
+    {
+      name: "ใต้",
+      pcu: 75,
+      status: "ปกติ",
+      color: "text-green-500",
+      cam: "CAM-02 Asoke",
+    },
+    {
+      name: "ตะวันออก",
+      pcu: 90,
+      status: "หนาแน่น",
+      color: "text-red-500",
+      cam: "CAM-03 Silom",
+    },
+    {
+      name: "ตะวันตก",
+      pcu: 85,
+      status: "ปานกลาง",
+      color: "text-yellow-500",
+      cam: "CAM-04 Sathorn",
+    },
+    {
+      name: "เลนพิเศษ",
+      pcu: 20,
+      status: "โล่ง",
+      color: "text-green-500",
+      cam: "CAM-06 Express",
+    },
   ];
 
+  const sequenceTrackingData = {
+    carInfo: {
+      plateNumber: "5ขจ-8765",
+      province: "ปทุมธานี",
+      brand: "Honda",
+      color: "ดำ",
+      type: "กระบะ",
+      lastCam: "CAM-001",
+      location: "ถ.นวมินทร์",
+      status: "Blacklist",
+    },
+    routePath: [
+      [13.843847, 100.65297],
+      [13.83862, 100.662548],
+      [13.83398, 100.660581],
+      [13.830887, 100.659236],
+    ],
+    checkpoints: [
+      {
+        id: 1,
+        position: [13.843847, 100.65297],
+        camId: "CAM-001",
+        time: "14:10:00",
+        seq: 1,
+        hasAlert: true,
+      },
+      {
+        id: 2,
+        position: [13.83862, 100.662548],
+        camId: "CAM-002",
+        time: "14:15:30",
+        seq: 2,
+        hasAlert: true,
+        videoThumbnail: true,
+      },
+      {
+        id: 3,
+        position: [13.830887, 100.659236],
+        camId: "CAM-003",
+        time: "14:15:30",
+        seq: 3,
+        hasAlert: true,
+        videoThumbnail: true,
+      },
+    ],
+  };
+
   return (
-    <div className="min-h-screen overflow-y-auto p-6 bg-gray-50 flex flex-col gap-6">
-      {/* Header */}
-      <div className="mb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-600">
-            <FaMapPin className="text-2xl text-white" />
+    <div className="h-screen w-full overflow-y-auto overflow-x-hidden bg-gray-100 p-4 md:p-6 font-sans text-gray-800">
+      <style>{`
+        .leaflet-popup-content-wrapper { padding: 0 !important; overflow: hidden; border-radius: 8px; }
+        .leaflet-popup-content { margin: 0 !important; width: auto !important; }
+        .custom-popup .leaflet-popup-tip-container { margin-top: -1px; }
+        .scrollbar-thin::-webkit-scrollbar { width: 6px; }
+        .scrollbar-thin::-webkit-scrollbar-track { background: #f1f1f1; }
+        .scrollbar-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+      `}</style>
+
+      {/* --- HEADER --- */}
+      <header className="flex flex-col md:flex-row justify-between items-center mb-6 bg-gray-100 sticky top-0 z-50 py-2">
+        <div className="flex items-center gap-4">
+          <div className="bg-emerald-100 p-2 rounded-lg">
+            <FaVideo className="text-emerald-600 text-2xl" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-800">Dashboard</h1>
-            <p className="text-sm text-gray-500">การจัดการ</p>
+            <h1 className="text-2xl font-bold text-gray-800">
+              Traffic Operation Management
+            </h1>
+            <p className="text-sm text-gray-500">Traffic Operation Center</p>
           </div>
         </div>
-        <div className="text-right">
-          <p className="text-lg font-semibold text-gray-800">14:20:39</p>
-          <p className="text-xs text-gray-500">วันพุธที่ 23 ธันวาคม 2568</p>
+        <div className="text-right mt-4 md:mt-0">
+          <div className="text-3xl font-bold text-gray-700 tracking-tight">
+            14:20:39
+          </div>
+          <div className="text-sm text-gray-500 font-medium">
+            Saturday 23 Dec 2025
+          </div>
         </div>
-      </div>
+      </header>
 
-      {/* Stats Cards */}
-      <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {/* --- KPI CARDS --- */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {stats.map((stat, i) => (
-          <div key={i} className={`${stat.color} relative overflow-hidden rounded-xl p-5 text-white shadow-lg`}>
-            <div className="relative z-10">
-              <p className="mb-1 text-sm opacity-90">{stat.label}</p>
-              <p className="mb-1 text-3xl font-bold">{stat.value}</p>
-              <p className="text-xs opacity-80">{stat.sublabel} {stat.unit}</p>
+          <div
+            key={i}
+            className={`${stat.color} text-white rounded-xl p-4 shadow-md relative overflow-hidden flex flex-col justify-between h-28`}
+          >
+            <div className="flex justify-between items-start z-10">
+              <span className="text-sm font-medium opacity-90">
+                {stat.label}
+              </span>
+              <div className="bg-white/20 p-2 rounded-lg">
+                <stat.icon className="text-xl" />
+              </div>
             </div>
-            <stat.icon className="absolute bottom-2 right-2 text-6xl opacity-20" />
+            <div className="z-10">
+              <h3 className="text-2xl font-bold">{stat.value}</h3>
+              <p className="text-xs opacity-80 mt-1">{stat.sublabel}</p>
+            </div>
+            <stat.icon className="absolute -bottom-4 -right-4 text-8xl opacity-10" />
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* Left Column - Main Content */}
-        <div className="space-y-4 lg:col-span-2">
-          {/* Alert Banner */}
-          <div className="flex items-center gap-4 rounded-lg border-2 border-red-200 bg-red-50 p-4">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-500">
-              <FaExclamationTriangle className="text-xl text-white" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-2">
-                <span className="rounded bg-red-500 px-2 py-1 text-xs font-bold text-white">เหตุการณ์พิเศษ</span>
-                <span className="font-semibold text-red-900">Car VIP detected @1669-VIP-456</span>
+      <div className="space-y-6">
+        {/* 1. VIP ALERT BANNER (Full Width) */}
+        <div className="bg-red-50 border border-red-200 rounded-xl p-1 shadow-sm">
+          <div className="bg-red-100 rounded-t-lg p-3 flex flex-col md:flex-row items-center justify-between border-b border-red-200">
+            <div className="flex items-center gap-3">
+              <div className="bg-red-600 text-white p-2 rounded animate-pulse">
+                <FaExclamationTriangle />
               </div>
-              <p className="text-sm text-red-700">ตรวจจับรถ VIP เลขทะเบียน กข-คค กรุงเทพมหานคร ครั้งที่ 9 ครั้ง</p>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="bg-red-600 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase">
+                    High Priority
+                  </span>
+                  <h2 className="text-red-800 font-bold text-lg">
+                    Car VIP detected @1669-VIP-456
+                  </h2>
+                </div>
+                <p className="text-xs text-red-600 mt-1">
+                  ตรวจจับรถ VIP ทะเบียน กข-9999 (CAM-NUM: 04) -
+                  ต้องการอำนวยความสะดวก
+                </p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-sm font-semibold text-red-900">14:20:39</p>
-              <p className="text-xs text-red-700">วันพุธที่ 23 ธันวาคม 2568</p>
+            <div className="text-right hidden md:block">
+              <div className="text-lg font-bold text-red-800">14:20:39</div>
+              <div className="text-xs text-red-500">23/12/2025</div>
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex flex-wrap gap-2 rounded-lg bg-white p-3 shadow">
-            <button className="flex items-center gap-2 rounded-lg bg-blue-500 px-3 py-2 text-sm font-medium text-white hover:bg-blue-600">
-              <FaCamera /> Camera
-              <span className="rounded bg-blue-700 px-2 py-0.5 text-xs">CAM-001</span>
-            </button>
-            <button className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              <FaMapMarkerAlt /> Location
-            </button>
-            <button className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              <FaDirections /> Direction
-            </button>
-            <button className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              <FaClock /> ETA
-              <span className="text-xs">3 นาที</span>
-            </button>
-            <button className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              <FaAmbulance /> Ambulance ID
-              <span className="rounded bg-red-500 px-2 py-0.5 text-xs text-white">ABX-654</span>
-            </button>
-            <button className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-              <FaMapPin /> Destination
-            </button>
+          <div className="bg-white p-3 rounded-b-lg flex flex-wrap gap-2 items-center">
+            {[
+              {
+                icon: FaCamera,
+                text: "Camera",
+                sub: "CAM-001",
+                bg: "bg-white border hover:bg-gray-50",
+              },
+              {
+                icon: FaMapMarkerAlt,
+                text: "Location",
+                sub: "Rama IX",
+                bg: "bg-white border hover:bg-gray-50",
+              },
+              {
+                icon: FaDirections,
+                text: "Direction",
+                sub: "Inbound",
+                bg: "bg-white border hover:bg-gray-50",
+              },
+              {
+                icon: FaClock,
+                text: "ETA",
+                sub: "3 min",
+                bg: "bg-white border hover:bg-gray-50",
+              },
+              {
+                icon: FaAmbulance,
+                text: "Ambulance ID",
+                sub: "1669-BK-155",
+                bg: "bg-white border hover:bg-gray-50",
+              },
+              {
+                icon: FaMapPin,
+                text: "Destination",
+                sub: "Praram 9 Hosp.",
+                bg: "bg-white border hover:bg-gray-50",
+              },
+            ].map((btn, idx) => (
+              <button
+                key={idx}
+                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-700 shadow-sm transition-colors ${btn.bg}`}
+              >
+                <btn.icon className="text-gray-500" />
+                <span className="font-semibold">{btn.text}</span>
+                <span className="bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded text-[10px]">
+                  {btn.sub}
+                </span>
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Map */}
-          <div className="h-96 overflow-hidden rounded-lg bg-white shadow">
-            <MapContainer center={[13.756, 100.502]} zoom={12} className="h-full w-full" scrollWheelZoom={false}>
-              <TileLayer 
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              />
+        {/* 2. SPLIT SECTION: MAIN MAP & RECENT ALERTS */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          
+          {/* Left: Map (Span 3) */}
+          <div className="lg:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200 p-1 h-[500px] relative z-0">
+            <MapContainer
+              center={[13.7563, 100.5018]}
+              zoom={13}
+              className="h-full w-full rounded-lg"
+            >
+              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+              <Marker position={[13.7563, 100.5018]}>
+                <Popup>Center</Popup>
+              </Marker>
+              <Marker position={[13.76, 100.51]} />
+              <Marker position={[13.74, 100.49]} />
             </MapContainer>
-          </div>
-
-          {/* Real-time Monitoring */}
-          <div className="rounded-lg bg-white p-4 shadow">
-            <div className="mb-3 flex items-center gap-2">
-              <FaClock className="text-purple-600" />
-              <h3 className="font-semibold text-gray-800">สัญญาณเรียลไทม์ - Real-time Monitoring</h3>
-            </div>
-            <div className="relative aspect-video rounded-lg overflow-hidden bg-gray-800">
-              <svg viewBox="0 0 600 400" className="w-full h-full">
-                <rect width="600" height="400" fill="#1f2937" />
-
-                {/* Roads */}
-                <rect x="0" y="150" width="200" height="100" fill="#374151" />
-                <rect x="400" y="150" width="200" height="100" fill="#374151" />
-                <rect x="200" y="0" width="200" height="150" fill="#374151" />
-                <rect x="200" y="250" width="200" height="150" fill="#374151" />
-
-                {/* Intersection */}
-                <rect x="200" y="150" width="200" height="100" fill="#6b7280" />
-
-                {/* Lane Markings Horizontal */}
-                {[...Array(8)].map((_, i) => (
-                  <line
-                    key={`h-${i}`}
-                    x1={i < 4 ? 50 + i * 40 : 420 + (i - 4) * 40}
-                    y1="200"
-                    x2={i < 4 ? 70 + i * 40 : 440 + (i - 4) * 40}
-                    y2="200"
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeDasharray="15,10"
-                  />
-                ))}
-
-                {/* Lane Markings Vertical */}
-                {[...Array(8)].map((_, i) => (
-                  <line
-                    key={`v-${i}`}
-                    x1="300"
-                    y1={i < 4 ? 30 + i * 30 : 260 + (i - 4) * 35}
-                    x2="300"
-                    y2={i < 4 ? 50 + i * 30 : 280 + (i - 4) * 35}
-                    stroke="white"
-                    strokeWidth="2"
-                    strokeDasharray="15,10"
-                  />
-                ))}
-
-                {/* Crosswalks */}
-                {[...Array(10)].map((_, i) => (
-                  <g key={`cw-${i}`}>
-                    <rect x={210 + i * 18} y="145" width="12" height="5" fill="white" />
-                    <rect x={210 + i * 18} y="250" width="12" height="5" fill="white" />
-                    <rect x="195" y={160 + i * 18} width="5" height="12" fill="white" />
-                    <rect x="400" y={160 + i * 18} width="5" height="12" fill="white" />
-                  </g>
-                ))}
-
-                {/* Cars */}
-                <circle cx="100" cy="180" r="8" fill="#10b981" />
-                <circle cx="500" cy="220" r="8" fill="#10b981" />
-                <circle cx="270" cy="80" r="8" fill="#10b981" />
-                <circle cx="330" cy="320" r="8" fill="#10b981" />
-                <circle cx="150" cy="220" r="8" fill="#10b981" />
-                <circle cx="450" cy="180" r="8" fill="#10b981" />
-              </svg>
+            <div className="absolute top-4 right-4 z-[400] bg-white p-2 rounded-lg shadow-md flex flex-col gap-2">
+              <button className="p-1 hover:bg-gray-100 rounded">
+                <FaRoad />
+              </button>
+              <button className="p-1 hover:bg-gray-100 rounded">
+                <FaVideo />
+              </button>
             </div>
           </div>
 
-          {/* PCU Stats */}
-          <div className="rounded-lg bg-white p-4 shadow">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800">การตรวจสอบ PCU</h3>
-              <button className="rounded-lg bg-green-500 px-4 py-1 text-sm text-white hover:bg-green-600">เปิดใช้งาน</button>
-            </div>
-            <div className="mb-4 flex justify-between text-center">
-              <div>
-                <p className="text-xs text-gray-500">Domain</p>
-                <p className="text-lg font-bold">80 PCU/1u</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">Humidity</p>
-                <p className="text-lg font-bold">75 PCU/1u</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-500">ช่องตรงที่</p>
-                <p className="text-lg font-bold">32 PCU/1u</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {pcuData.map((item, i) => (
-                <div key={i} className="rounded-lg border border-gray-200 p-3">
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">{item.lane}</span>
-                    <span className={`rounded px-2 py-0.5 text-xs font-medium ${item.color}`}>{item.status}</span>
-                  </div>
-                  <p className="text-xs text-gray-500">{item.label}</p>
-                  <p className="text-xl font-bold text-gray-800">{item.value} PCU/1u</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Traffic Chart */}
-          <div className="rounded-lg bg-white p-4 shadow">
-            <h3 className="mb-3 font-semibold text-gray-800">ปริมาณการจราจร (1 วัน)</h3>
-            <div className="h-64">
-              <Line data={trafficData} options={chartOptions} />
-            </div>
-          </div>
-
-          {/* Sequence */}
-          <div className="rounded-lg bg-white p-4 shadow">
-            <h3 className="mb-3 font-semibold text-gray-800">Sequence</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="relative aspect-video overflow-hidden rounded-lg bg-gray-200">
-                <MapContainer 
-                  center={[13.756, 100.502]} 
-                  zoom={11} 
-                  className="h-full w-full" 
-                  zoomControl={false} 
-                  dragging={false}
-                  scrollWheelZoom={false}
+          {/* Right: Alerts (Span 1) - Height fixed to match Map */}
+          <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[500px] flex flex-col">
+            <h3 className="font-bold text-gray-800 mb-3 text-sm flex justify-between items-center flex-none">
+              Recent Alerts
+              <span className="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-full">
+                {alerts.length} New
+              </span>
+            </h3>
+            {/* Scrollable list inside fixed height */}
+            <div className="space-y-3 flex-1 overflow-y-auto pr-1 scrollbar-thin">
+              {alerts.map((alert) => (
+                <div
+                  key={alert.id}
+                  className="bg-white border-l-4 border-blue-500 shadow-sm p-3 rounded-r-lg hover:bg-gray-50 transition-colors cursor-pointer border border-gray-100"
                 >
-                  <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                </MapContainer>
-                <button className="absolute left-1/2 top-1/2 flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-black bg-opacity-70 hover:bg-opacity-90">
-                  <FaPlay className="text-white" />
-                </button>
-              </div>
-              <div className="rounded-lg bg-gray-900 p-4">
-                <div className="flex h-full flex-col justify-center">
-                  <div className="rounded-lg bg-white p-4 space-y-2">
-                    <div className="flex items-center gap-2">
-                      <FaCar className="text-green-600" />
-                      <span className="text-sm">ทะเบียน : ทท 1234</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FaCar className="text-blue-600" />
-                      <span className="text-sm">ยี่ห้อ / สี : Honda / ดำ</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FaMapMarkerAlt className="text-red-600" />
-                      <span className="text-sm">ประเภทรถ : กระบะ</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FaCamera className="text-purple-600" />
-                      <span className="text-sm">กล้อง : CAM-001</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FaClock className="text-orange-600" />
-                      <span className="text-sm">ความเร็ว : ปกติ</span>
+                  <div className="flex items-start gap-2">
+                    <FaCar className="text-blue-500 mt-1 shrink-0" />
+                    <div className="w-full">
+                      <div className="font-bold text-xs text-gray-800 flex justify-between">
+                        {alert.title}
+                      </div>
+                      <div className="text-[10px] text-gray-500 mt-0.5">
+                        {alert.camId} • {alert.location}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Recent Events */}
-          <div className="rounded-lg bg-white p-4 shadow">
-            <h3 className="mb-3 font-semibold text-gray-800">รายการล่าสุด (7 รายการ)</h3>
-            <div className="space-y-2">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-lg border border-gray-200 p-3 hover:bg-gray-50">
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span className="text-sm text-gray-600 font-medium">ทท-1234</span>
-                    <span className="text-sm text-gray-600">Honda</span>
-                    <div className="flex items-center gap-1">
-                      <FaCamera className="text-yellow-500" />
-                      <span className="text-xs">CAM-001</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FaMapMarkerAlt className="text-green-600" />
-                      <span className="text-xs">สาทร</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <FaClock className="text-blue-600" />
-                      <span className="text-xs">3 ชั่วโมง</span>
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <button className="rounded bg-blue-500 px-3 py-1 text-xs text-white hover:bg-blue-600">ข้อมูล</button>
-                    <button className="rounded bg-green-500 px-3 py-1 text-xs text-white hover:bg-green-600">รายละเอียด</button>
+                  <div className="mt-2 text-right text-[10px] text-gray-400 font-mono">
+                    {alert.time}
                   </div>
                 </div>
               ))}
@@ -334,116 +426,336 @@ function OperationManagementDashboard() {
           </div>
         </div>
 
-        {/* Right Column - Alerts & Cameras */}
-        <div className="space-y-4">
-          {/* Recent Alerts */}
-          <div className="rounded-lg bg-white p-4 shadow">
-            <h3 className="mb-3 font-semibold text-gray-800">Recent Alerts</h3>
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {alerts.map((alert) => (
-                <div key={alert.id} className="rounded-lg border-l-4 border-red-500 bg-red-50 p-3">
-                  <div className="mb-1 flex items-start gap-2">
-                    <FaExclamationTriangle className="mt-1 text-red-500 flex-shrink-0" />
-                    <div className="flex-1">
-                      <p className="text-sm font-semibold text-red-900">{alert.type} {alert.camera}</p>
-                      <p className="text-xs text-red-700">{alert.location}</p>
+        {/* 3. INTERSECTION & PCU (FULL WIDTH) */}
+        {/* These sit below the Map/Alerts split and take full width */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+          {/* Left Box: Graphic */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[600px] flex flex-col">
+            <div className="flex items-center gap-2 mb-4 border-l-4 border-purple-600 pl-2 flex-none">
+              <FaMapMarkerAlt className="text-purple-600" />
+              <h3 className="font-bold text-gray-800">
+                สี่แยกราชดำเนิน (Real-time)
+              </h3>
+            </div>
+            <div className="relative flex-1 bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center w-full">
+              <div className="absolute w-20 h-full bg-slate-700/50"></div>
+              <div className="absolute h-20 w-full bg-slate-700/50"></div>
+              <div className="absolute w-0.5 h-full bg-dashed border-l border-dashed border-white/20"></div>
+              <div className="absolute h-0.5 w-full bg-dashed border-t border-dashed border-white/20"></div>
+              <div className="absolute w-24 h-24 bg-red-900/30 border border-red-500/50 z-10 flex items-center justify-center">
+                <span className="text-red-500 text-xs font-mono animate-pulse">
+                  LOCKED
+                </span>
+              </div>
+              <div className="absolute top-10 left-1/2 -ml-2 w-4 h-4 bg-green-500 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
+              <div className="absolute bottom-10 left-1/2 -ml-2 w-4 h-4 bg-green-500 rounded-full"></div>
+              <div className="absolute left-10 top-1/2 -mt-2 w-4 h-4 bg-yellow-500 rounded-full"></div>
+            </div>
+          </div>
+
+          {/* Right Box: PCU */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[600px] flex flex-col">
+            <div className="flex justify-between items-center mb-4 flex-none">
+              <h3 className="font-bold text-gray-800">
+                การจราจร & กล้อง (PCU)
+              </h3>
+              <button className="bg-green-500 text-white text-xs px-3 py-1 rounded-full">
+                Active
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-2 mb-4 text-center flex-none">
+              <div className="bg-gray-50 p-2 rounded">
+                <div className="text-xs text-gray-500">Domain</div>
+                <div className="font-bold text-green-600">80</div>
+              </div>
+              <div className="bg-gray-50 p-2 rounded">
+                <div className="text-xs text-gray-500">Humidity</div>
+                <div className="font-bold text-blue-600">130</div>
+              </div>
+              <div className="bg-gray-50 p-2 rounded">
+                <div className="text-xs text-gray-500">Speed</div>
+                <div className="font-bold text-orange-600">32</div>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3 flex-1 overflow-y-auto pr-1 scrollbar-thin content-start">
+              {laneData.map((lane, idx) => (
+                <div
+                  key={idx}
+                  className={`border border-gray-100 p-0 rounded-lg hover:shadow-md transition-shadow bg-white overflow-hidden ${
+                    idx === 1 ? "col-span-2" : ""
+                  }`}
+                >
+                  <div className="relative bg-black h-20 w-full group">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <FaVideo className="text-gray-700 text-xl group-hover:text-gray-500 transition-colors" />
+                    </div>
+                    <div className="absolute top-1 left-1 bg-green-500 text-white text-[8px] px-1 rounded flex items-center gap-1">
+                      <div className="w-1 h-1 bg-white rounded-full animate-pulse"></div>{" "}
+                      Live
+                    </div>
+                    <div className="absolute bottom-0 w-full bg-gradient-to-t from-black/80 to-transparent p-1">
+                      <div className="text-white text-[9px] pl-1 truncate">
+                        {lane.cam}
+                      </div>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <span className="text-xs text-red-600">Alert ID: 001</span>
-                    <span className="text-xs font-medium text-red-900">{alert.time}</span>
+                  <div className="p-2">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-xs font-bold text-gray-500">
+                        {lane.name}
+                      </span>
+                      <span
+                        className={`text-[9px] px-1.5 rounded ${
+                          lane.status === "ปกติ" || lane.status === "คล่องตัว"
+                            ? "bg-green-100 text-green-600"
+                            : lane.status === "หนาแน่น"
+                            ? "bg-red-100 text-red-600"
+                            : "bg-yellow-100 text-yellow-600"
+                        }`}
+                      >
+                        {lane.status}
+                      </span>
+                    </div>
+                    <div className={`text-lg font-bold ${lane.color}`}>
+                      {lane.pcu}{" "}
+                      <span className="text-xs text-gray-400 font-normal">
+                        PCU
+                      </span>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
           </div>
+        </div>
 
-          {/* Emergency Response Workflow */}
-          <div className="rounded-lg bg-white p-4 shadow">
-            <h3 className="mb-3 font-semibold text-gray-800">Emergency Response Workflow</h3>
-            <div className="space-y-3">
-              <div className="rounded-lg border border-gray-200 p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 flex-shrink-0">
-                    <FaCamera className="text-green-600" />
+        {/* 4. TRAFFIC CHART (FULL WIDTH) */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 w-full">
+          <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <FaCar className="text-blue-500" /> ปริมาณจราจรรายชั่วโมง (1 วัน)
+          </h3>
+          <div className="h-[500px] w-full">
+            <Line data={trafficData} options={chartOptions} />
+          </div>
+        </div>
+
+        {/* 5. SEQUENCE TRACKING (FULL WIDTH) */}
+        <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <div className="flex items-center gap-2 mb-3 border-l-4 border-red-500 pl-2">
+            <FaMapMarkerAlt className="text-red-500" />
+            <h3 className="font-bold text-gray-800">Sequence Tracking</h3>
+          </div>
+          <div className="flex flex-col lg:flex-row gap-4 h-auto lg:h-[600px]">
+            <div className="w-full lg:w-1/2 bg-gray-100 rounded-lg overflow-hidden relative border border-gray-300">
+              <MapContainer
+                center={[13.83864, 100.662575]}
+                zoom={15}
+                zoomControl={false}
+                className="h-full w-full"
+              >
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                <Polyline
+                  positions={sequenceTrackingData.routePath}
+                  color="red"
+                  dashArray="5, 10"
+                  weight={3}
+                />
+                {sequenceTrackingData.checkpoints.map((point) => (
+                  <Marker key={point.id} position={point.position}>
+                    {point.hasAlert && (
+                      <Popup
+                        className="custom-popup"
+                        maxWidth={250}
+                        closeButton={false}
+                      >
+                        <div className="p-2 font-sans w-[150px]">
+                          <div className="bg-black h-24 rounded flex items-center justify-center mb-2 relative group cursor-pointer">
+                            <FaPlay className="text-white opacity-80 group-hover:scale-110 transition-transform" />
+                            <div className="absolute top-1 right-1 bg-red-600 text-white text-[8px] px-1 rounded">
+                              REC
+                            </div>
+                          </div>
+                          <div className="space-y-1 text-xs text-gray-700">
+                            <div className="flex justify-between">
+                              <span className="font-bold">ทะเบียน:</span>
+                              <span>
+                                {sequenceTrackingData.carInfo.plateNumber}
+                              </span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="font-bold">กล้อง:</span>
+                              <span>{point.camId}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span className="font-bold">จุดที่:</span>
+                              <span>{point.seq}</span>
+                            </div>
+                          </div>
+                          <div className="mt-2 bg-red-100 text-red-600 text-[10px] font-bold text-center py-1 rounded border border-red-200">
+                            เหตุผล: พบรถบัญชีดำ
+                          </div>
+                        </div>
+                      </Popup>
+                    )}
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
+            <div className="w-full lg:w-1/2 flex flex-col gap-3 h-full">
+              <div className="bg-black rounded-lg flex-1 flex items-center justify-center relative group min-h-[160px]">
+                <FaPlay className="text-white text-4xl opacity-50 group-hover:opacity-100 transition-opacity cursor-pointer" />
+                <div className="absolute bottom-2 left-2 right-2 flex items-center gap-2">
+                  <div className="text-white text-[10px]">00:15</div>
+                  <div className="h-1 bg-gray-600 flex-1 rounded-full overflow-hidden">
+                    <div className="h-full bg-red-500 w-1/3"></div>
                   </div>
-                  <span className="text-sm font-medium">ตรวจจับ CCTV</span>
+                  <div className="text-white text-[10px]">00:29</div>
                 </div>
-                <button className="w-full rounded bg-gray-800 py-1 text-xs text-white hover:bg-gray-900">เปิดใช้งาน</button>
               </div>
-
-              <div className="rounded-lg border border-gray-200 p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 flex-shrink-0">
-                    <FaMapMarkerAlt className="text-green-600" />
+              <div className="bg-white border border-gray-200 rounded-lg p-3 flex gap-3 items-center shadow-sm">
+                <div className="border-2 border-black rounded p-2 w-35 text-center bg-white shadow-sm shrink-0">
+                  <div className="text-xl font-bold text-gray-800 leading-none mt-1">
+                    {sequenceTrackingData.carInfo.plateNumber}
                   </div>
-                  <span className="text-sm font-medium">ติดตามตำแหน่ง</span>
-                </div>
-                <button className="w-full rounded bg-gray-800 py-1 text-xs text-white hover:bg-gray-900">เปิดใช้งาน</button>
-              </div>
-
-              <div className="rounded-lg border border-gray-200 p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 flex-shrink-0">
-                    <FaClock className="text-blue-600" />
+                  <div className="text-[10px] text-gray-500 mt-1">
+                    {sequenceTrackingData.carInfo.province}
                   </div>
-                  <span className="text-sm font-medium">คำนวณ ETA</span>
                 </div>
-                <button className="w-full rounded bg-red-500 py-1 text-xs text-white hover:bg-red-600">ใช้งาน</button>
-              </div>
-
-              <div className="rounded-lg border border-gray-200 p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 flex-shrink-0">
-                    <FaMapPin className="text-gray-600" />
+                <div className="space-y-1 text-sm w-full">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-1">
+                    <span className="text-gray-500 flex items-center gap-1">
+                      <FaCar /> รุ่น/สี :
+                    </span>
+                    <span className="font-medium">
+                      {sequenceTrackingData.carInfo.brand} /{" "}
+                      {sequenceTrackingData.carInfo.color}
+                    </span>
                   </div>
-                  <span className="text-sm font-medium">Quick Action Panel</span>
-                </div>
-                <button className="w-full rounded bg-gray-300 py-1 text-xs text-gray-700 hover:bg-gray-400">รอดำเนินการ</button>
-              </div>
-
-              <div className="rounded-lg border border-gray-200 p-3">
-                <div className="mb-2 flex items-center gap-2">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 flex-shrink-0">
-                    <FaPlay className="text-gray-600" />
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-1">
+                    <span className="text-gray-500 flex items-center gap-1">
+                      <FaRoad /> ประเภท :
+                    </span>
+                    <span className="font-medium">
+                      {sequenceTrackingData.carInfo.type}
+                    </span>
                   </div>
-                  <span className="text-sm font-medium">เล่นย้อนหลัง</span>
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-1">
+                    <span className="text-gray-500 flex items-center gap-1">
+                      <FaCamera /> กล้อง :
+                    </span>
+                    <span className="font-medium text-blue-600">
+                      {sequenceTrackingData.carInfo.lastCam}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-gray-500 flex items-center gap-1">
+                      <FaMapMarkerAlt /> สถานที่ :
+                    </span>
+                    <span className="font-medium truncate max-w-[80px]">
+                      {sequenceTrackingData.carInfo.location}
+                    </span>
+                  </div>
                 </div>
-                <button className="w-full rounded bg-gray-300 py-1 text-xs text-gray-700 hover:bg-gray-400">รอดำเนินการ</button>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Live Camera Feeds */}
-          <div className="rounded-lg bg-white p-4 shadow">
-            <h3 className="mb-3 font-semibold text-gray-800">Live Camera Feeds</h3>
-            <div className="space-y-3">
-              {['CAM-804003', 'CAM-804004', 'CAM-804005', 'CAM-804006'].map((cam) => (
-                <div key={cam} className="relative aspect-video overflow-hidden rounded-lg bg-gray-900">
-                  <div className="absolute inset-0 flex flex-col items-center justify-center text-white">
-                    <FaCamera className="mb-2 text-4xl opacity-50" />
-                    <p className="text-sm font-medium">{cam}</p>
-                    <p className="text-xs opacity-75">ไม่พร้อมใช้งาน</p>
-                  </div>
-                  <span className="absolute left-2 top-2 rounded bg-green-500 px-2 py-1 text-xs font-bold text-white flex items-center gap-1">
-                    <span className="w-2 h-2 bg-white rounded-full"></span>
-                    {cam}
-                  </span>
-                </div>
-              ))}
+        {/* 6. BLACKLIST (FULL WIDTH) */}
+        <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[800px] flex flex-col">
+          <h3 className="font-bold text-gray-800 mb-4 flex justify-between items-center flex-none">
+            <span className="flex items-center gap-2">
+              รายการบัญชีดำ (7 รายการ)
+              <span className="bg-red-100 text-red-600 text-[10px] px-2 py-0.5 rounded-full">
+                High Alert
+              </span>
+            </span>
+            <button className="text-xs text-blue-600 border border-blue-200 px-3 py-1 rounded-full hover:bg-blue-50 transition-colors">
+              View All
+            </button>
+          </h3>
+          <div className="flex gap-2 mb-3 flex-none">
+            <div className="relative flex-1">
+              <input
+                type="text"
+                placeholder="ค้นหาป้ายทะเบียน, สี, ยี่ห้อ..."
+                className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-blue-400 focus:ring-1 focus:ring-blue-100 transition-all"
+              />
+              <FaSearch className="absolute left-3 top-2.5 text-gray-400 text-xs" />
             </div>
+            <button className="bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 rounded-lg text-xs font-medium transition-colors">
+              Filter
+            </button>
           </div>
-
-          {/* Bottom Actions */}
-          <div className="space-y-2">
-            <button className="flex w-full items-center justify-between rounded-lg bg-blue-500 p-3 text-white hover:bg-blue-600">
-              <span className="text-sm font-medium">ดูแผนที่ทั้งหมด</span>
-              <FaMapMarkerAlt />
-            </button>
-            <button className="flex w-full items-center justify-between rounded-lg bg-purple-500 p-3 text-white hover:bg-purple-600">
-              <span className="text-sm font-medium">รายงานสรุป</span>
-              <FaPlay />
-            </button>
+          <div className="space-y-2 overflow-y-auto flex-1 pr-1 scrollbar-thin">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
+              <div
+                key={i}
+                className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-red-200 hover:bg-red-50/30 transition-all cursor-pointer bg-white shadow-sm group"
+              >
+                <div className="flex items-center gap-3 mb-2 md:mb-0 w-full md:w-1/3">
+                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-red-500 transition-colors border border-gray-200">
+                    <FaCar />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-bold text-gray-800 text-sm">
+                        กท-123{i}
+                      </span>
+                      {i === 1 && (
+                        <span className="animate-pulse w-2 h-2 bg-red-500 rounded-full"></span>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-gray-500 flex gap-1">
+                      <span>Honda Civic</span> • <span>สีดำ</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-4 w-full md:w-1/3 justify-start md:justify-center mb-2 md:mb-0 border-l-0 md:border-l border-gray-100 pl-0 md:pl-4">
+                  <div className="flex flex-col">
+                    <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+                      Camera
+                    </div>
+                    <div className="text-xs font-medium text-blue-600 flex items-center gap-1">
+                      <FaCamera className="text-[10px]" /> CAM-00{i}
+                    </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <div className="text-[10px] text-gray-400 uppercase font-bold tracking-wider">
+                      Time
+                    </div>
+                    <div className="text-xs font-medium text-gray-600 flex items-center gap-1">
+                      <FaClock className="text-[10px]" /> 09:3{i}:45
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center justify-between w-full md:w-1/3 md:justify-end gap-3 border-l-0 md:border-l border-gray-100 pl-0 md:pl-4">
+                  <div className="text-left md:text-right">
+                    <div className="text-xs font-bold text-gray-700 flex items-center md:justify-end gap-1">
+                      <FaMapMarkerAlt className="text-red-500 text-[10px]" />{" "}
+                      สี่แยกราชดำเนิน
+                    </div>
+                    <div className="text-[10px] text-gray-400 mt-0.5">
+                      Alert Level: High
+                    </div>
+                  </div>
+                  <div className="flex gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                    <button
+                      className="p-1.5 hover:bg-blue-100 text-blue-600 rounded bg-blue-50 transition-colors"
+                      title="Play Video"
+                    >
+                      <FaPlay className="text-[10px]" />
+                    </button>
+                    <button
+                      className="p-1.5 hover:bg-gray-100 text-gray-600 rounded bg-gray-50 transition-colors"
+                      title="View Details"
+                    >
+                      <FaSearch className="text-[10px]" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
