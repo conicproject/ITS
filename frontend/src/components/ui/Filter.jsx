@@ -1,105 +1,257 @@
-// frontend/src/components/ui/Filter.jsx
-import React, { useState } from 'react';
-import { FaSearch } from 'react-icons/fa';
+import React, { useState, useRef, useEffect } from 'react';
+import { FaSearch, FaMapMarkerAlt, FaCar, FaIdCard, FaCalendarAlt, FaUndoAlt } from 'react-icons/fa'; 
+import { DayPicker } from 'react-day-picker';
+import { format } from 'date-fns';
+import { th } from 'date-fns/locale';
+import 'react-day-picker/dist/style.css'; 
 import { FilterConfig } from '../../config/FilterConfig';
+
+// --- CSS สำหรับปฏิทิน ---
+const customStyles = `
+  .rdp { 
+    --rdp-cell-size: 40px; 
+    --rdp-accent-color: #059669; 
+    --rdp-background-color: #ecfdf5; 
+    margin: 0;
+  }
+  .rdp-day_selected:not([disabled]) { 
+    background-color: var(--rdp-accent-color); 
+    color: white; 
+    font-weight: bold; 
+  }
+  .rdp-button:hover:not([disabled]):not(.rdp-day_selected) { 
+    background-color: var(--rdp-background-color); 
+    color: var(--rdp-accent-color); 
+  }
+  .rdp-caption_label { font-size: 1rem; font-weight: 700; color: #1f2937; }
+  .rdp-head_cell { font-size: 0.875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; }
+`;
 
 export const Filter = ({ type = "license", onSearch }) => {
   const config = FilterConfig[type] || {};
-  const showPlate = config.showPlate ?? false;
-  const showLocation = config.showLocation ?? false;
-  const showVehicleType = config.showVehicleType ?? false;
-  const showDateRange = config.showDateRange ?? false;
-  const placeholderPlate = config.placeholder ?? "ค้นหา";
-  const placeholderLocation = config.placeholderLocation ?? "ค้นหาจุดติดตั้ง";
+  const { 
+    showPlate = false, 
+    showLocation = false, 
+    showVehicleType = false, 
+    showDateRange = false,
+    placeholder = "ระบุเลขทะเบียน...",
+    placeholderLocation = "ระบุจุดติดตั้ง..."
+  } = config;
 
-  const [plate, setPlate] = useState("");
-  const [location, setLocation] = useState("");
-  const [vehicleType, setVehicleType] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [filterState, setFilterState] = useState({
+    plate: "",
+    location: "",
+    vehicleType: "",
+  });
+
+  const [dateRange, setDateRange] = useState({ from: new Date(), to: new Date() });
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+  const calendarRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (calendarRef.current && !calendarRef.current.contains(event.target)) {
+        setIsCalendarOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const handleSearch = () => {
     onSearch?.({
-      plate,
-      location,
-      vehicleType,
-      startDate,
-      endDate
+      ...filterState,
+      startDate: dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : "",
+      endDate: dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ""
     });
   };
 
+  const handleReset = () => {
+    setFilterState({ plate: "", location: "", vehicleType: "" });
+    setDateRange({ from: new Date(), to: new Date() });
+  };
+
+  const getDateLabel = () => {
+    if (dateRange?.from && dateRange?.to) {
+        return `${format(dateRange.from, 'dd MMM yyyy', { locale: th })} - ${format(dateRange.to, 'dd MMM yyyy', { locale: th })}`;
+    }
+    if (dateRange?.from) {
+        return format(dateRange.from, 'dd MMM yyyy', { locale: th });
+    }
+    return "เลือกช่วงเวลา";
+  };
+
+  // --- Styles ที่ปรับปรุงใหม่ ---
+  const labelClass = "text-[11px] uppercase tracking-wider font-bold text-gray-500 mb-1.5 ml-1 flex items-center gap-1";
+  
+  // inputWrapper: ใช้ relative เพื่อเป็นจุดอ้างอิงให้ icon
+  const inputWrapperClass = "relative w-full group"; 
+  
+  const inputBaseClass = "w-full border border-gray-200 bg-gray-50/50 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 focus:bg-white transition-all duration-200 h-[44px] text-gray-700 font-medium shadow-sm cursor-pointer hover:border-green-300";
+  
+  // iconClass: ใช้ top-1/2 -translate-y-1/2 เพื่อให้อยู่ตรงกลางเป๊ะๆ ไม่ว่าจะขยับ label ยังไง
+  const iconClass = "absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 z-10 group-focus-within:text-green-600 transition-colors pointer-events-none";
+
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-      {/* เปลี่ยน flex → flex-wrap เพื่อไม่ให้ดัน layout ทั้งหน้า */}
-      <div className="flex flex-wrap items-center gap-3 w-full">
-
-        <FaSearch className="w-5 h-5 text-gray-500 flex-shrink-0" />
-
-        {showPlate && (
-          <input
-            type="text"
-            placeholder={placeholderPlate}
-            value={plate}
-            onChange={(e) => setPlate(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px] focus:ring-2 focus:ring-green-500"
-          />
-        )}
-
-        {showLocation && (
-          <input
-            type="text"
-            placeholder={placeholderLocation}
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px] focus:ring-2 focus:ring-green-500"
-          />
-        )}
-
-        {showVehicleType && (
-          <select
-            value={vehicleType}
-            onChange={(e) => setVehicleType(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px] focus:ring-2 focus:ring-green-500"
-          >
-            <option value="">เลือกประเภทยานพาหนะ</option>
-            <option value="truck">รถบรรทุก</option>
-            <option value="car">รถยนต์</option>
-            <option value="motorcycle">รถจักรยานยนต์</option>
-          </select>
-        )}
-
-        {showDateRange && (
-          <>
-            <select
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px] focus:ring-2 focus:ring-green-500"
-            >
-              <option value="">Select Date</option>
-              <option value="2025-01-24">24/01/2025</option>
-              <option value="2025-01-23">23/01/2025</option>
-            </select>
-
-            <select
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px] focus:ring-2 focus:ring-green-500"
-            >
-              <option value="">Select Date</option>
-              <option value="2025-01-24">24/01/2025</option>
-              <option value="2025-01-23">23/01/2025</option>
-            </select>
-          </>
-        )}
-
-        <button
-          onClick={handleSearch}
-          className="bg-green-700 text-white px-6 py-2 rounded text-sm hover:bg-green-800 flex-shrink-0"
+    <>
+    <style>{customStyles}</style>
+    
+    <div className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-6 mb-8 border border-gray-100 relative z-[5000]">
+      
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
+        <div className="flex items-center gap-3">
+            <div className="bg-green-100/50 p-2.5 rounded-xl border border-green-100">
+                <FaSearch className="w-4 h-4 text-green-700" />
+            </div>
+            <div>
+                <h2 className="text-lg font-bold text-gray-800">ค้นหาข้อมูล</h2>
+                <p className="text-xs text-gray-500 mt-0.5">ระบบกรองข้อมูลจราจรอัจฉริยะ</p>
+            </div>
+        </div>
+        
+        <button 
+            onClick={handleReset}
+            className="text-gray-400 hover:text-red-500 text-xs px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors flex items-center gap-1.5 font-medium"
         >
-          ค้นหา
+            <FaUndoAlt className="w-3 h-3" /> ล้างค่า
         </button>
       </div>
 
+      {/* Inputs Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
+        
+        {/* 1. Plate Input */}
+        {showPlate && (
+           <div className="md:col-span-6 lg:col-span-3">
+               <label className={labelClass}><FaIdCard className="w-3 h-3"/> ทะเบียนรถ</label>
+               {/* สร้าง Wrapper หุ้ม Input และ Icon ไว้ด้วยกัน */}
+               <div className={inputWrapperClass}>
+                   <FaIdCard className={iconClass}/>
+                   <input 
+                     type="text"
+                     className={`${inputBaseClass} cursor-text`} 
+                     placeholder={placeholder}
+                     value={filterState.plate}
+                     onChange={(e) => setFilterState({...filterState, plate: e.target.value})}
+                   />
+               </div>
+           </div>
+        )}
+
+        {/* 2. Location Input */}
+        {showLocation && (
+           <div className="md:col-span-6 lg:col-span-3">
+               <label className={labelClass}><FaMapMarkerAlt className="w-3 h-3"/> จุดติดตั้ง</label>
+               <div className={inputWrapperClass}>
+                   <FaMapMarkerAlt className={iconClass}/>
+                   <input 
+                     type="text"
+                     className={`${inputBaseClass} cursor-text`} 
+                     placeholder={placeholderLocation}
+                     value={filterState.location}
+                     onChange={(e) => setFilterState({...filterState, location: e.target.value})}
+                   />
+               </div>
+           </div>
+        )}
+
+        {/* 3. Vehicle Select */}
+        {showVehicleType && (
+          <div className="md:col-span-4 lg:col-span-2">
+             <label className={labelClass}><FaCar className="w-3 h-3" /> ประเภท</label>
+             <div className={inputWrapperClass}>
+                 <FaCar className={iconClass} />
+                 <select 
+                    value={filterState.vehicleType}
+                    onChange={(e) => setFilterState({...filterState, vehicleType: e.target.value})}
+                    className={`${inputBaseClass} appearance-none`}
+                 >
+                  <option value="">ทั้งหมด</option>
+                  <option value="truck">รถบรรทุก</option>
+                  <option value="car">รถยนต์</option>
+                  <option value="motorcycle">จยย.</option>
+                 </select>
+                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                  <svg className="fill-current h-4 w-4" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                </div>
+            </div>
+          </div>
+        )}
+
+        {/* 4. Date Picker */}
+        {showDateRange && (
+          <div className="md:col-span-8 lg:col-span-3" ref={calendarRef}> 
+             <label className={labelClass}><FaCalendarAlt className="w-3 h-3" /> ช่วงเวลา</label>
+             
+             <div className={inputWrapperClass}> {/* Wrapper นี้สำคัญมากสำหรับไอคอนปฏิทิน */}
+                 <FaCalendarAlt className={iconClass} />
+                 
+                 {/* Trigger Input */}
+                 <div 
+                    onClick={() => setIsCalendarOpen(!isCalendarOpen)}
+                    className={`${inputBaseClass} flex items-center justify-between select-none`}
+                 >
+                    <div className="flex items-center gap-2 overflow-hidden whitespace-nowrap">
+                        <span className={`text-sm ${dateRange?.from ? 'text-gray-900 font-semibold' : 'text-gray-400'}`}>
+                            {getDateLabel()}
+                        </span>
+                    </div>
+                 </div>
+
+                 {/* Popup Calendar */}
+                 {isCalendarOpen && (
+                    <div className="absolute top-[110%] right-0 lg:right-0 z-[9999] bg-white border border-gray-100 rounded-2xl shadow-2xl p-4 w-auto min-w-[320px] animate-in fade-in zoom-in-95 duration-200">
+                        <DayPicker
+                            mode="range"
+                            defaultMonth={dateRange?.from || new Date()}
+                            selected={dateRange}
+                            onSelect={setDateRange}
+                            locale={th}
+                            numberOfMonths={1}
+                            pagedNavigation
+                            showOutsideDays
+                            disabled={{ after: new Date() }}
+                            footer={
+                                <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between gap-2 items-center">
+                                    <span className="text-xs text-gray-400">
+                                        {dateRange?.from && !dateRange?.to ? "เลือกวันสิ้นสุด..." : ""}
+                                    </span>
+                                    <div className="flex gap-2">
+                                        <button 
+                                            onClick={() => setIsCalendarOpen(false)}
+                                            className="px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium"
+                                        >
+                                            ปิด
+                                        </button>
+                                        <button 
+                                            onClick={() => { handleSearch(); setIsCalendarOpen(false); }}
+                                            className="px-4 py-1.5 text-xs bg-green-600 text-white rounded-lg hover:bg-green-700 shadow-md transition-colors font-bold"
+                                        >
+                                            ตกลง
+                                        </button>
+                                    </div>
+                                </div>
+                            }
+                        />
+                    </div>
+                 )}
+             </div>
+          </div>
+        )}
+
+        {/* 5. Search Button */}
+        <div className="md:col-span-12 lg:col-span-1 mt-2 lg:mt-0">
+            <button
+              onClick={handleSearch}
+              className="w-full h-[44px] bg-gradient-to-br from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white rounded-xl text-sm font-semibold shadow-md flex items-center justify-center gap-2 transition-transform active:scale-95"
+            >
+              <FaSearch />
+            </button>
+        </div>
+
+      </div>
     </div>
+    </>
   );
 };
