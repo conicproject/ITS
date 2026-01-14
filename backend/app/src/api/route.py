@@ -7,6 +7,7 @@ from src.controller.menu import MenuController
 from src.controller.camera import CameraController
 from src.controller.vehicle import VehicleController
 from src.controller.data_vehicle import DataVehicleController
+from src.controller.open_api import OpenAPIController
 
 router = APIRouter()
 user_controller = UserController()
@@ -16,6 +17,7 @@ menu_controller = MenuController()
 camera_controller = CameraController()
 vehicle_controller = VehicleController()
 data_vehicle_controller = DataVehicleController()
+open_api_controller = OpenAPIController()
 
 # Auth endpoints
 router.add_api_route("/auth/login", auth_controller.login, methods=["POST"], tags=["Authentication"])
@@ -38,3 +40,6 @@ router.add_api_route("/traffic-detail/{record_type}",  vehicle_controller.get_tr
 # break : pull data vehicle
 # api data_vehicle
 router.add_api_route("/data_vehicle", data_vehicle_controller.get_data_vehicle, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+
+router.add_api_route("/get_auth", open_api_controller.get_auth, methods=["GET"], tags=["Data"])   
+router.add_api_route("/get_data_yesterday", open_api_controller.get_data_yesterday, methods=["GET"], tags=["Data"])   

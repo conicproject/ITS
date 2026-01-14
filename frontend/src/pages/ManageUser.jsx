@@ -31,7 +31,7 @@ function ManageUser() {
 
   return (
     <>
-      <h1 className={`text-2xl font-bold mb-6 text-center ${colors.text}`}>
+      <h1 className={`text-2xl font-bold mb-6 text-center`}>
         เพิ่ม User ใหม่
       </h1>
 
@@ -41,14 +41,14 @@ function ManageUser() {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className={`w-full px-4 py-3 rounded-lg border ${colors.inputBorder} ${colors.inputBg} ${colors.text} ${colors.placeholder} focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500`}
+          className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500`}
         />
         <input
           type="password"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className={`w-full px-4 py-3 rounded-lg border ${colors.inputBorder} ${colors.inputBg} ${colors.text} ${colors.placeholder} focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500`}
+          className={`w-full px-4 py-3 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500`}
         />
 
         <button
