@@ -45,13 +45,11 @@ const routes = [
     ),
   },
   {
-    path: "/manageUser",
+    path: "/manageuser",
     name: "ManageUser",
     element: (
       <DefaultLayout>
-        <AppLayout>
-          <ManageUser />
-        </AppLayout>
+        <ManageUser />
       </DefaultLayout>
     ),
   },

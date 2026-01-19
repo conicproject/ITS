@@ -8,9 +8,9 @@ import time
 
 logger = logging.getLogger(__name__)
 
-# โหลด .env จาก project root (ปรับ path ตามจริง)
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../.."))
 load_dotenv(os.path.join(PROJECT_ROOT, "env", ".env"))
+
 
 class OracleConnection:
     def __init__(self):
@@ -19,7 +19,7 @@ class OracleConnection:
         self.service = os.getenv("ORACLE_SERVICE")
         self.username = os.getenv("ORACLE_USER")
         self.password = os.getenv("ORACLE_PASSWORD")
-        
+
         if not all([self.host, self.port, self.service, self.username, self.password]):
             missing = [k for k, v in {
                 'ORACLE_HOST': self.host,
@@ -30,15 +30,61 @@ class OracleConnection:
             }.items() if not v]
             raise ValueError(f"Missing required environment variables: {', '.join(missing)}")
 
-    def get_connection(self):
-        dns_tns = cx_Oracle.makedsn(self.host, self.port, service_name=self.service)
-        return cx_Oracle.connect(self.username, self.password, dns_tns, mode=cx_Oracle.SYSDBA)
+        self.dsn = cx_Oracle.makedsn(
+            self.host,
+            int(self.port),
+            service_name=self.service
+        )
 
+        self._conn = None
+
+    # ===============================
+    # 🔁 connect with retry forever
+    # ===============================
+    def get_connection(self):
+        while True:
+            try:
+                conn = cx_Oracle.connect(
+                    self.username,
+                    self.password,
+                    self.dsn,
+                    mode=cx_Oracle.SYSDBA
+                )
+
+                logger.info("✅ Oracle connected")
+                return conn
+
+            except cx_Oracle.DatabaseError as e:
+                logger.error(
+                    f"❌ Oracle connect failed, retrying Error: {str(e)}"
+                )
+
+    # ===============================
+    # ♻️ get or reconnect
+    # ===============================
+    def get_or_reconnect(self):
+        if self._conn:
+            try:
+                self._conn.ping()
+                return self._conn
+            except cx_Oracle.DatabaseError:
+                logger.warning("🔌 Oracle connection lost, reconnecting...")
+                try:
+                    self._conn.close()
+                except Exception:
+                    pass
+
+        self._conn = self.get_connection()
+        return self._conn
+
+    # ===============================
+    # 🧩 context manager
+    # ===============================
     @contextmanager
     def get_connection_context(self):
-        conn = self.get_connection()
+        conn = self.get_or_reconnect()
         try:
             yield conn
-        finally:
-            conn.close()
-            logger.debug("Oracle connection closed")
+        except cx_Oracle.DatabaseError:
+            logger.exception("🔥 Oracle error during operation")
+            raise
