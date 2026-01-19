@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaSearch, FaMapMarkerAlt, FaCar, FaIdCard, FaCalendarAlt, FaUndoAlt } from 'react-icons/fa'; 
+import { FaSearch, FaMapMarkerAlt, FaCar, FaIdCard, FaCalendarAlt, FaUndoAlt, FaBuilding } from 'react-icons/fa'; 
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
 import 'react-day-picker/dist/style.css'; 
 import { FilterConfig } from '../../config/FilterConfig';
 
-// --- CSS สำหรับปฏิทิน ---
 const customStyles = `
   .rdp { 
     --rdp-cell-size: 40px; 
@@ -27,20 +26,30 @@ const customStyles = `
   .rdp-head_cell { font-size: 0.875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; }
 `;
 
-export const Filter = ({ type = "license", onSearch }) => {
-  const config = FilterConfig[type] || {};
+export const Filter = ({ type = "license", onSearch, ...customProps }) => {
+  const baseConfig = FilterConfig[type] || {};
+  const config = { ...baseConfig, ...customProps };
+
   const { 
     showPlate = false, 
     showLocation = false, 
+    showDistrict = false, // --- NEW: เพิ่มตัวแปรสำหรับเขต ---
     showVehicleType = false, 
     showDateRange = false,
     placeholder = "ระบุเลขทะเบียน...",
-    placeholderLocation = "ระบุจุดติดตั้ง..."
+    placeholderLocation = "ระบุจุดติดตั้ง...",
+    
+    plateColSpan = "md:col-span-6 lg:col-span-3",
+    locationColSpan = "md:col-span-6 lg:col-span-3",
+    districtColSpan = "md:col-span-6 lg:col-span-3", // --- NEW: Default ColSpan ---
+    vehicleTypeColSpan = "md:col-span-4 lg:col-span-2",
+    dateColSpan = "md:col-span-8 lg:col-span-3"
   } = config;
 
   const [filterState, setFilterState] = useState({
     plate: "",
     location: "",
+    district: "", // --- NEW: State ---
     vehicleType: "",
   });
 
@@ -67,7 +76,7 @@ export const Filter = ({ type = "license", onSearch }) => {
   };
 
   const handleReset = () => {
-    setFilterState({ plate: "", location: "", vehicleType: "" });
+    setFilterState({ plate: "", location: "", district: "", vehicleType: "" });
     setDateRange({ from: new Date(), to: new Date() });
   };
 
@@ -81,15 +90,9 @@ export const Filter = ({ type = "license", onSearch }) => {
     return "เลือกช่วงเวลา";
   };
 
-  // --- Styles ที่ปรับปรุงใหม่ ---
   const labelClass = "text-[11px] uppercase tracking-wider font-bold text-gray-500 mb-1.5 ml-1 flex items-center gap-1";
-  
-  // inputWrapper: ใช้ relative เพื่อเป็นจุดอ้างอิงให้ icon
   const inputWrapperClass = "relative w-full group"; 
-  
   const inputBaseClass = "w-full border border-gray-200 bg-gray-50/50 rounded-xl pl-10 pr-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 focus:bg-white transition-all duration-200 h-[44px] text-gray-700 font-medium shadow-sm cursor-pointer hover:border-green-300";
-  
-  // iconClass: ใช้ top-1/2 -translate-y-1/2 เพื่อให้อยู่ตรงกลางเป๊ะๆ ไม่ว่าจะขยับ label ยังไง
   const iconClass = "absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 z-10 group-focus-within:text-green-600 transition-colors pointer-events-none";
 
   return (
@@ -98,7 +101,6 @@ export const Filter = ({ type = "license", onSearch }) => {
     
     <div className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-6 mb-8 border border-gray-100 relative z-[5000]">
       
-      {/* Header */}
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
         <div className="flex items-center gap-3">
             <div className="bg-green-100/50 p-2.5 rounded-xl border border-green-100">
@@ -118,14 +120,12 @@ export const Filter = ({ type = "license", onSearch }) => {
         </button>
       </div>
 
-      {/* Inputs Grid */}
       <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
         
-        {/* 1. Plate Input */}
+        {/* --- ส่วน License Plate --- */}
         {showPlate && (
-           <div className="md:col-span-6 lg:col-span-3">
+           <div className={plateColSpan}>
                <label className={labelClass}><FaIdCard className="w-3 h-3"/> ทะเบียนรถ</label>
-               {/* สร้าง Wrapper หุ้ม Input และ Icon ไว้ด้วยกัน */}
                <div className={inputWrapperClass}>
                    <FaIdCard className={iconClass}/>
                    <input 
@@ -139,9 +139,9 @@ export const Filter = ({ type = "license", onSearch }) => {
            </div>
         )}
 
-        {/* 2. Location Input */}
+        {/* --- ส่วน Location --- */}
         {showLocation && (
-           <div className="md:col-span-6 lg:col-span-3">
+           <div className={locationColSpan}>
                <label className={labelClass}><FaMapMarkerAlt className="w-3 h-3"/> จุดติดตั้ง</label>
                <div className={inputWrapperClass}>
                    <FaMapMarkerAlt className={iconClass}/>
@@ -156,9 +156,32 @@ export const Filter = ({ type = "license", onSearch }) => {
            </div>
         )}
 
-        {/* 3. Vehicle Select */}
+        {/* --- ส่วน District (NEW) --- */}
+        {showDistrict && (
+          <div className={districtColSpan}>
+             <label className={labelClass}><FaBuilding className="w-3 h-3" /> เขต/อำเภอ</label>
+             <div className={inputWrapperClass}>
+                 <FaBuilding className={iconClass} />
+                 <select 
+                    value={filterState.district}
+                    onChange={(e) => setFilterState({...filterState, district: e.target.value})}
+                    className={`${inputBaseClass} appearance-none`}
+                 >
+                  <option value="">ทุกเขตพื้นที่</option>
+                  <option value="หลักสี่">เขตหลักสี่</option>
+                  <option value="บางเขน">เขตบางเขน</option>
+                  <option value="ปากเกร็ด">อ.ปากเกร็ด</option>
+                 </select>
+                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+                  <svg className="fill-current h-4 w-4" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+                </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- ส่วน Vehicle Type --- */}
         {showVehicleType && (
-          <div className="md:col-span-4 lg:col-span-2">
+          <div className={vehicleTypeColSpan}>
              <label className={labelClass}><FaCar className="w-3 h-3" /> ประเภท</label>
              <div className={inputWrapperClass}>
                  <FaCar className={iconClass} />
@@ -179,15 +202,13 @@ export const Filter = ({ type = "license", onSearch }) => {
           </div>
         )}
 
-        {/* 4. Date Picker */}
+        {/* --- ส่วน Date Range --- */}
         {showDateRange && (
-          <div className="md:col-span-8 lg:col-span-3" ref={calendarRef}> 
+          <div className={dateColSpan} ref={calendarRef}> 
              <label className={labelClass}><FaCalendarAlt className="w-3 h-3" /> ช่วงเวลา</label>
              
-             <div className={inputWrapperClass}> {/* Wrapper นี้สำคัญมากสำหรับไอคอนปฏิทิน */}
+             <div className={inputWrapperClass}>
                  <FaCalendarAlt className={iconClass} />
-                 
-                 {/* Trigger Input */}
                  <div 
                     onClick={() => setIsCalendarOpen(!isCalendarOpen)}
                     className={`${inputBaseClass} flex items-center justify-between select-none`}
@@ -199,7 +220,6 @@ export const Filter = ({ type = "license", onSearch }) => {
                     </div>
                  </div>
 
-                 {/* Popup Calendar */}
                  {isCalendarOpen && (
                     <div className="absolute top-[110%] right-0 lg:right-0 z-[9999] bg-white border border-gray-100 rounded-2xl shadow-2xl p-4 w-auto min-w-[320px] animate-in fade-in zoom-in-95 duration-200">
                         <DayPicker
@@ -240,7 +260,7 @@ export const Filter = ({ type = "license", onSearch }) => {
           </div>
         )}
 
-        {/* 5. Search Button */}
+        {/* --- Search Button --- */}
         <div className="md:col-span-12 lg:col-span-1 mt-2 lg:mt-0">
             <button
               onClick={handleSearch}

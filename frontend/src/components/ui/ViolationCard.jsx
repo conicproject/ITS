@@ -14,7 +14,6 @@ export const ViolationCard = ({ violation, onClick }) => {
 
   // --- Dynamic Theme Logic ---
   const getStatusTheme = (status) => {
-      // สีแดง (ฝ่าฝืน)
       if (['สูง', 'No Green List', 'ฝ่าฝืน'].includes(status)) {
           return {
               bar: 'bg-red-500',
@@ -22,7 +21,6 @@ export const ViolationCard = ({ violation, onClick }) => {
               borderHover: 'hover:border-red-400'
           };
       }
-      // สีเขียว (Green List / ผ่าน)
       if (['ต่ำ', 'Green List', 'ผ่าน', 'ปกติ'].includes(status)) {
           return {
               bar: 'bg-green-500',
@@ -30,7 +28,6 @@ export const ViolationCard = ({ violation, onClick }) => {
               borderHover: 'hover:border-green-400'
           };
       }
-      // สีส้ม (ปานกลาง)
       if (['ปานกลาง', 'Warning'].includes(status)) {
           return {
               bar: 'bg-orange-400',
@@ -38,7 +35,6 @@ export const ViolationCard = ({ violation, onClick }) => {
               borderHover: 'hover:border-orange-400'
           };
       }
-      // Default
       return {
           bar: 'bg-gray-300',
           badge: 'bg-gray-100 text-gray-600 border-gray-200',
@@ -48,12 +44,16 @@ export const ViolationCard = ({ violation, onClick }) => {
 
   const theme = getStatusTheme(data.status);
 
+  // ฟังก์ชันแยก วันที่ และ เวลา
+  const timeParts = data.time.split(' ');
+  const dateStr = timeParts[0]; // 2025-01-24
+  const timeStr = timeParts[1]; // 14:25
+
   return (
     <div 
       onClick={() => onClick && onClick(violation)}
       className={`group bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md ${theme.borderHover} transition-all duration-200 relative overflow-hidden w-full cursor-pointer p-2 sm:p-3 md:p-4`}
     >
-      {/* Left Bar (Dynamic Color) */}
       <div className={`absolute left-0 top-0 bottom-0 w-1 md:w-1.5 rounded-l-xl transition-colors ${theme.bar}`} />
 
       <div className="pl-2 md:pl-3">
@@ -69,8 +69,6 @@ export const ViolationCard = ({ violation, onClick }) => {
                     {data.type}
                 </span>
             </div>
-            
-            {/* Status Badge (Dynamic Color) */}
             <span className={`text-[9px] sm:text-[10px] font-bold px-1.5 py-0.5 rounded-full border whitespace-nowrap ${theme.badge}`}>
                 {data.status}
             </span>
@@ -78,23 +76,29 @@ export const ViolationCard = ({ violation, onClick }) => {
 
         {/* Grid Content */}
         <div className="grid grid-cols-2 lg:grid-cols-3 gap-y-2 gap-x-2 sm:gap-3 bg-gray-50/50 p-2 rounded-lg border border-gray-100">
+            {/* ส่วน วัน/เวลา ที่แก้ไขใหม่ */}
             <div className="flex flex-col">
                 <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-gray-400 uppercase font-bold">
-                    <FaClock className="shrink-0" /> เวลา
+                    <FaClock className="shrink-0" /> วัน/เวลา
                 </div>
-                <div className="text-[11px] sm:text-xs font-semibold text-gray-700 truncate">{data.time.includes(' ') ? data.time.split(' ')[1] : data.time} น.</div>
+                <div className="text-[10px] sm:text-[11px] font-semibold text-gray-700 leading-tight mt-0.5">
+                    <div className="truncate">{dateStr}</div>
+                    <div className="text-blue-600">{timeStr} น.</div>
+                </div>
             </div>
+
              <div className="flex flex-col">
                 <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-gray-400 uppercase font-bold">
                     <FaMapMarkerAlt className="shrink-0" /> จุดตรวจจับ
                 </div>
-                <div className="text-[11px] sm:text-xs font-semibold text-gray-700 truncate">{data.location}</div>
+                <div className="text-[10px] sm:text-[11px] font-semibold text-gray-700 truncate mt-0.5">{data.location}</div>
             </div>
+
             <div className="flex flex-col col-span-2 lg:col-span-1">
                 <div className="flex items-center gap-1 text-[9px] sm:text-[10px] text-gray-400 uppercase font-bold">
                     <FaVideo className="shrink-0" /> กล้อง
                 </div>
-                <div className="text-[11px] sm:text-xs font-semibold text-gray-700 truncate">{data.camera}</div>
+                <div className="text-[10px] sm:text-[11px] font-semibold text-gray-700 truncate mt-0.5">{data.camera}</div>
             </div>
         </div>
 
