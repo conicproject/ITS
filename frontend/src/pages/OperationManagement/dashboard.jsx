@@ -1,3 +1,4 @@
+// frontend/src/pages/OperationManagementDashboard.jsx
 import React from "react";
 import {
   MapContainer,
@@ -176,6 +177,7 @@ function OperationManagementDashboard() {
     },
   };
 
+  // --- MOCK DATA: LANE PCU ---
   const rawLaneData = [
     {
       id: "north",
@@ -184,14 +186,26 @@ function OperationManagementDashboard() {
       status: "ปกติ",
       color: "text-green-500",
       cam: "CAM-01 Ratchada",
+      pcuCurrent: 24,
+      pcuMax: 120,
+      usagePercent: 20.5,
+      density: 351,
+      flow: 150,
+      speed: 35,
     },
     {
       id: "center",
-      name: "เลนกลาง",
+      name: "เลนกลาง - สี่แยก",
       pcu: 45,
       status: "คล่องตัว",
       color: "text-blue-500",
       cam: "CAM-05 Center Hub",
+      pcuCurrent: 7,
+      pcuMax: 30,
+      usagePercent: 23.3,
+      density: 351,
+      flow: 150,
+      speed: 35,
     },
     {
       id: "south",
@@ -200,29 +214,45 @@ function OperationManagementDashboard() {
       status: "ปกติ",
       color: "text-green-500",
       cam: "CAM-02 Asoke",
+      pcuCurrent: 60,
+      pcuMax: 80,
+      usagePercent: 75.0,
+      density: 450,
+      flow: 180,
+      speed: 20,
     },
     {
       id: "east",
-      name: "เลนออก",
+      name: "เลนตะวันออก",
       pcu: 90,
       status: "หนาแน่น",
       color: "text-red-500",
       cam: "CAM-03 Silom",
+      pcuCurrent: 85,
+      pcuMax: 90,
+      usagePercent: 94.4,
+      density: 580,
+      flow: 90,
+      speed: 12,
     },
     {
       id: "west",
-      name: "เลนตก",
+      name: "เลนตะวันตก",
       pcu: 85,
       status: "ปานกลาง",
       color: "text-yellow-500",
       cam: "CAM-04 Sathorn",
+      pcuCurrent: 45,
+      pcuMax: 85,
+      usagePercent: 52.9,
+      density: 320,
+      flow: 140,
+      speed: 28,
     },
   ];
 
-  const orderMap = { center: 1, north: 2, south: 3, east: 4, west: 5 };
-  const laneData = [...rawLaneData].sort(
-    (a, b) => (orderMap[a.id] || 99) - (orderMap[b.id] || 99)
-  );
+  const centerLane = rawLaneData.find(l => l.id === 'center');
+  const otherLanes = rawLaneData.filter(l => l.id !== 'center');
 
   const sequenceTrackingData = {
     carInfo: {
@@ -282,13 +312,10 @@ function OperationManagementDashboard() {
         .scrollbar-thin::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
       `}</style>
 
-      {/* --- HEADER (Updated Style) --- */}
+      {/* --- HEADER --- */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-8">
-        
-        {/* Title Group */}
         <div className="w-full md:w-auto flex items-start gap-3">
           <span className="text-green-600 bg-green-50 p-2 rounded-lg shrink-0">
-             {/* ใช้ FaVideo เพื่อสื่อถึง Operation/Monitoring และเพื่อให้เข้ากับธีมสีเขียว */}
              <FaVideo className="w-6 h-6" />
           </span>
           <div className="flex flex-col">
@@ -300,8 +327,6 @@ function OperationManagementDashboard() {
             </p>
           </div>
         </div>
-
-        {/* Time Component */}
         <DateTimeDisplay />
       </div>
 
@@ -383,7 +408,6 @@ function OperationManagementDashboard() {
 
         {/* 2. SPLIT SECTION: MAIN MAP & RECENT ALERTS */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          {/* Left: Map (Span 3) */}
           <div className="lg:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200 p-1 h-[350px] md:h-[500px] relative z-0">
             {typeof window !== "undefined" && (
               <MapContainer
@@ -409,7 +433,6 @@ function OperationManagementDashboard() {
             </div>
           </div>
 
-          {/* Right: Alerts (Span 1) */}
           <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[400px] md:h-[500px] flex flex-col">
             <h3 className="font-bold text-gray-800 mb-3 text-sm flex justify-between items-center flex-none">
               Recent Alerts
@@ -443,92 +466,174 @@ function OperationManagementDashboard() {
           </div>
         </div>
 
-        {/* 3. INTERSECTION & PCU */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
-          {/* Left Box: Graphic */}
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-auto md:h-[790px] flex flex-col">
-            <div className="flex items-center gap-2 mb-4 border-l-4 border-purple-600 pl-2 flex-none">
-              <FaMapMarkerAlt className="text-purple-600" />
-              <h3 className="font-bold text-gray-800">
-                สี่แยกราชดำเนิน (Real-time)
-              </h3>
-            </div>
+        {/* --- 3. INTERSECTION & PCU (UPDATED LAYOUT) --- */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
             
-            <div className="relative flex-1 bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center w-full min-h-[300px]">
-              <div className="absolute w-20 h-full bg-slate-700/50"></div>
-              <div className="absolute h-20 w-full bg-slate-700/50"></div>
-              <div className="absolute w-0.5 h-full bg-dashed border-l border-dashed border-white/20"></div>
-              <div className="absolute h-0.5 w-full bg-dashed border-t border-dashed border-white/20"></div>
-              <div className="absolute w-24 h-24 bg-red-900/30 border border-red-500/50 z-10 flex items-center justify-center">
-                <span className="text-red-500 text-xs font-mono animate-pulse">
-                  LOCKED
-                </span>
-              </div>
-              <div className="absolute top-10 left-1/2 -ml-2 w-4 h-4 bg-green-500 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.8)]"></div>
-              <div className="absolute bottom-10 left-1/2 -ml-2 w-4 h-4 bg-green-500 rounded-full"></div>
-              <div className="absolute left-10 top-1/2 -mt-2 w-4 h-4 bg-yellow-500 rounded-full"></div>
-            </div>
-          </div>
-
-          {/* Right Box: PCU */}
-          <div className="bg-white rounded-xl shadow-xl border border-gray-200 p-4 h-auto md:h-[790px] flex flex-col">
-            <div className="flex justify-between items-center mb-4 flex-none">
-              <h3 className="font-bold text-gray-800">
-                การจราจร & กล้อง (PCU)
-              </h3>
-              <button className="bg-green-500 text-white text-xs px-3 py-1 rounded-full">
-                Active
-              </button>
-            </div>
-
-            <div className="bg-white p-4 rounded mb-4 flex justify-between items-center shadow-sm flex-none">
-              <div className="text-center w-1/3 border-r border-gray-100">
-                <div className="text-xs text-gray-500">Domain</div>
-                <div className="font-bold text-green-600">80</div>
-              </div>
-              <div className="text-center w-1/3 border-r border-gray-100">
-                <div className="text-xs text-gray-500">Humidity</div>
-                <div className="font-bold text-blue-600">130</div>
-              </div>
-              <div className="text-center w-1/3">
-                <div className="text-xs text-gray-500">Speed</div>
-                <div className="font-bold text-orange-600">32</div>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 flex-1 content-start">
-              {laneData.map((lane, idx) => (
-                <div
-                  key={idx}
-                  className={`bg-black rounded-lg overflow-hidden flex flex-col justify-center items-center relative group shadow-sm border border-gray-800 ${
-                    lane.id === "center" ? "col-span-2 h-48 md:h-56" : "col-span-1 h-40 md:h-48"
-                  }`}
-                >
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <FaVideo className="text-gray-700 text-3xl group-hover:text-gray-500 transition-colors" />
-                    <span className="text-white ml-2 text-sm font-bold opacity-50">
-                      {lane.name}
-                    </span>
-                  </div>
-                  <div className="absolute top-2 right-2 bg-green-500 text-white text-[9px] px-1.5 py-0.5 rounded flex items-center gap-1">
-                    <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div>
-                    Live
-                  </div>
-                  <div className="absolute bottom-0 w-full bg-black/60 p-2 flex justify-between items-center backdrop-blur-sm">
-                    <div className="text-white text-xs font-bold pl-1">
-                      {lane.name}
+            <div className="flex justify-between items-center mb-6">
+                <div className="flex items-center gap-2">
+                    <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
+                        <FaMapMarkerAlt />
                     </div>
-                    <div className="text-white text-xs">
-                      <span className="font-bold text-green-400">
-                        {lane.pcu}
-                      </span>{" "}
-                      <span className="text-[9px] opacity-70">PCU</span>
+                    <div>
+                        <h3 className="font-bold text-lg text-gray-800">สถานะจราจรแยกราชดำเนิน</h3>
+                        <p className="text-xs text-gray-500">Real-time Traffic Monitoring System</p>
                     </div>
-                  </div>
                 </div>
-              ))}
+                <div className="flex items-center gap-2">
+                     <span className="text-xs text-gray-500">Live Status:</span>
+                     <span className="flex items-center gap-1 bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-bold">
+                        <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                        Online
+                     </span>
+                </div>
             </div>
-          </div>
+
+            {/* TOP ROW: Graphic (Left) & Center Lane (Right) */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                
+                {/* 1. LEFT: Intersection Graphic */}
+                <div className="bg-slate-900 rounded-xl overflow-hidden relative min-h-[350px] border border-slate-800 shadow-inner flex items-center justify-center">
+                    <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-slate-800 to-slate-950"></div>
+                    <div className="absolute w-32 h-full bg-slate-700/50 border-x-2 border-slate-600/50"></div>
+                    <div className="absolute h-32 w-full bg-slate-700/50 border-y-2 border-slate-600/50"></div>
+                    <div className="absolute w-0.5 h-full bg-dashed border-l border-dashed border-white/20"></div>
+                    <div className="absolute h-0.5 w-full bg-dashed border-t border-dashed border-white/20"></div>
+                    <div className="absolute w-36 h-36 bg-red-900/20 border-2 border-red-500/30 z-10 grid place-content-center">
+                         <div className="text-red-500/50 text-xs font-mono">CRITICAL AREA</div>
+                    </div>
+                    <div className="absolute top-12 left-1/2 -ml-3 w-6 h-12 bg-black rounded border border-gray-700 flex flex-col items-center justify-around py-1 shadow-lg">
+                        <div className="w-3 h-3 bg-red-500 rounded-full shadow-[0_0_10px_rgba(239,68,68,0.8)]"></div>
+                        <div className="w-3 h-3 bg-yellow-900 rounded-full opacity-30"></div>
+                        <div className="w-3 h-3 bg-green-900 rounded-full opacity-30"></div>
+                    </div>
+                    <div className="absolute top-[20%] left-[48%] w-3 h-5 bg-blue-500 rounded-sm shadow-md"></div>
+                    <div className="absolute bottom-[20%] left-[51%] w-3 h-5 bg-white rounded-sm shadow-md"></div>
+                    <div className="absolute left-[20%] top-[51%] w-5 h-3 bg-yellow-500 rounded-sm shadow-md"></div>
+                </div>
+
+                {/* 2. RIGHT: Center Lane (Big Card - Maximized Camera) */}
+                <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm flex flex-col h-full">
+                    {/* Video Area (Increased Height to 350px) */}
+                    <div className="bg-black relative group flex-1 min-h-[350px]">
+                         <div className="absolute top-0 left-0 w-full p-4 bg-gradient-to-b from-black/70 to-transparent flex justify-between items-start z-10">
+                            <span className="text-white font-bold text-lg drop-shadow-md">{centerLane.name}</span>
+                            <div className="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1 shadow-sm">
+                                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div> Live
+                            </div>
+                         </div>
+                         <div className="absolute inset-0 flex items-center justify-center">
+                            <FaVideo className="text-gray-700 text-6xl group-hover:text-gray-500 transition-colors" />
+                         </div>
+                         <div className="absolute bottom-3 right-3 text-white/50 text-xs font-mono bg-black/50 px-2 py-1 rounded">
+                            {centerLane.cam}
+                         </div>
+                    </div>
+
+                    {/* Stats Panel (Compact) */}
+                    <div className="px-4 py-3 bg-white border-t border-gray-100">
+                        <div className="flex items-center gap-4">
+                            {/* Left: Progress Bar */}
+                            <div className="w-1/3 shrink-0">
+                                <div className="flex justify-between items-end mb-1">
+                                    <span className="text-[10px] font-bold text-gray-600">PCU Usage</span>
+                                    <span className="text-[10px] font-bold text-blue-600">{centerLane.usagePercent}%</span>
+                                </div>
+                                <div className="relative w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div 
+                                        className="absolute top-0 left-0 h-full bg-blue-500 rounded-full" 
+                                        style={{ width: `${centerLane.usagePercent}%` }}
+                                    ></div>
+                                </div>
+                                <div className="text-[9px] text-gray-400 mt-1 text-right">{centerLane.pcuCurrent}/{centerLane.pcuMax} PCU</div>
+                            </div>
+                            
+                            {/* Divider */}
+                            <div className="w-px h-8 bg-gray-200"></div>
+
+                            {/* Right: Metrics Grid */}
+                            <div className="flex-1 grid grid-cols-3 gap-2">
+                                 <div className="text-center">
+                                    <div className="text-[9px] text-gray-400 uppercase">Density</div>
+                                    <div className="font-bold text-gray-800 text-sm">{centerLane.density}</div>
+                                    <div className="text-[8px] text-gray-400">pcu/km</div>
+                                 </div>
+                                 <div className="text-center border-l border-gray-100">
+                                    <div className="text-[9px] text-gray-400 uppercase">Flow</div>
+                                    <div className="font-bold text-gray-800 text-sm">{centerLane.flow}</div>
+                                    <div className="text-[8px] text-gray-400">pcu/hr</div>
+                                 </div>
+                                 <div className="text-center border-l border-gray-100">
+                                    <div className="text-[9px] text-gray-400 uppercase">Speed</div>
+                                    <div className="font-bold text-gray-800 text-sm">{centerLane.speed}</div>
+                                    <div className="text-[8px] text-gray-400">km/h</div>
+                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* BOTTOM ROW: Other Lanes (Increased Height, Compact Stats) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                {otherLanes.map((lane, idx) => (
+                    <div key={idx} className="bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                        {/* Video Area (Increased Height to h-48) */}
+                        <div className="bg-black relative h-48 group">
+                             <div className="absolute top-2 left-2 text-white font-bold text-xs drop-shadow-md z-10">
+                                {lane.name}
+                             </div>
+                             <div className="absolute top-2 right-2 bg-green-500 text-white text-[8px] px-1.5 py-0.5 rounded flex items-center gap-1 z-10">
+                                <div className="w-1 h-1 bg-white rounded-full animate-pulse"></div>
+                            </div>
+                             <div className="absolute inset-0 flex items-center justify-center">
+                                <FaVideo className="text-gray-700 text-3xl group-hover:text-gray-500 transition-colors" />
+                             </div>
+                        </div>
+
+                        {/* Stats Area (Very Compact) */}
+                        <div className="px-3 py-2 bg-white">
+                            <div className="flex items-center justify-between gap-2">
+                                {/* Usage Bar (Compact) */}
+                                <div className="flex flex-col w-1/4 shrink-0">
+                                    <div className="flex justify-between items-baseline">
+                                         <span className="text-[8px] text-gray-400">Usage</span>
+                                         <span className="text-[9px] font-bold text-gray-800">{lane.usagePercent}%</span>
+                                    </div>
+                                    <div className="h-1 bg-gray-100 rounded-full mt-0.5 overflow-hidden">
+                                        <div 
+                                            className={`h-full rounded-full ${
+                                                lane.usagePercent > 80 ? 'bg-red-500' : 
+                                                lane.usagePercent > 50 ? 'bg-yellow-400' : 'bg-gray-400'
+                                            }`} 
+                                            style={{ width: `${lane.usagePercent}%` }}
+                                        ></div>
+                                    </div>
+                                </div>
+
+                                {/* Vertical Divider */}
+                                <div className="w-px h-5 bg-gray-100"></div>
+
+                                {/* 3 Metrics */}
+                                <div className="flex items-center justify-between flex-1 gap-1">
+                                     <div className="text-center">
+                                         <div className="text-[8px] text-gray-400 leading-none mb-0.5">Den</div>
+                                         <div className="text-[10px] font-bold text-gray-700 leading-none">{lane.density}</div>
+                                     </div>
+                                     <div className="text-center">
+                                         <div className="text-[8px] text-gray-400 leading-none mb-0.5">Flow</div>
+                                         <div className="text-[10px] font-bold text-gray-700 leading-none">{lane.flow}</div>
+                                     </div>
+                                     <div className="text-center">
+                                         <div className="text-[8px] text-gray-400 leading-none mb-0.5">Spd</div>
+                                         <div className="text-[10px] font-bold text-gray-700 leading-none">{lane.speed}</div>
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
         </div>
 
         {/* 4. TRAFFIC CHART */}

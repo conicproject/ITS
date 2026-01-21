@@ -1,5 +1,6 @@
+// frontend/src/components/ui/Filter.jsx
 import React, { useState, useRef, useEffect } from 'react';
-import { FaSearch, FaMapMarkerAlt, FaCar, FaIdCard, FaCalendarAlt, FaUndoAlt, FaBuilding } from 'react-icons/fa'; 
+import { FaSearch, FaMapMarkerAlt, FaCar, FaIdCard, FaCalendarAlt, FaUndoAlt, FaBuilding, FaRoad } from 'react-icons/fa'; 
 import { DayPicker } from 'react-day-picker';
 import { format } from 'date-fns';
 import { th } from 'date-fns/locale';
@@ -31,26 +32,41 @@ export const Filter = ({ type = "license", onSearch, ...customProps }) => {
   const config = { ...baseConfig, ...customProps };
 
   const { 
+    // --- Existing Props ---
     showPlate = false, 
     showLocation = false, 
-    showDistrict = false, // --- NEW: เพิ่มตัวแปรสำหรับเขต ---
+    showDistrict = false,
     showVehicleType = false, 
     showDateRange = false,
+    
+    // --- NEW: Route Analysis Props ---
+    showRouteName = false,    // ช่องค้นหาชื่อเส้นทาง
+    showOriginDest = false,   // คู่ Select ต้นทาง -> ปลายทาง
+
     placeholder = "ระบุเลขทะเบียน...",
     placeholderLocation = "ระบุจุดติดตั้ง...",
+    placeholderRoute = "ค้นหาเส้นทาง...",
     
     plateColSpan = "md:col-span-6 lg:col-span-3",
     locationColSpan = "md:col-span-6 lg:col-span-3",
-    districtColSpan = "md:col-span-6 lg:col-span-3", // --- NEW: Default ColSpan ---
+    districtColSpan = "md:col-span-6 lg:col-span-3",
     vehicleTypeColSpan = "md:col-span-4 lg:col-span-2",
-    dateColSpan = "md:col-span-8 lg:col-span-3"
+    dateColSpan = "md:col-span-8 lg:col-span-3",
+    
+    // Default ColSpan สำหรับ Route Analysis
+    routeNameColSpan = "md:col-span-4 lg:col-span-3",
+    originDestColSpan = "md:col-span-8 lg:col-span-5"
   } = config;
 
   const [filterState, setFilterState] = useState({
     plate: "",
     location: "",
-    district: "", // --- NEW: State ---
+    district: "",
     vehicleType: "",
+    // --- New State ---
+    routeName: "",
+    origin: "",
+    destination: ""
   });
 
   const [dateRange, setDateRange] = useState({ from: new Date(), to: new Date() });
@@ -76,7 +92,10 @@ export const Filter = ({ type = "license", onSearch, ...customProps }) => {
   };
 
   const handleReset = () => {
-    setFilterState({ plate: "", location: "", district: "", vehicleType: "" });
+    setFilterState({ 
+      plate: "", location: "", district: "", vehicleType: "",
+      routeName: "", origin: "", destination: "" 
+    });
     setDateRange({ from: new Date(), to: new Date() });
   };
 
@@ -99,7 +118,7 @@ export const Filter = ({ type = "license", onSearch, ...customProps }) => {
     <>
     <style>{customStyles}</style>
     
-    <div className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-6 mb-8 border border-gray-100 relative z-[5000]">
+    <div className="bg-white rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] p-6 mb-8 border border-gray-100 relative z-[50]">
       
       <div className="flex justify-between items-center mb-6 pb-4 border-b border-gray-100">
         <div className="flex items-center gap-3">
@@ -122,7 +141,64 @@ export const Filter = ({ type = "license", onSearch, ...customProps }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-end">
         
-        {/* --- ส่วน License Plate --- */}
+        {/* --- 1. Route Name Search (NEW) --- */}
+        {showRouteName && (
+           <div className={routeNameColSpan}>
+               <label className={labelClass}><FaRoad className="w-3 h-3"/> ค้นหาเส้นทาง</label>
+               <div className={inputWrapperClass}>
+                   <FaSearch className={iconClass}/>
+                   <input 
+                     type="text"
+                     className={`${inputBaseClass} cursor-text`} 
+                     placeholder={placeholderRoute}
+                     value={filterState.routeName}
+                     onChange={(e) => setFilterState({...filterState, routeName: e.target.value})}
+                   />
+               </div>
+           </div>
+        )}
+
+        {/* --- 2. Origin & Destination Pair (NEW) --- */}
+        {showOriginDest && (
+          <div className={originDestColSpan}>
+             <label className={labelClass}><FaMapMarkerAlt className="w-3 h-3"/> ต้นทาง - ปลายทาง</label>
+             <div className="flex items-center gap-2">
+                 {/* Origin */}
+                 <div className={inputWrapperClass}>
+                     <FaMapMarkerAlt className={`${iconClass} text-blue-400`} />
+                     <select 
+                        value={filterState.origin}
+                        onChange={(e) => setFilterState({...filterState, origin: e.target.value})}
+                        className={`${inputBaseClass} appearance-none`}
+                     >
+                      <option value="">เลือกต้นทาง...</option>
+                      <option value="รังสิต">รังสิต</option>
+                      <option value="บางนา">บางนา</option>
+                      <option value="สีลม">สีลม</option>
+                     </select>
+                </div>
+                
+                <span className="text-xs text-gray-400 font-medium px-1">ถึง</span>
+
+                {/* Destination */}
+                <div className={inputWrapperClass}>
+                     <FaMapMarkerAlt className={`${iconClass} text-red-400`} />
+                     <select 
+                        value={filterState.destination}
+                        onChange={(e) => setFilterState({...filterState, destination: e.target.value})}
+                        className={`${inputBaseClass} appearance-none`}
+                     >
+                      <option value="">เลือกปลายทาง...</option>
+                      <option value="อโศก">อโศก</option>
+                      <option value="ตราด">ตราด</option>
+                      <option value="พระราม6">พระราม 6</option>
+                     </select>
+                </div>
+             </div>
+          </div>
+        )}
+
+        {/* --- Existing: License Plate --- */}
         {showPlate && (
            <div className={plateColSpan}>
                <label className={labelClass}><FaIdCard className="w-3 h-3"/> ทะเบียนรถ</label>
@@ -139,7 +215,7 @@ export const Filter = ({ type = "license", onSearch, ...customProps }) => {
            </div>
         )}
 
-        {/* --- ส่วน Location --- */}
+        {/* --- Existing: Location --- */}
         {showLocation && (
            <div className={locationColSpan}>
                <label className={labelClass}><FaMapMarkerAlt className="w-3 h-3"/> จุดติดตั้ง</label>
@@ -156,7 +232,7 @@ export const Filter = ({ type = "license", onSearch, ...customProps }) => {
            </div>
         )}
 
-        {/* --- ส่วน District (NEW) --- */}
+        {/* --- Existing: District --- */}
         {showDistrict && (
           <div className={districtColSpan}>
              <label className={labelClass}><FaBuilding className="w-3 h-3" /> เขต/อำเภอ</label>
@@ -172,14 +248,11 @@ export const Filter = ({ type = "license", onSearch, ...customProps }) => {
                   <option value="บางเขน">เขตบางเขน</option>
                   <option value="ปากเกร็ด">อ.ปากเกร็ด</option>
                  </select>
-                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                  <svg className="fill-current h-4 w-4" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                </div>
             </div>
           </div>
         )}
 
-        {/* --- ส่วน Vehicle Type --- */}
+        {/* --- Existing: Vehicle Type --- */}
         {showVehicleType && (
           <div className={vehicleTypeColSpan}>
              <label className={labelClass}><FaCar className="w-3 h-3" /> ประเภท</label>
@@ -195,14 +268,11 @@ export const Filter = ({ type = "license", onSearch, ...customProps }) => {
                   <option value="car">รถยนต์</option>
                   <option value="motorcycle">จยย.</option>
                  </select>
-                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
-                  <svg className="fill-current h-4 w-4" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
-                </div>
             </div>
           </div>
         )}
 
-        {/* --- ส่วน Date Range --- */}
+        {/* --- Date Range --- */}
         {showDateRange && (
           <div className={dateColSpan} ref={calendarRef}> 
              <label className={labelClass}><FaCalendarAlt className="w-3 h-3" /> ช่วงเวลา</label>

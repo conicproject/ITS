@@ -173,7 +173,7 @@ const InstallationPoint = () => {
         </div>
 
         {/* Filter Section */}
-        <Filter 
+        <Filter
             onSearch={handleSearch}
             showLocation={true}
             showDistrict={true}
