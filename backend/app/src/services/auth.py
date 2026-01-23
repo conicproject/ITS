@@ -33,9 +33,11 @@ class AuthService:
         if not self.pwd_context.verify(password, user_data["password"]):
             raise HTTPException(status_code=401, detail="Password not match")
 
+        # ⭐ เปลี่ยนจุดนี้ - ส่ง project_id กลับด้วย
         return {
             "id": user_data["id"],
-            "username": user_data["username"]
+            "username": user_data["username"],
+            "project_id": user_data["project_id"]  # ✅ เพิ่มบรรทัดนี้
         }
 
     def generate_token(self, user_data: dict):
@@ -43,9 +45,11 @@ class AuthService:
             seconds=ACCESS_TOKEN_EXPIRE_SECONDS
         )
 
+        # ⭐ เปลี่ยนจุดนี้ - ใส่ project_id ใน token
         payload = {
             "id": user_data["id"],
             "username": user_data["username"],
+            "project_id": user_data["project_id"],  # ✅ เพิ่มบรรทัดนี้
             "exp": expire
         }
 

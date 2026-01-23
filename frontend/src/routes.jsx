@@ -1,9 +1,10 @@
+// src/routes.jsx - อัพเดทให้ใช้ ProtectedRoute
 import Home from "./pages/Home";
 import ManageUser from "./pages/ManageUser";
 import Login from "./pages/Login";
 import Overview from "./pages/Overview";
 import DefaultLayout from "./layouts/DefaultLayout";
-import AppLayout from "./layouts/AppLayout";
+import ProtectedRoute from "./components/ProtectedRoute";
 import EnforcementDashboard from "./pages/Enforcement/dashboard";
 import EnforcementFunction from "./pages/Enforcement/function";
 import DataCollectionDashboard from "./pages/DataCollection/dashboard";
@@ -35,310 +36,373 @@ import Ambulance from "./pages/OperationManagement/function/Ambulance";
 import VIP from "./pages/OperationManagement/function/vip";
 import Sequence from "./pages/OperationManagement/function/sequence";
 
-
 const routes = [
   {
     path: "/",
     name: "Login",
-    element: (
-      <Login />
-    ),
+    element: <Login />,
   },
   {
     path: "/manageuser",
     name: "ManageUser",
     element: (
-      <DefaultLayout>
-        <ManageUser />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <ManageUser />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/home",
     name: "Home",
     element: (
-      <DefaultLayout>
-        <Home />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <Home />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/overview",
     name: "Overview",
     element: (
-      <DefaultLayout>
-        <Overview />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <Overview />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/enforcement/dashboard",
     name: "EnforcementDashboard",
     element: (
-      <DefaultLayout>
-        <EnforcementDashboard />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <EnforcementDashboard />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/enforcement/function",
     name: "EnforcementFunction",
     element: (
-      <DefaultLayout>
-        <EnforcementFunction />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <EnforcementFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/data-collection/dashboard",
     name: "DataCollectionDashboard",
     element: (
-      <DefaultLayout>
-        <DataCollectionDashboard />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DataCollectionDashboard />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/data-collection/function",
     name: "DataCollectionFunction",
     element: (
-      <DefaultLayout>
-        <DataCollectionFunction />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DataCollectionFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/operation-management/dashboard",
     name: "OperationManagementDashboard",
     element: (
-      <DefaultLayout>
-        <OperationManagementDashboard />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <OperationManagementDashboard />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/operation-management/function",
     name: "OperationManagementFunction",
     element: (
-      <DefaultLayout>
-        <OperationManagementFunction />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <OperationManagementFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/incident-accident/dashboard",
     name: "IncidentAccidentDashboard",
     element: (
-      <DefaultLayout>
-        <IncidentAccidentDashboard />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <IncidentAccidentDashboard />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/incident-accident/function",
     name: "IncidentAccidentFunction",
     element: (
-      <DefaultLayout>
-        <IncidentAccidentFunction />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <IncidentAccidentFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/enforcement/function/report-vehicle",
     name: "EnforcementReportVehicle",
     element: (
-      <DefaultLayout>
-        <EnforcementReportFunction />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <EnforcementReportFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/enforcement/function/detail-report-vehicle",
     name: "DetailReportVehicle",
     element: (
-      <DefaultLayout>
-        <DetailReportVehicle />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetailReportVehicle />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/enforcement/function/detect-speeding",
-    name: "DetailReportVehicle",
+    name: "DetectSpeeding",
     element: (
-      <DefaultLayout>
-        <DetectSpeeding />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectSpeeding />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/enforcement/function/detect-truck-barrier",
-    name: "DetailReportVehicle",
+    name: "DetectTruckBarrier",
     element: (
-      <DefaultLayout>
-        <DetectTruckBarrier />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectTruckBarrier />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/enforcement/function/blacklist",
     name: "EnforcementBlacklist",
     element: (
-      <DefaultLayout>
-        <EnforcementBlacklist />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <EnforcementBlacklist />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/enforcement/function/detect-lane",
     name: "DetectLane",
     element: (
-      <DefaultLayout>
-        <DetectLane />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectLane />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/enforcement/function/detect-parking",
     name: "DetectParking",
     element: (
-      <DefaultLayout>
-        <DetectParking />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectParking />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/enforcement/function/detect-red-light",
     name: "DetectRedLight",
     element: (
-      <DefaultLayout>
-        <DetectRedLight />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectRedLight />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/enforcement/function/detect-sidewalk",
     name: "DetectSidewalk",
     element: (
-      <DefaultLayout>
-        <DetectSidewalk />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectSidewalk />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/data-collection/function/installation-point",
     name: "InstallationPoint",
     element: (
-      <DefaultLayout>
-        <InstallationPoint />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <InstallationPoint />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/data-collection/function/license-plate-search",
     name: "LicensePlateSearch",
     element: (
-      <DefaultLayout>
-        <LicensePlateSearch />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <LicensePlateSearch />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/data-collection/function/route-analysis",
     name: "RouteAnalysis",
     element: (
-      <DefaultLayout>
-        <RouteAnalysis />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <RouteAnalysis />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/data-collection/function/vehicle-report",
     name: "VehicleReport",
     element: (
-      <DefaultLayout>
-        <VehicleReport />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <VehicleReport />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/incident-accident/function/relate-accident",
     name: "RelateAccident",
     element: (
-      <DefaultLayout>
-        <RelateAccident />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <RelateAccident />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/incident-accident/function/irregularitie",
     name: "Irregularities",
     element: (
-      <DefaultLayout>
-        <Irregularities />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <Irregularities />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/incident-accident/function/road-obstruction",
     name: "RoadObstruction",
     element: (
-      <DefaultLayout>
-        <RoadObstruction />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <RoadObstruction />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/incident-accident/function/special-event",
     name: "SpecialEvent",
     element: (
-      <DefaultLayout>
-        <SpecialEvent />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <SpecialEvent />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/incident-accident/function/hazardous-incident",
     name: "HazardousIncidents",
     element: (
-      <DefaultLayout>
-        <SpecialHazard />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <SpecialHazard />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/operation-management/function/traffic-signal",
     name: "TrafficSignal",
     element: (
-      <DefaultLayout>
-        <TrafficSignal />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <TrafficSignal />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/operation-management/function/ambulance",
     name: "Ambulance",
     element: (
-      <DefaultLayout>
-        <Ambulance />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <Ambulance />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/operation-management/function/vip",
     name: "VIP",
     element: (
-      <DefaultLayout>
-        <VIP />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <VIP />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
   {
     path: "/operation-management/function/sequence",
     name: "Sequence",
     element: (
-      <DefaultLayout>
-        <Sequence />
-      </DefaultLayout>
+      <ProtectedRoute>
+        <DefaultLayout>
+          <Sequence />
+        </DefaultLayout>
+      </ProtectedRoute>
     ),
   },
 ];

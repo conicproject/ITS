@@ -1,4 +1,5 @@
 # backend/app/src/services/open_api.py
+from importlib.metadata import metadata
 from src.repositories.open_api import OpenAPIRepository
 import logging
 import time
@@ -128,10 +129,17 @@ class OpenAPIService:
             metadata = first_page_result["metadata"]
 
             if not metadata:
-                raise Exception("หน้าแรกไม่มี metadata")
+                logger.warning("⚠️ หน้าแรกไม่มี metadata — ถือว่าไม่มีข้อมูล")
+                return {
+                    "total": 0,
+                    "pages_fetched": 0,
+                    "expected_total": 0,
+                    "data_diff": 0,
+                    "data": []
+                }
 
-            total_page = metadata["totalPage"]
-            total_count = metadata["totalCount"]
+            total_page = metadata.get("totalPage", 1)
+            total_count = metadata.get("totalCount", len(first_page_items))
 
             logger.info(
                 f"📊 ข้อมูลทั้งหมด: {total_count:,} รายการ, "
