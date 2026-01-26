@@ -172,6 +172,69 @@ class DataVehicleRepository:
         finally:
             self._close_oracle()
 
+
+    def data_search_vehicle(self, date, province=None, lpr=None, camera=None):
+        """
+        ค้นหาข้อมูล VEHICLE_PASS จาก Postgres
+        - date: datetime.date (required)
+        - province: str (optional)
+        - lpr: str (optional)
+        - camera: str (optional)
+        """
+
+        conn = None
+        cursor = None
+        try:
+            conn = self.postgres_conn.get_connection()
+            cursor = conn.cursor()
+
+            conditions = ["DATE(PASS_TIME) = %s"]
+            params = [date]
+
+            if province:
+                conditions.append("PLATE_PROVINCE = %s")
+                params.append(province)
+
+            if lpr:
+                conditions.append("PLATE_NO ILIKE %s")
+                params.append(f"%{lpr}%")
+
+            if camera:
+                conditions.append("CAMERA_ID = %s")
+                params.append(camera)
+
+            where_clause = " AND ".join(conditions)
+
+            sql = f"""
+                SELECT *
+                FROM VEHICLE_PASS
+                WHERE {where_clause}
+                ORDER BY PASS_TIME DESC
+            """
+
+            logger.debug(f"🔎 SQL: {sql}")
+            logger.debug(f"📦 PARAMS: {params}")
+
+            cursor.execute(sql, tuple(params))
+            rows = cursor.fetchall()
+
+            if not rows:
+                return []
+
+            columns = [desc[0] for desc in cursor.description]
+            return [dict(zip(columns, row)) for row in rows]
+
+        except Exception as e:
+            logger.exception("❌ Error searching VEHICLE_PASS from Postgres:")
+            return []
+
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+
     # ---------------- Combined ----------------
     def sync_to_postgres(self):
         """ดึงข้อมูลจาก Oracle แล้วบันทึกเป็น batch 5 นาที"""
