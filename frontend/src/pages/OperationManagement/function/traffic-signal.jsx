@@ -3,10 +3,36 @@ import React, { useState } from "react";
 import { FaMapMarkerAlt, FaVideo, FaRoad, FaChartLine } from "react-icons/fa";
 import { Filter } from "../../../components/ui/Filter"; 
 
+// --- 1. Import ส่วนของ Chart ---
+import { Line } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler,
+  Legend,
+} from "chart.js";
+
+// --- 2. Register Chart Components ---
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Filler,
+  Legend
+);
+
 export default function TrafficSignal() {
   const [selectedLocation, setSelectedLocation] = useState("สี่แยกราชดำเนิน");
 
-  // --- MOCK DATA ---
+  // --- MOCK DATA: LANES ---
   const rawLaneData = [
     { id: "north", name: "เลนเหนือ", pcu: 80, status: "ปกติ", cam: "CAM-01 Ratchada", pcuCurrent: 24, pcuMax: 120, usagePercent: 20.5, density: 351, flow: 150, speed: 35 },
     { id: "center", name: "เลนกลาง - สีแดง", pcu: 45, status: "คล่องตัว", cam: "CAM-05 Center Hub", pcuCurrent: 7, pcuMax: 30, usagePercent: 23.3, density: 351, flow: 150, speed: 35 },
@@ -18,20 +44,81 @@ export default function TrafficSignal() {
   const centerLane = rawLaneData.find((l) => l.id === "center");
   const otherLanes = rawLaneData.filter((l) => l.id !== "center");
 
-  const generateChartData = () => [120, 90, 80, 70, 60, 100, 400, 900, 1300, 1600, 1500, 1400, 1450, 1500, 1700, 1800, 1600, 1200, 900, 700, 500, 300, 200, 150];
-  const chartData = generateChartData();
-  const maxValue = Math.max(...chartData);
+  // --- 3. CONFIG CHART DATA (เอามาจาก Dashboard) ---
+  const trafficData = {
+    labels: Array.from(
+      { length: 24 },
+      (_, i) => `${String(i).padStart(2, "0")}:00`
+    ),
+    datasets: [
+      {
+        label: "ปริมาณจราจร",
+        data: [
+          200, 150, 100, 80, 120, 400, 800, 1500, 1400, 1100, 900, 1000, 1100,
+          1200, 1400, 1600, 1800, 1600, 1000, 600, 400, 300, 250, 200,
+        ],
+        fill: true,
+        backgroundColor: "rgba(99, 102, 241, 0.1)", // ปรับเป็นสี Indigo ให้เข้ากับ Theme หน้านี้
+        borderColor: "#6366f1", // Indigo-500
+        borderWidth: 2,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointBackgroundColor: "#ffffff",
+        pointBorderColor: "#6366f1",
+        pointBorderWidth: 2,
+        hitRadius: 30,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    plugins: { 
+      legend: { display: false },
+      tooltip: {
+        enabled: true,
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        titleColor: '#1f2937',
+        bodyColor: '#4b5563',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        padding: 10,
+        boxPadding: 4,
+        usePointStyle: true,
+        callbacks: {
+          label: function(context) {
+            return ` ${context.dataset.label}: ${context.parsed.y.toLocaleString()} คัน`;
+          }
+        }
+      }
+    },
+    scales: {
+      x: { 
+        grid: { display: false }, 
+        ticks: { font: { size: 10 }, maxRotation: 0, color: '#9ca3af' } 
+      },
+      y: { 
+        grid: { color: "#f3f4f6", borderDash: [4, 4] }, 
+        ticks: { stepSize: 500, font: { size: 10 }, color: '#9ca3af' },
+        beginAtZero: true,
+      },
+    },
+  };
 
   const handleSearch = (e) => { 
       console.log("Searching...", e); 
   };
 
   return (
-    // แก้ไข: ใช้ h-screen + overflow-y-auto ที่ตัวคลุมใหญ่สุด เพื่อให้ Scroll ภายในพื้นที่ตัวเอง
     <div className="h-screen overflow-y-auto bg-gray-50 font-sans pb-10">
       
         {/* --- HEADER --- */}
-        {/* อยู่ใน Flow เดียวกับเนื้อหา เมื่อเลื่อนลง Header จะหายไปข้างบน */}
         <div className="p-4 md:p-6 pb-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
@@ -43,14 +130,6 @@ export default function TrafficSignal() {
             <p className="text-gray-500 text-sm mt-1 ml-11">
               Traffic Density Detection System & Real-time Monitoring
             </p>
-          </div>
-          
-          <div className="flex items-center gap-2 text-sm bg-white px-3 py-1.5 rounded-full border border-gray-200 shadow-sm">
-             <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-green-500"></span>
-             </span>
-             <span className="text-gray-600 font-medium">System Online</span>
           </div>
         </div>
 
@@ -236,63 +315,30 @@ export default function TrafficSignal() {
                 </div>
             </div>
 
-            {/* --- SECTION 4: Chart --- */}
+            {/* --- SECTION 4: Chart (Replaced with React-Chartjs-2) --- */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-6">
-            <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-indigo-50 rounded-lg text-indigo-600">
-                        <FaChartLine className="text-lg" />
+                <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2.5 bg-indigo-50 rounded-lg text-indigo-600">
+                            <FaChartLine className="text-lg" />
+                        </div>
+                        <div>
+                            <h3 className="text-base font-bold text-gray-800">สถิติปริมาณจราจร (24 ชม.)</h3>
+                            <p className="text-xs text-gray-500">เปรียบเทียบข้อมูล Real-time กับค่าเฉลี่ยย้อนหลัง</p>
+                        </div>
                     </div>
-                    <div>
-                        <h3 className="text-base font-bold text-gray-800">สถิติปริมาณจราจร (24 ชม.)</h3>
-                        <p className="text-xs text-gray-500">เปรียบเทียบข้อมูล Real-time กับค่าเฉลี่ยย้อนหลัง</p>
+                    <div className="flex gap-4 text-xs">
+                        <div className="flex items-center gap-1.5">
+                            <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full"></div>
+                            <span className="text-gray-600 font-medium">วันนี้</span>
+                        </div>
                     </div>
                 </div>
-                <div className="flex gap-4 text-xs">
-                    <div className="flex items-center gap-1.5">
-                        <div className="w-2.5 h-2.5 bg-indigo-500 rounded-full"></div>
-                        <span className="text-gray-600 font-medium">วันนี้</span>
-                    </div>
-                </div>
-            </div>
 
-            <div className="relative h-64 w-full">
-                <svg viewBox="0 0 1200 300" className="w-full h-full overflow-visible">
-                <defs>
-                    <linearGradient id="chartGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#6366f1" stopOpacity="0.2" />
-                    <stop offset="100%" stopColor="#6366f1" stopOpacity="0" />
-                    </linearGradient>
-                </defs>
-                {/* Grid Lines */}
-                {[0, 1, 2, 3, 4].map((i) => (
-                    <line key={i} x1="50" y1={30 + i * 50} x2="1150" y2={30 + i * 50} stroke="#f3f4f6" strokeWidth="1" />
-                ))}
-                
-                {/* Area Path */}
-                <path
-                    d={`M 50 ${280 - (chartData[0] / maxValue) * 200} ${chartData.map((val, i) => `L ${50 + (i * 1100) / 23} ${280 - (val / maxValue) * 200}`).join(" ")} L ${1150} 280 L 50 280 Z`}
-                    fill="url(#chartGradient)"
-                />
-                
-                {/* Line Path */}
-                <path
-                    d={`M 50 ${280 - (chartData[0] / maxValue) * 200} ${chartData.map((val, i) => `L ${50 + (i * 1100) / 23} ${280 - (val / maxValue) * 200}`).join(" ")}`}
-                    fill="none"
-                    stroke="#6366f1"
-                    strokeWidth="3"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                />
-                
-                {/* X-Axis Labels */}
-                {[0, 4, 8, 12, 16, 20, 24].map((hour) => (
-                    <text key={hour} x={50 + (hour * 1100) / 24} y="300" textAnchor="middle" className="text-[10px] fill-gray-400 font-medium">
-                    {`${String(hour).padStart(2, "0")}:00`}
-                    </text>
-                ))}
-                </svg>
-            </div>
+                {/* Chart Container */}
+                <div className="h-[300px] w-full">
+                    <Line data={trafficData} options={chartOptions} />
+                </div>
             </div>
 
         </div>
