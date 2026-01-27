@@ -1,46 +1,66 @@
 // frontend/src/components/ui/ViolationCard.jsx
-import { violationConfigs, statusColors } from "../../config/ViolationConfig";
+import React from 'react';
+import { violationConfigs } from '../../config/ViolationConfig';
 
-export const ViolationCard = ({ violation, type }) => {
-  const config = violationConfigs[type] || { fields: [], showDetail: false };
-  const { fields, showDetail } = config;
-  
-  const visibleFields = fields.filter((field) => !field.optional || violation[field.key]);
-  const hasSpeed = !!violation.speed;
-
-  // เลือกจำนวนคอลัมน์อย่างปลอดภัย
-  const cols = Math.max(1, visibleFields.length || 1);
-  const gridTemplate = `repeat(${cols}, minmax(0, 1fr))`;
+export const ViolationCard = ({ violation, type, onClick }) => {
+  // ดึง config ตามประเภท
+  const config = violationConfigs[type] || violationConfigs.lprsearch;
+  const fields = config.fields || [];
 
   return (
-    <div className="border-b border-gray-200 p-4 hover:bg-gray-50 transition-colors">
-      <div className="p-2 flex flex-col gap-3">
-
-        {/* Tags */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="px-2 py-1 text-xs bg-gray-500 text-white">{violation.lpr ?? "-"}</span>
-          <span className="px-2 py-1 text-xs bg-gray-500 text-white">{violation.type ?? "-"}</span>
-          {!hasSpeed && (
-            <span className={`px-2 py-1 text-xs text-white rounded ${statusColors[violation.status] || "bg-gray-400"}`}>
-              {violation.status ?? "-"}
+    <div 
+      className="p-4 hover:bg-gray-50 transition-colors cursor-pointer"
+      onClick={() => onClick?.(violation)}
+    >
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          {/* ทะเบียนรถ - แสดงเด่น */}
+          <div className="mb-3">
+            <span className="text-lg font-bold text-gray-900">
+              {violation.lpr || violation.plate_no || "ไม่ทราบทะเบียน"}
             </span>
-          )}
+          </div>
+
+          {/* ข้อมูลตาม config */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+            {fields.map((field, idx) => {
+              const value = violation[field.key];
+              
+              // ข้าม field ที่ optional และไม่มีค่า
+              if (field.optional && !value) return null;
+              
+              return (
+                <div key={idx} className="flex items-center gap-2 text-sm">
+                  <span className="text-gray-500">{field.label}:</span>
+                  <span className={`font-medium ${
+                    field.key === 'speed' && violation.status === 'สูง' 
+                      ? 'text-red-600' 
+                      : 'text-gray-900'
+                  }`}>
+                    {value || '-'}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
-        {/* Fields - dynamic grid that can shrink */}
-        <div className="grid gap-4" style={{ gridTemplateColumns: gridTemplate, minWidth: 0 }}>
-          {visibleFields.map((field) => (
-            <div key={field.key} className="text-sm text-gray-600 break-words">
-              <div className="text-xs text-gray-500">{field.label}</div>
-              <div className="text-xs font-medium text-black truncate">{violation[field.key] ?? "-"}</div>
-            </div>
-          ))}
-        </div>
-
-        {/* Detail */}
-        {showDetail && violation.detail && (
-          <div className="text-xs bg-gray-200 p-2 rounded break-words">
-            หมายเหตุ: {violation.detail}
+        {/* Status Badge */}
+        {violation.status && (
+          <div className="ml-4 flex-shrink-0">
+            <span className={`px-3 py-1 rounded-full text-xs font-medium inline-block ${
+              violation.status === "สูง" 
+                ? "bg-red-100 text-red-800" 
+                : violation.status === "ปานกลาง"
+                ? "bg-orange-100 text-orange-800"
+                : violation.status === "Green List"
+                ? "bg-green-100 text-green-800"
+                : violation.status === "No Green List"
+                ? "bg-yellow-100 text-yellow-800"
+                : "bg-green-100 text-green-800"
+            }`}>
+              {violation.status}
+            </span>
           </div>
         )}
       </div>

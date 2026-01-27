@@ -1,6 +1,6 @@
 // frontend/src/components/ui/Filter.jsx
 import React, { useState } from 'react';
-import { FaSearch } from 'react-icons/fa';
+import { FaSearch, FaCalendar } from 'react-icons/fa';
 import { FilterConfig } from '../../config/FilterConfig';
 
 export const Filter = ({ type = "license", onSearch }) => {
@@ -15,25 +15,65 @@ export const Filter = ({ type = "license", onSearch }) => {
   const [plate, setPlate] = useState("");
   const [location, setLocation] = useState("");
   const [vehicleType, setVehicleType] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
+  const [date, setDate] = useState("");
+
+  // 🔹 สร้าง options สำหรับวันที่ย้อนหลัง 7 วัน
+  const getDateOptions = () => {
+    const options = [{ value: "today", label: "วันนี้" }];
+    const today = new Date();
+    
+    for (let i = 1; i <= 7; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0];
+      const label = date.toLocaleDateString('th-TH', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+      options.push({ value: dateStr, label });
+    }
+    
+    return options;
+  };
 
   const handleSearch = () => {
     onSearch?.({
       plate,
       location,
       vehicleType,
-      startDate,
-      endDate
+      date: date || "today"
     });
+  };
+
+  const handleReset = () => {
+    setPlate("");
+    setLocation("");
+    setVehicleType("");
+    setDate("");
+    onSearch?.({ date: "today" });
   };
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-      {/* เปลี่ยน flex → flex-wrap เพื่อไม่ให้ดัน layout ทั้งหน้า */}
       <div className="flex flex-wrap items-center gap-3 w-full">
-
         <FaSearch className="w-5 h-5 text-gray-500 flex-shrink-0" />
+
+        {/* Date Picker - แสดงเสมอ */}
+        <div className="flex items-center gap-2 flex-1 min-w-[200px]">
+          <FaCalendar className="w-4 h-4 text-gray-500" />
+          <select
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 focus:ring-2 focus:ring-green-500"
+          >
+            {getDateOptions().map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {showPlate && (
           <input
@@ -62,44 +102,26 @@ export const Filter = ({ type = "license", onSearch }) => {
             className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px] focus:ring-2 focus:ring-green-500"
           >
             <option value="">เลือกประเภทยานพาหนะ</option>
-            <option value="truck">รถบรรทุก</option>
-            <option value="car">รถยนต์</option>
-            <option value="motorcycle">รถจักรยานยนต์</option>
+            <option value="twoWheelVehicle">รถจักรยานยนต์</option>
+            <option value="vehicle">รถยนต์</option>
+            <option value="SUVMPV">SUV/MPV</option>
           </select>
-        )}
-
-        {showDateRange && (
-          <>
-            <select
-              value={startDate}
-              onChange={(e) => setStartDate(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px] focus:ring-2 focus:ring-green-500"
-            >
-              <option value="">Select Date</option>
-              <option value="2025-01-24">24/01/2025</option>
-              <option value="2025-01-23">23/01/2025</option>
-            </select>
-
-            <select
-              value={endDate}
-              onChange={(e) => setEndDate(e.target.value)}
-              className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px] focus:ring-2 focus:ring-green-500"
-            >
-              <option value="">Select Date</option>
-              <option value="2025-01-24">24/01/2025</option>
-              <option value="2025-01-23">23/01/2025</option>
-            </select>
-          </>
         )}
 
         <button
           onClick={handleSearch}
-          className="bg-green-700 text-white px-6 py-2 rounded text-sm hover:bg-green-800 flex-shrink-0"
+          className="bg-green-700 text-white px-6 py-2 rounded text-sm hover:bg-green-800 flex-shrink-0 transition-colors"
         >
           ค้นหา
         </button>
-      </div>
 
+        <button
+          onClick={handleReset}
+          className="bg-gray-500 text-white px-6 py-2 rounded text-sm hover:bg-gray-600 flex-shrink-0 transition-colors"
+        >
+          รีเซ็ต
+        </button>
+      </div>
     </div>
   );
 };
