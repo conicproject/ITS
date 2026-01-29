@@ -73,12 +73,9 @@ const DetectParking = () => {
     console.log('Search params:', searchParams);
   };
 
+  // --- แก้ไขจุดที่ 1: อัปเดต State เสมอ (ไม่ต้องเช็ค window.innerWidth) ---
   const handleSelectViolation = (violation) => {
-    if (window.innerWidth < 1024) {
-        setSelectedViolation(violation);
-    } else {
-        console.log('Desktop select:', violation.lpr);
-    }
+    setSelectedViolation(violation);
   };
 
   const handleCloseModal = () => {
@@ -192,8 +189,8 @@ const DetectParking = () => {
           
           {/* Right: Sidebar (Desktop Only) */}
           <div className="hidden lg:block flex-none w-[400px] xl:w-[500px] 2xl:w-[600px]">
-            {/* แสดงข้อมูลตัวแรกเป็น Default */}
-            <MapSidebar data={getMapData(violations[0])} />
+            {/* --- แก้ไขจุดที่ 2: ใช้ selectedViolation หรือตัวแรกสุด --- */}
+            <MapSidebar data={getMapData(selectedViolation || violations[0])} />
           </div>
 
         </div>

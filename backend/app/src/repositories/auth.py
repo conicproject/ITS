@@ -15,7 +15,7 @@ class AuthRepository:
                 with connection.cursor() as cursor:
                     cursor.execute(
                         """
-                        SELECT user_id, user_name, user_password
+                        SELECT user_id, user_name, user_password, project_id
                         FROM users
                         WHERE user_name = %s
                         """,
@@ -29,7 +29,8 @@ class AuthRepository:
                     return {
                         "id": row[0],
                         "username": row[1],
-                        "password": row[2]
+                        "password": row[2],
+                        "project_id": row[3],
                     }
         except Exception as e:
             logger.error(f"Get user by username error: {str(e)}")
