@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 
 
 class DataVehicleRepository:
-    """ดึงข้อมูลจาก Oracle และบันทึกลง Postgres แบบ Realtime (batch 5 นาที, split sub-batch)"""
+    """ดึงข้อมูลจาก Oracle และบันทึกลง Postgres แบบ Realtime"""
 
-    BATCH_LIMIT = 5000  # จำกัดขนาด sub-batch เพื่อไม่ให้ JSON ใหญ่เกินไป
+    BATCH_LIMIT = 5000
 
     def __init__(self):
         logger.info("🚀 Initializing DataVehicleRepository...")
@@ -128,6 +128,7 @@ class DataVehicleRepository:
 
             logger.info(f"🔍 Fetching Oracle data since {self.last_time}")
 
+            # 🔹 แก้ไข: ใช้ FETCH FIRST แทน LIMIT (Oracle syntax)
             sql = """
                 SELECT pr.PROJECT_NAME, ch.CHECKPOINT_ID, ch.CHECKPOINT_NICKNAME, la.ROAD_DIRECTION,
                        dt.DISTRICT_NAME, vt.TYPE_NAMETH, vp.PLATE_NO, p.PROVINCE_NAMETH,
@@ -149,7 +150,7 @@ class DataVehicleRepository:
                   AND vp.PASS_TIME < TRUNC(SYSDATE) + 1
                   AND vp.PASS_TIME > TO_TIMESTAMP(:last_time, 'YYYY-MM-DD HH24:MI:SS')
                 ORDER BY vp.PASS_TIME
-                LIMIT 100
+                FETCH FIRST 100 ROWS ONLY
             """
 
             params = {"last_time": self.last_time.strftime("%Y-%m-%d %H:%M:%S")}
@@ -171,6 +172,86 @@ class DataVehicleRepository:
             return []
         finally:
             self._close_oracle()
+
+    def data_search_vehicle(self, date, province=None, lpr=None, camera=None, vehicle_type=None):
+        """
+        🔹 แก้ไข: ค้นหาข้อมูลจาก VEHICLE_PASS โดยตรง (ไม่ใช่ extract_data)
+        - date: datetime.date (required)
+        - province: str (optional)
+        - lpr: str (optional - ค้นหาทะเบียนรถ)
+        - camera: int (optional - CROSSING_ID)
+        """
+
+        conn = None
+        cursor = None
+        try:
+            conn = self.postgres_conn.get_connection()
+            cursor = conn.cursor()
+
+            # 🔹 เริ่มสร้าง WHERE clause
+            conditions = ["DATE(pass_time) = %s"]
+            params = [date]
+
+            # 🔹 กรองตามจังหวัด (ถ้ามี)
+            if province:
+                conditions.append("plate_province = %s")
+                params.append(province)
+
+            # 🔹 กรองตามทะเบียนรถ (ใช้ ILIKE สำหรับ case-insensitive)
+            if lpr:
+                conditions.append("plate_no ILIKE %s")
+                params.append(f"%{lpr}%")
+
+            # 🔹 กรองตามกล้อง (CROSSING_ID)
+            if camera:
+                conditions.append("crossing_id = %s")
+                params.append(int(camera))
+
+            if vehicle_type:
+                conditions.append("vehicle_type = %s")
+                params.append(vehicle_type)
+
+            where_clause = " AND ".join(conditions)
+
+            # 🔹 Query จาก VEHICLE_PASS
+            sql = f"""
+                SELECT 
+                    pass_id, crossing_id, crossing_index_code, lane_no, 
+                    direction_index, plate_no, plate_type, pass_time, 
+                    vehicle_speed, vehicle_len, plate_color, vehicle_color, 
+                    vehicle_type, vehicle_color_depth, vehicle_logo, 
+                    vehicle_sub_logo, vehicle_model, plate_province
+                FROM vehicle_pass
+                WHERE {where_clause}
+                ORDER BY pass_time DESC
+                LIMIT 100
+            """
+
+            logger.debug(f"🔎 SQL: {sql}")
+            logger.debug(f"📦 PARAMS: {params}")
+
+            cursor.execute(sql, tuple(params))
+            rows = cursor.fetchall()
+
+            if not rows:
+                logger.info("⏳ No data found for search criteria")
+                return []
+
+            columns = [desc[0] for desc in cursor.description]
+            result = [dict(zip(columns, row)) for row in rows]
+            
+            logger.info(f"✅ Found {len(result)} records")
+            return result
+
+        except Exception as e:
+            logger.exception("❌ Error searching VEHICLE_PASS from Postgres:")
+            return []
+
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
 
     # ---------------- Combined ----------------
     def sync_to_postgres(self):
