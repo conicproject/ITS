@@ -30,7 +30,7 @@ function GenericFunction({ title, items = [] }) {
   };
 
   return (
-    <div className="h-screen p-8">
+    <div className="fix-function-page-y-auto h-screen p-8">
       <div className="mb-8">
         <h2 className="text-2xl font-semibold text-gray-800">{title}</h2>
         <hr className="mt-2 border-gray-300" />

@@ -1,203 +1,55 @@
 // frontend/src/pages/IncidentAccident/function/special-event.jsx
-import React, { useState } from "react";
-import { FaExclamationTriangle, FaCar, FaWrench } from "react-icons/fa";
+import React, { useMemo } from "react";
+import { FaFlag, FaRunning, FaMusic, FaUsers } from "react-icons/fa";
 import IncidentHeader from "../../../components/ui/IncidentHeader";
 import StatsCard from "../../../components/ui/StatsCard";
 import IncidentMap from "../../../components/ui/IncidentMap";
 import HotspotsPanel from "../../../components/ui/HotspotsPanel";
 import IncidentTable from "../../../components/ui/IncidentTable";
 
-function SpecialEvent() {
-  const [selectedSort, setSelectedSort] = useState("ล่าสุด");
-  const [selectedStatus, setSelectedStatus] = useState("ทั้งหมด");
-  const [currentPage, setCurrentPage] = useState(1);
+import { incidentData } from "../DataTest/incidentMockData";
+import { hotspotsData } from "../DataTest/hotspotsData";
 
+function SpecialEvent() {
   const mapCenter = [13.7563, 100.5018];
 
+  const incidents = useMemo(() => {
+    return incidentData
+      .filter((item) => item.id.startsWith("EV"))
+      .map((item) => ({
+        ...item,
+        category: "กิจกรรมพิเศษ",
+        vehicle: "-",
+        displayStatus: item.status
+      }));
+  }, []);
+
   const stats = [
-    { label: "ตำรวจตู้ที่แจ้งเข้าหมาย", value: 50, icon: FaExclamationTriangle, color: "text-yellow-500" },
-    { label: "ชนรถ (Collision)", value: 20, icon: FaCar, color: "text-red-500" },
-    { label: "วางเสีย (Breakdown)", value: 19, icon: FaWrench, color: "text-blue-500" },
-    { label: "ชุดกำ (Overturn)", value: 11, icon: FaExclamationTriangle, color: "text-purple-500" },
+    { label: "กิจกรรมทั้งหมด", value: incidents.length, icon: FaFlag, color: "text-purple-500" },
+    { label: "การชุมนุม/ด่าน", value: incidents.filter(i => i.type.includes("ชุมนุม") || i.type.includes("จุดตรวจ")).length, icon: FaUsers, color: "text-red-500" },
+    { label: "คอนเสิร์ต/งานวัด", value: incidents.filter(i => i.type.includes("คอนเสิร์ต") || i.type.includes("งาน")).length, icon: FaMusic, color: "text-blue-500" },
+    { label: "กีฬา/วิ่ง", value: incidents.filter(i => i.type.includes("วิ่ง") || i.type.includes("กีฬา")).length, icon: FaRunning, color: "text-green-500" },
   ];
-
-  const incidentMarkers = [
-    { id: 1, position: [13.7563, 100.5018], type: "ชนรถ", color: "#ef4444", severity: "Severe" },
-    { id: 2, position: [13.7463, 100.5118], type: "วางเสีย", color: "#f59e0b", severity: "Moderate" },
-    { id: 3, position: [13.7663, 100.4918], type: "ชนรถ", color: "#ef4444", severity: "Severe" },
-    { id: 4, position: [13.7363, 100.5218], type: "วางกำ", color: "#3b82f6", severity: "Minor" },
-    { id: 5, position: [13.7763, 100.5318], type: "วางเสีย", color: "#f59e0b", severity: "Moderate" },
-    { id: 6, position: [13.7263, 100.4818], type: "ชนรถ", color: "#ef4444", severity: "Severe" },
-    { id: 7, position: [13.7863, 100.5118], type: "วางเสีย", color: "#f59e0b", severity: "Minor" },
-    { id: 8, position: [13.7463, 100.4718], type: "ชนรถ", color: "#ef4444", severity: "Moderate" },
-  ];
-
-  const incidents = [
-    {
-      id: "#1001",
-      type: "ชนรถ",
-      location: "ถนนพหลโยธิน แขวงจันทรเกษม",
-      datetime: "7/10/2568 16:28:59",
-      severity: "Severe",
-      status: "Verified",
-      cctv: true,
-    },
-    {
-      id: "#1024",
-      type: "วางเสีย",
-      location: "ถนนสาธรใต้ แขวงยานนาวา",
-      datetime: "26/9/2568 16:28:59",
-      severity: "Minor",
-      status: "Verified",
-      cctv: true,
-    },
-    {
-      id: "#1022",
-      type: "วางเสีย",
-      location: "ถนนสุขุมวิท แขวงคลองตัน",
-      datetime: "22/9/2568 16:28:59",
-      severity: "Severe",
-      status: "New",
-      cctv: true,
-    },
-    {
-      id: "#1021",
-      type: "ชนรถ",
-      location: "ถนนสาธรใต้ แขวงยานนาวา",
-      datetime: "20/9/2568 16:28:59",
-      severity: "Minor",
-      status: "Verified",
-      cctv: true,
-    },
-    {
-      id: "#1027",
-      type: "ชนรถ",
-      location: "ถนนพหลโยธิน แขวงลาดยาว",
-      datetime: "19/9/2568 16:28:59",
-      severity: "Severe",
-      status: "Verified",
-      cctv: true,
-    },
-    {
-      id: "#1029",
-      type: "วางกำ",
-      location: "ถนนเพชรบุรี แขวงมักกะสัน",
-      datetime: "19/9/2568 16:28:59",
-      severity: "Severe",
-      status: "New",
-      cctv: true,
-    },
-    {
-      id: "#1020",
-      type: "ชนรถ",
-      location: "ถนนพหลโยธิน แขวงลาดยาว",
-      datetime: "18/9/2568 16:28:59",
-      severity: "Severe",
-      status: "New",
-      cctv: true,
-    },
-    {
-      id: "#1043",
-      type: "วางเสีย",
-      location: "ถนนสาธรใต้ แขวงยานนาวา",
-      datetime: "12/9/2568 16:28:59",
-      severity: "Severe",
-      status: "Closed",
-      cctv: true,
-    },
-    {
-      id: "#1012",
-      type: "วางเสีย",
-      location: "ถนนพระราม 4 แขวงคลองเตย",
-      datetime: "11/9/2568 16:28:59",
-      severity: "Moderate",
-      status: "Verified",
-      cctv: true,
-    },
-    {
-      id: "#1015",
-      type: "ชนรถ",
-      location: "ถนนพหลโยธิน แขวงลาดยาว",
-      datetime: "11/9/2568 16:28:59",
-      severity: "Moderate",
-      status: "Closed",
-      cctv: true,
-    },
-  ];
-
-  const hotspots = [
-    {
-      rank: 1,
-      name: "แยกร็อกทอง-ร่มเกล้า",
-      location: "สี่แยกร็อกทอง-ร่มเกล้า",
-      time: "แหล่งอุบัติเหตุต่อเนื่อง",
-      incidents: "ประมวลคำเข้อมูล: 12 เคส",
-      updated: "ปรับปรุงล่าสุด: 2025-01-16 16:29:25",
-      icon: "🚗",
-    },
-    {
-      rank: 2,
-      name: "สะพานพระราม 6",
-      location: "สะพานพระราม 6-ท่าพระ",
-      time: "แหล่งอุบัติเหตุต่อเนื่อง",
-      incidents: "ประมวลคำเข้อมูล: 11 เคส",
-      updated: "ปรับปรุงล่าสุด: 2025-01-15 14:58:02",
-      icon: "🚗",
-    },
-    {
-      rank: 3,
-      name: "แยกอโศก-สุขุมวิท",
-      location: "สี่แยกอโศก-สุขุมวิท",
-      time: "แหล่งอุบัติเหตุต่อเนื่อง",
-      incidents: "ประมวลคำเข้อมูล: 9 เคส",
-      updated: "ปรับปรุงล่าสุด: 2025-01-14 13:48:20",
-      icon: "🚗",
-    },
-  ];
-
-  const handleExport = () => {
-    console.log("Export data");
-  };
-
-  const handleAddIncident = () => {
-    console.log("Add new incident");
-  };
 
   return (
-    <div className="fix-function-page-y-auto bg-gray-50 p-6">
+    <div className="h-screen overflow-y-auto bg-gray-50 p-6 pb-20">
       <IncidentHeader 
         title="เหตุการณ์พิเศษจากกิจกรรมมนุษย์"
         subtitle="Event-related Incidents"
-        onExport={handleExport}
-        onAddIncident={handleAddIncident}
+        onExport={() => {}}
+        onAddIncident={() => {}}
       />
-
       <StatsCard stats={stats} />
-
-      <div className="grid grid-cols-12 gap-6">
-        <div className="col-span-8">
-          <IncidentMap 
-            incidentMarkers={incidentMarkers}
-            mapCenter={mapCenter}
-          />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-6">
+        <div className="lg:col-span-8 h-[500px]">
+          <IncidentMap incidents={incidents} mapCenter={mapCenter} />
         </div>
-
-        <div className="col-span-4">
-          <HotspotsPanel hotspots={hotspots} />
+        <div className="lg:col-span-4 h-[500px]">
+          <HotspotsPanel hotspots={hotspotsData} />
         </div>
       </div>
-
       <div className="mt-6">
-        <IncidentTable 
-          incidents={incidents}
-          selectedSort={selectedSort}
-          setSelectedSort={setSelectedSort}
-          selectedStatus={selectedStatus}
-          setSelectedStatus={setSelectedStatus}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
-          showVehicleColumn={false}
-        />
+        <IncidentTable incidents={incidents} showVehicleColumn={false} title="รายการกิจกรรมทั้งหมด" />
       </div>
     </div>
   );

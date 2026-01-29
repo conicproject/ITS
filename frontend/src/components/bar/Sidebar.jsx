@@ -260,10 +260,10 @@ function Sidebar({
           background: "#F5F6FA",
           display: "flex",
           flexDirection: "column",
-          position: overlayMode ? "fixed" : "relative",
+          position: "relative",
           top: 0,
           left: 0,
-          zIndex: overlayMode ? 50 : 10,
+          zIndex: 50,
           transition: "width 0.3s ease-in-out",
           overflow: "hidden",
         }}
