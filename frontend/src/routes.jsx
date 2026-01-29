@@ -35,6 +35,19 @@ import TrafficSignal from "./pages/OperationManagement/function/traffic-signal";
 import Ambulance from "./pages/OperationManagement/function/Ambulance";
 import VIP from "./pages/OperationManagement/function/vip";
 import Sequence from "./pages/OperationManagement/function/sequence";
+import DetectChangeLane from "./pages/Enforcement/function/detect-change-lane";
+import DetectHelmet from "./pages/Enforcement/function/detect-helmet";
+import DetectOverLine from "./pages/Enforcement/function/detect-over-line";
+import DetectPhone from "./pages/Enforcement/function/detect-phone";
+import DetectReverse from "./pages/Enforcement/function/detect-reverse";
+import DetectSeatBelt from "./pages/Enforcement/function/detect-seatbelt";
+import DetectSignTraffic from "./pages/Enforcement/function/detect-sign-traffic";
+import DetectStopCrosswalk from "./pages/Enforcement/function/detect-stop-crosswalk";
+import DetectStopZone from "./pages/Enforcement/function/detect-stop-zone";
+import DetectUturn from "./pages/Enforcement/function/detect-uturn";
+import Expressway from "./pages/IncidentAccident/function/expressway";
+import ObjectFall from "./pages/IncidentAccident/function/object-fall";
+import RoadAccident from "./pages/IncidentAccident/function/road-accident";
 
 const routes = [
   {
@@ -263,6 +276,116 @@ const routes = [
     ),
   },
   {
+    path: "/enforcement/function/detect-change-lane",
+    name: "DetectChangeLane",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectChangeLane />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/enforcement/function/detect-helmet",
+    name: "DetectHelmet",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectHelmet />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/enforcement/function/detect-over-line",
+    name: "DetectOverLine",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectOverLine />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/enforcement/function/detect-phone",
+    name: "DetectPhone",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectPhone />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/enforcement/function/detect-reverse",
+    name: "DetectReverse",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectReverse />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/enforcement/function/detect-seatbelt",
+    name: "DetectSeatBelt",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectSeatBelt />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/enforcement/function/detect-sign-traffic",
+    name: "DetectSignTraffic",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectSignTraffic />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/enforcement/function/detect-stop-crosswalk",
+    name: "DetectStopCrosswalk",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectStopCrosswalk />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/enforcement/function/detect-stop-zone",
+    name: "DetectStopZone",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectStopZone />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/enforcement/function/detect-uturn",
+    name: "DetectUturn",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectUturn />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "/data-collection/function/installation-point",
     name: "InstallationPoint",
     element: (
@@ -357,6 +480,39 @@ const routes = [
       <ProtectedRoute>
         <DefaultLayout>
           <SpecialHazard />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/incident-accident/function/road-accident",
+    name: "RoadAccident",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <RoadAccident />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/incident-accident/function/object-fall",
+    name: "ObjectFall ",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <ObjectFall />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/incident-accident/function/expressway",
+    name: "Expressway",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <Expressway />
         </DefaultLayout>
       </ProtectedRoute>
     ),
