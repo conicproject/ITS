@@ -23,12 +23,10 @@ const DetectSpeeding = () => {
 
   const handleSearch = (params) => console.log(params);
 
+  // --- จุดที่แก้ไข 1: อัปเดต State เสมอ (ไม่ต้องเช็คขนาดจอ) ---
   const handleSelectViolation = (violation) => {
-    if (window.innerWidth < 1024) {
-        setSelectedViolation(violation);
-    } else {
-        console.log('Desktop select:', violation.lpr);
-    }
+    setSelectedViolation(violation);
+    // Modal ของ Mobile จะไม่โผล่มากวนใจบน Desktop เพราะใน div modal มี class 'lg:hidden' ดักไว้แล้วครับ
   };
 
   const getMapData = (violation) => {
@@ -96,14 +94,11 @@ const DetectSpeeding = () => {
             </button>
         </div>
 
-        {/* --- Filter Section (ปรับระยะห่างให้แคบลง) --- */}
+        {/* --- Filter Section --- */}
         <div className={`
             shrink-0 transition-all duration-300 ease-in-out overflow-hidden z-30
             ${showFilter ? 'max-h-[500px] opacity-100 mb-1' : 'max-h-0 opacity-0 mb-0 lg:max-h-none lg:opacity-100 lg:mb-[0.01px] lg:overflow-visible'}
         `}>
-            {/* - mb-1 (Mobile): ระยะห่างเหลือ ~4px (แคบมาก) 
-                - lg:mb-3 (Desktop): ระยะห่างเหลือ ~12px (จากเดิม 24px)
-            */}
             <div className="p-1">
                 <Filter
                     type="speed"
@@ -127,7 +122,8 @@ const DetectSpeeding = () => {
           
           {/* Desktop Sidebar */}
           <div className="hidden lg:block flex-none w-[400px] xl:w-[500px] 2xl:w-[600px]">
-            <MapSidebar data={getMapData(violations[0])} />
+             {/* --- จุดที่แก้ไข 2: ให้ Sidebar ใช้ selectedViolation หรือถ้าไม่มีให้ใช้ตัวแรก --- */}
+            <MapSidebar data={getMapData(selectedViolation || violations[0])} />
           </div>
         </div>
       </div>
