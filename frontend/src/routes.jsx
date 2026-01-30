@@ -45,9 +45,6 @@ import DetectSignTraffic from "./pages/Enforcement/function/detect-sign-traffic"
 import DetectStopCrosswalk from "./pages/Enforcement/function/detect-stop-crosswalk";
 import DetectStopZone from "./pages/Enforcement/function/detect-stop-zone";
 import DetectUturn from "./pages/Enforcement/function/detect-uturn";
-import Expressway from "./pages/IncidentAccident/function/expressway";
-import ObjectFall from "./pages/IncidentAccident/function/object-fall";
-import RoadAccident from "./pages/IncidentAccident/function/road-accident";
 
 const routes = [
   {
@@ -480,39 +477,6 @@ const routes = [
       <ProtectedRoute>
         <DefaultLayout>
           <SpecialHazard />
-        </DefaultLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/incident-accident/function/road-accident",
-    name: "RoadAccident",
-    element: (
-      <ProtectedRoute>
-        <DefaultLayout>
-          <RoadAccident />
-        </DefaultLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/incident-accident/function/object-fall",
-    name: "ObjectFall ",
-    element: (
-      <ProtectedRoute>
-        <DefaultLayout>
-          <ObjectFall />
-        </DefaultLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/incident-accident/function/expressway",
-    name: "Expressway",
-    element: (
-      <ProtectedRoute>
-        <DefaultLayout>
-          <Expressway />
         </DefaultLayout>
       </ProtectedRoute>
     ),

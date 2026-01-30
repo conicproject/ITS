@@ -1,5 +1,5 @@
 // frontend/src/pages/IncidentAccident/function/relate-accident.jsx
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { FaExclamationTriangle, FaCar, FaWrench } from "react-icons/fa";
 import IncidentHeader from "../../../components/ui/IncidentHeader";
 import StatsCard from "../../../components/ui/StatsCard";
@@ -8,131 +8,80 @@ import HotspotsPanel from "../../../components/ui/HotspotsPanel";
 import IncidentTable from "../../../components/ui/IncidentTable";
 
 function RelateAccident() {
-  const [selectedSort, setSelectedSort] = useState("ล่าสุด");
+ const [selectedSort, setSelectedSort] = useState("ล่าสุด");
   const [selectedStatus, setSelectedStatus] = useState("ทั้งหมด");
   const [currentPage, setCurrentPage] = useState(1);
 
   const mapCenter = [13.7563, 100.5018];
 
-  const stats = [
-    { label: "ตำรวจตู้ที่แจ้งเข้าหมาย", value: 50, icon: FaExclamationTriangle, color: "text-yellow-500" },
-    { label: "ชนรถ (Collision)", value: 20, icon: FaCar, color: "text-red-500" },
-    { label: "วางเสีย (Breakdown)", value: 19, icon: FaWrench, color: "text-blue-500" },
-    { label: "ชุดกำ (Overturn)", value: 11, icon: FaExclamationTriangle, color: "text-purple-500" },
-  ];
-
-  const incidentMarkers = [
-    { id: 1, position: [13.7563, 100.5018], type: "ชนรถ", color: "#ef4444", severity: "Severe" },
-    { id: 2, position: [13.7463, 100.5118], type: "วางเสีย", color: "#f59e0b", severity: "Moderate" },
-    { id: 3, position: [13.7663, 100.4918], type: "ชนรถ", color: "#ef4444", severity: "Severe" },
-    { id: 4, position: [13.7363, 100.5218], type: "วางกำ", color: "#3b82f6", severity: "Minor" },
-    { id: 5, position: [13.7763, 100.5318], type: "วางเสีย", color: "#f59e0b", severity: "Moderate" },
-    { id: 6, position: [13.7263, 100.4818], type: "ชนรถ", color: "#ef4444", severity: "Severe" },
-    { id: 7, position: [13.7863, 100.5118], type: "วางเสีย", color: "#f59e0b", severity: "Minor" },
-    { id: 8, position: [13.7463, 100.4718], type: "ชนรถ", color: "#ef4444", severity: "Moderate" },
-  ];
-
   const incidents = [
     {
-      id: "#1001",
-      type: "ชนรถ",
-      vehicle: "Bus",
+      id: "1",
+      type: "ไฟไฟม้",
       location: "ถนนพหลโยธิน แขวงจันทรเกษม",
       datetime: "7/10/2568 16:28:59",
       severity: "Severe",
       status: "Verified",
       cctv: true,
+      lat: 13.7563,
+      lng: 100.5018,
     },
     {
-      id: "#1024",
-      type: "วางเสีย",
-      vehicle: "Bicycle",
+      id: "2",
+      type: "สารเคมีรั่วไหล",
       location: "ถนนสาธรใต้ แขวงยานนาวา",
       datetime: "26/9/2568 16:28:59",
       severity: "Minor",
       status: "Verified",
       cctv: true,
+      lat: 13.7463,
+      lng: 100.5118,
     },
     {
-      id: "#1022",
-      type: "วางเสีย",
-      vehicle: "Truck",
+      id: "3",
+      type: "ควันพิษ",
       location: "ถนนสุขุมวิท แขวงคลองตัน",
       datetime: "22/9/2568 16:28:59",
       severity: "Severe",
       status: "New",
       cctv: true,
+      lat: 13.7663,
+      lng: 100.4918,
     },
     {
-      id: "#1021",
-      type: "ชนรถ",
-      vehicle: "Motorcycle",
-      location: "ถนนสาธรใต้ แขวงยานนาวา",
-      datetime: "20/9/2568 16:28:59",
-      severity: "Minor",
-      status: "Verified",
-      cctv: true,
-    },
-    {
-      id: "#1027",
-      type: "ชนรถ",
-      vehicle: "Bicycle",
-      location: "ถนนพหลโยธิน แขวงลาดยาว",
-      datetime: "19/9/2568 16:28:59",
-      severity: "Severe",
-      status: "Verified",
-      cctv: true,
-    },
-    {
-      id: "#1029",
-      type: "วางกำ",
-      vehicle: "Car",
+      id: "4",
+      type: "ไฟไฟม้",
       location: "ถนนเพชรบุรี แขวงมักกะสัน",
       datetime: "19/9/2568 16:28:59",
       severity: "Severe",
       status: "New",
       cctv: true,
+      lat: 13.7363,
+      lng: 100.5218,
     },
-    {
-      id: "#1020",
-      type: "ชนรถ",
-      vehicle: "Bicycle",
-      location: "ถนนพหลโยธิน แขวงลาดยาว",
-      datetime: "18/9/2568 16:28:59",
-      severity: "Severe",
-      status: "New",
-      cctv: true,
-    },
-    {
-      id: "#1043",
-      type: "วางเสีย",
-      vehicle: "Bicycle",
-      location: "ถนนสาธรใต้ แขวงยานนาวา",
-      datetime: "12/9/2568 16:28:59",
-      severity: "Severe",
-      status: "Closed",
-      cctv: true,
-    },
-    {
-      id: "#1012",
-      type: "วางเสีย",
-      vehicle: "Motorcycle",
-      location: "ถนนพระราม 4 แขวงคลองเตย",
-      datetime: "11/9/2568 16:28:59",
-      severity: "Moderate",
-      status: "Verified",
-      cctv: true,
-    },
-    {
-      id: "#1015",
-      type: "ชนรถ",
-      vehicle: "Motorcycle",
-      location: "ถนนพหลโยธิน แขวงลาดยาว",
-      datetime: "11/9/2568 16:28:59",
-      severity: "Moderate",
-      status: "Closed",
-      cctv: true,
-    },
+  ];
+
+  const incidentMarkers = useMemo(() => {
+    const colorMap = {
+      "ไฟไฟม้": "#ef4444",
+      "ควันพิษ": "#f59e0b",
+      "สารเคมีรั่วไหล": "#3b82f6",
+    };
+
+    return incidents.map((item, index) => ({
+      id: index,
+      position: [item.lat, item.lng],
+      type: item.type,
+      severity: item.severity,
+      color: colorMap[item.type] || "#6b7280",
+    }));
+  }, [incidents]);
+
+  const stats = [
+    { label: "จำนวนอุบัติเหตุทั้งหมด", value: 50, icon: FaExclamationTriangle, color: "text-yellow-500" },
+    { label: "รถชน (Collision)", value: 20, icon: FaCar, color: "text-red-500" },
+    { label: "รถเสีย (Breakdown)", value: 19, icon: FaWrench, color: "text-blue-500" },
+    { label: "รถคว่ำ (Overturn)", value: 11, icon: FaExclamationTriangle, color: "text-purple-500" },
   ];
 
   const hotspots = [
@@ -165,28 +114,20 @@ function RelateAccident() {
     },
   ];
 
-  const handleExport = () => {
-    console.log("Export data");
-  };
-
-  const handleAddIncident = () => {
-    console.log("Add new incident");
-  };
-
   return (
     <div className="fix-function-page-y-auto bg-gray-50 p-6">
-      <IncidentHeader 
-        title="อุบัติเหตุการเกี่ยวข้องกับยานพาหนะ"
-        subtitle="Vehicle Incident Data Workflow"
-        onExport={handleExport}
-        onAddIncident={handleAddIncident}
+      <IncidentHeader
+        title="เหตุการณ์อันตรายพิเศษ"
+        subtitle="Hazardous Incidents"
+        onExport={() => console.log("Export")}
+        onAddIncident={() => console.log("Add Incident")}
       />
 
       <StatsCard stats={stats} />
 
       <div className="grid grid-cols-12 gap-6">
         <div className="col-span-8">
-          <IncidentMap 
+          <IncidentMap
             incidentMarkers={incidentMarkers}
             mapCenter={mapCenter}
           />
@@ -198,7 +139,7 @@ function RelateAccident() {
       </div>
 
       <div className="mt-6">
-        <IncidentTable 
+        <IncidentTable
           incidents={incidents}
           selectedSort={selectedSort}
           setSelectedSort={setSelectedSort}
@@ -206,7 +147,7 @@ function RelateAccident() {
           setSelectedStatus={setSelectedStatus}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
-          showVehicleColumn={true}
+          showVehicleColumn={false}
         />
       </div>
     </div>
