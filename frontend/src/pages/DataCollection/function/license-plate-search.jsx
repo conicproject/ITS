@@ -90,7 +90,6 @@ function LicensePlateSearch() {
             setLoading(false);
         }
     };
-  };
 
     const handleSearch = (params) => {
         console.log("🔍 SEARCH PARAMS:", params);
@@ -186,6 +185,7 @@ function LicensePlateSearch() {
                 data={selectedVehicle}
             />
         </div>
-      );
+    );
+}
 
 export default LicensePlateSearch;

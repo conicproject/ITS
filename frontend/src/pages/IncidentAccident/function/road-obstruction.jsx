@@ -11,6 +11,10 @@ import { incidentData } from "../DataTest/incidentMockData";
 import { hotspotsData } from "../DataTest/hotspotsData";
 
 function RoadObstruction() {
+  const [selectedSort, setSelectedSort] = useState("ล่าสุด");
+  const [selectedStatus, setSelectedStatus] = useState("ทั้งหมด");
+  const [currentPage, setCurrentPage] = useState(1);
+
   const mapCenter = [13.7563, 100.5018];
 
   const incidents = [
@@ -77,10 +81,10 @@ function RoadObstruction() {
   }, [incidents]);
 
   const stats = [
-    { label: "จำนวนสิ่งกีดขวางบนถนนทั้งหมด", value: 50, icon: FaExclamationTriangle, color: "text-yellow-500" },
-    { label: "วัตถุตกหล่น", value: 20, icon: FaCar, color: "text-red-500" },
-    { label: "เศษซากบนถนน", value: 19, icon: FaWrench, color: "text-blue-500" },
-    { label: "ตึกถล่ม", value: 11, icon: FaExclamationTriangle, color: "text-purple-500" },
+    { label: "จำนวนอุบัติเหตุทั้งหมด", value: 50, icon: FaExclamationTriangle, color: "text-yellow-500" },
+    { label: "รถชน (Collision)", value: 20, icon: FaCar, color: "text-red-500" },
+    { label: "รถเสีย (Breakdown)", value: 19, icon: FaWrench, color: "text-blue-500" },
+    { label: "รถคว่ำ (Overturn)", value: 11, icon: FaExclamationTriangle, color: "text-purple-500" },
   ];
 
   const hotspots = [
@@ -121,26 +125,24 @@ function RoadObstruction() {
         onExport={() => console.log("Export")}
         onAddIncident={() => console.log("Add Incident")}
       />
+
       <StatsCard stats={stats} />
 
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-12 gap-6 mb-6">
         <div className="col-span-8">
           <IncidentMap
             incidentMarkers={incidentMarkers}
             mapCenter={mapCenter}
           />
         </div>
-        <div className="lg:col-span-4 h-[500px]">
-          <HotspotsPanel hotspots={hotspotsData} />
+        <div className="col-span-4">
+          <HotspotsPanel hotspots={hotspots} />
         </div>
       </div>
+
       <div className="mt-6">
         <IncidentTable
           incidents={incidents}
-          selectedSort={selectedSort}
-          setSelectedSort={setSelectedSort}
-          selectedStatus={selectedStatus}
-          setSelectedStatus={setSelectedStatus}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           showVehicleColumn={false}

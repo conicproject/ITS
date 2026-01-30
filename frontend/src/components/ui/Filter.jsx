@@ -3,25 +3,14 @@ import React, { useState } from 'react';
 import { FaSearch, FaCalendar } from 'react-icons/fa';
 import { FilterConfig } from '../../config/FilterConfig';
 
-const customStyles = `
-  .rdp { 
-    --rdp-cell-size: 40px; 
-    --rdp-accent-color: #059669; 
-    --rdp-background-color: #ecfdf5; 
-    margin: 0;
-  }
-  .rdp-day_selected:not([disabled]) { 
-    background-color: var(--rdp-accent-color); 
-    color: white; 
-    font-weight: bold; 
-  }
-  .rdp-button:hover:not([disabled]):not(.rdp-day_selected) { 
-    background-color: var(--rdp-background-color); 
-    color: var(--rdp-accent-color); 
-  }
-  .rdp-caption_label { font-size: 1rem; font-weight: 700; color: #1f2937; }
-  .rdp-head_cell { font-size: 0.875rem; font-weight: 600; color: #6b7280; text-transform: uppercase; }
-`;
+export const Filter = ({ type = "license", onSearch }) => {
+  const config = FilterConfig[type] || {};
+  const showPlate = config.showPlate ?? false;
+  const showLocation = config.showLocation ?? false;
+  const showVehicleType = config.showVehicleType ?? false;
+  const showDateRange = config.showDateRange ?? false;
+  const placeholderPlate = config.placeholder ?? "ค้นหา";
+  const placeholderLocation = config.placeholderLocation ?? "ค้นหาจุดติดตั้ง";
 
   const [plate, setPlate] = useState("");
   const [location, setLocation] = useState("");
@@ -123,7 +112,7 @@ const customStyles = `
           onClick={handleSearch}
           className="bg-green-700 text-white px-6 py-2 rounded text-sm hover:bg-green-800 flex-shrink-0 transition-colors"
         >
-            <FaUndoAlt className="w-3 h-3" /> ล้างค่า
+          ค้นหา
         </button>
 
         <button
@@ -135,3 +124,4 @@ const customStyles = `
       </div>
     </div>
   );
+};
