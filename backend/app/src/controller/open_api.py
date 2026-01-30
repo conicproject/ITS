@@ -24,11 +24,13 @@ class OpenAPIController:
             yesterday = datetime.now() - timedelta(days=6)
 
             start_date = yesterday.strftime("%Y-%m-%dT00:00:00.000+07:00")
-            end_date = yesterday.strftime("%Y-%m-%dT23:59:59.000+07:00")
+            end_date = yesterday.strftime("%Y-%m-%dT00:05:00.000+07:00")
 
             logger.info(f"📅 Query Date Range: {start_date} → {end_date}")
 
             result = self.service.get_data_yesterday(start_date, end_date)
+
+            logger.info(f"📊 ได้ข้อมูลทั้งหมด: {result['data']} รายการ")
 
             return {
                 "status": "success",

@@ -1,7 +1,9 @@
+// src/pages/Login.jsx - อัพเดทเพื่อเก็บข้อมูลเมนู
 import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import apiClient from "../service/client";
 import { FaUser, FaLock } from "react-icons/fa";
+import { saveMenusToStorage, clearMenusFromStorage } from "../utils/menuAccess";
 
 function Login() {
   const navigate = useNavigate();
@@ -16,11 +18,13 @@ function Login() {
       const token = localStorage.getItem("token");
       if (token) {
         try {
-          await apiClient.get("/api/menus");
+          const { data } = await apiClient.get("/api/menus");
+          saveMenusToStorage(data); // บันทึกเมนูลง localStorage
           navigate("/overview", { replace: true });
         } catch {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
+          clearMenusFromStorage();
         }
       }
     };
@@ -55,6 +59,15 @@ function Login() {
 
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
+      
+      // ดึงข้อมูลเมนูหลังจาก login สำเร็จ
+      try {
+        const menuResponse = await apiClient.get("/api/menus");
+        saveMenusToStorage(menuResponse.data);
+      } catch (menuError) {
+        console.error("Failed to fetch menus:", menuError);
+      }
+      
       navigate("/overview", { replace: true });
     } catch (err) {
       alert(
@@ -77,7 +90,6 @@ function Login() {
       className="min-h-screen flex items-center justify-center bg-cover bg-center"
       style={{ backgroundImage: "url('/assets/bg_login.jpg')" }}
     >
-      {/* ⭐ เพิ่ม style tag สำหรับ autofill */}
       <style>{`
         input:-webkit-autofill,
         input:-webkit-autofill:hover,

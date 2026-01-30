@@ -12,63 +12,129 @@ import { incidentData } from "../DataTest/incidentMockData";
 import { hotspotsData } from "../DataTest/hotspotsData";
 
 function RelateAccident() {
-  const [selectedSort, setSelectedSort] = useState("ล่าสุด");
+ const [selectedSort, setSelectedSort] = useState("ล่าสุด");
   const [selectedStatus, setSelectedStatus] = useState("ทั้งหมด");
   const [currentPage, setCurrentPage] = useState(1);
 
   const mapCenter = [13.7563, 100.5018];
 
-  // 1. แปลงและกรองข้อมูลให้เหลือแค่ "อุบัติเหตุ" และ "รถเสีย" (VH Only)
-  const incidents = useMemo(() => {
-    return incidentData
-      .filter(item => item.id.startsWith("VH")) // กรองเอาเฉพาะ Vehicle Incidents
-      .map(item => {
-         // สร้าง field vehicle (เหมือนใน Dashboard)
-         let vehicleInfo = "-";
-         if (item.brand && item.brand !== "-") {
-             vehicleInfo = `${item.brand} ${item.color} (${item.plate})`;
-         } else if (item.subtype) {
-             const parts = item.subtype.split("_");
-             if (parts.length > 1) vehicleInfo = parts[1].charAt(0).toUpperCase() + parts[1].slice(1);
-         }
-
-         return {
-            ...item,
-            category: item.type.includes("เสีย") ? "รถเสีย" : "อุบัติเหตุ",
-            vehicle: vehicleInfo,
-            displayStatus: item.status
-         };
-      });
-  }, []);
-
-  // ใช้ Hotspot จากไฟล์กลาง (หรือจะใช้ Mock เดิมก็ได้ถ้าต้องการแยกส่วน)
-  const hotspots = hotspotsData; 
-
-  // Stats (คำนวณจากข้อมูลจริง)
-  const stats = [
-    { label: "จำนวนอุบัติเหตุทั้งหมด", value: incidents.length, icon: FaExclamationTriangle, color: "text-yellow-500" },
-    { label: "รถชน (Collision)", value: incidents.filter(i => i.type.includes("ชน")).length, icon: FaCar, color: "text-red-500" },
-    { label: "รถเสีย (Breakdown)", value: incidents.filter(i => i.type.includes("เสีย")).length, icon: FaWrench, color: "text-blue-500" },
-    { label: "รถคว่ำ (Overturn)", value: incidents.filter(i => i.type.includes("คว่ำ")).length, icon: FaExclamationTriangle, color: "text-purple-500" },
+  const incidents = [
+    {
+      id: "1",
+      type: "ไฟไฟม้",
+      location: "ถนนพหลโยธิน แขวงจันทรเกษม",
+      datetime: "7/10/2568 16:28:59",
+      severity: "Severe",
+      status: "Verified",
+      cctv: true,
+      lat: 13.7563,
+      lng: 100.5018,
+    },
+    {
+      id: "2",
+      type: "สารเคมีรั่วไหล",
+      location: "ถนนสาธรใต้ แขวงยานนาวา",
+      datetime: "26/9/2568 16:28:59",
+      severity: "Minor",
+      status: "Verified",
+      cctv: true,
+      lat: 13.7463,
+      lng: 100.5118,
+    },
+    {
+      id: "3",
+      type: "ควันพิษ",
+      location: "ถนนสุขุมวิท แขวงคลองตัน",
+      datetime: "22/9/2568 16:28:59",
+      severity: "Severe",
+      status: "New",
+      cctv: true,
+      lat: 13.7663,
+      lng: 100.4918,
+    },
+    {
+      id: "4",
+      type: "ไฟไฟม้",
+      location: "ถนนเพชรบุรี แขวงมักกะสัน",
+      datetime: "19/9/2568 16:28:59",
+      severity: "Severe",
+      status: "New",
+      cctv: true,
+      lat: 13.7363,
+      lng: 100.5218,
+    },
   ];
 
-  const handleExport = () => { console.log("Export Excel"); };
-  const handleAddIncident = () => { console.log("Add new incident"); };
+  const incidentMarkers = useMemo(() => {
+    const colorMap = {
+      "ไฟไฟม้": "#ef4444",
+      "ควันพิษ": "#f59e0b",
+      "สารเคมีรั่วไหล": "#3b82f6",
+    };
+
+    return incidents.map((item, index) => ({
+      id: index,
+      position: [item.lat, item.lng],
+      type: item.type,
+      severity: item.severity,
+      color: colorMap[item.type] || "#6b7280",
+    }));
+  }, [incidents]);
+
+  const stats = [
+    { label: "จำนวนอุบัติเหตุทั้งหมด", value: 50, icon: FaExclamationTriangle, color: "text-yellow-500" },
+    { label: "รถชน (Collision)", value: 20, icon: FaCar, color: "text-red-500" },
+    { label: "รถเสีย (Breakdown)", value: 19, icon: FaWrench, color: "text-blue-500" },
+    { label: "รถคว่ำ (Overturn)", value: 11, icon: FaExclamationTriangle, color: "text-purple-500" },
+  ];
+
+  const hotspots = [
+    {
+      rank: 1,
+      name: "แยกร็อกทอง-ร่มเกล้า",
+      location: "สี่แยกร็อกทอง-ร่มเกล้า",
+      time: "แหล่งอุบัติเหตุต่อเนื่อง",
+      incidents: "ประมวลคำเข้อมูล: 12 เคส",
+      updated: "ปรับปรุงล่าสุด: 2025-01-16 16:29:25",
+      icon: "🚗",
+    },
+    {
+      rank: 2,
+      name: "สะพานพระราม 6",
+      location: "สะพานพระราม 6-ท่าพระ",
+      time: "แหล่งอุบัติเหตุต่อเนื่อง",
+      incidents: "ประมวลคำเข้อมูล: 11 เคส",
+      updated: "ปรับปรุงล่าสุด: 2025-01-15 14:58:02",
+      icon: "🚗",
+    },
+    {
+      rank: 3,
+      name: "แยกอโศก-สุขุมวิท",
+      location: "สี่แยกอโศก-สุขุมวิท",
+      time: "แหล่งอุบัติเหตุต่อเนื่อง",
+      incidents: "ประมวลคำเข้อมูล: 9 เคส",
+      updated: "ปรับปรุงล่าสุด: 2025-01-14 13:48:20",
+      icon: "🚗",
+    },
+  ];
 
   return (
-    <div className="h-screen overflow-y-auto bg-gray-50 p-6">
-      <IncidentHeader 
-        title="ระบบเก็บและแสดงข้อมูลอุบัติเหตุ"
-        subtitle="Vehicle Incident Data Workflow"
-        onExport={handleExport}
-        onAddIncident={handleAddIncident}
+    <div className="fix-function-page-y-auto bg-gray-50 p-6">
+      <IncidentHeader
+        title="เหตุการณ์อันตรายพิเศษ"
+        subtitle="Hazardous Incidents"
+        onExport={() => console.log("Export")}
+        onAddIncident={() => console.log("Add Incident")}
       />
 
       <StatsCard stats={stats} />
 
       <div className="grid grid-cols-12 gap-6 mb-6">
         <div className="col-span-8">
-          <IncidentMap incidents={incidents} mapCenter={mapCenter} />
+          <IncidentMap
+            incidentMarkers={incidentMarkers}
+            mapCenter={mapCenter}
+          />
         </div>
         <div className="col-span-4">
           <HotspotsPanel hotspots={hotspots} />
@@ -76,11 +142,11 @@ function RelateAccident() {
       </div>
 
       <div className="mt-6">
-        <IncidentTable 
+        <IncidentTable
           incidents={incidents}
           currentPage={currentPage}
-          onPageChange={setCurrentPage}
-          showVehicleColumn={true}
+          setCurrentPage={setCurrentPage}
+          showVehicleColumn={false}
         />
       </div>
     </div>
