@@ -1,4 +1,3 @@
-// frontend/src/pages/DataCollection/function/license-plate-search.jsx
 import React, { useEffect, useState } from "react";
 import { Filter } from "../../../components/ui/Filter";
 import { ViolationList } from "../../../components/ui/ViolationList";
@@ -10,7 +9,7 @@ function LicensePlateSearch() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [searchInfo, setSearchInfo] = useState(null);
-    
+
     // 🔹 Modal state
     const [selectedVehicle, setSelectedVehicle] = useState(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -22,7 +21,7 @@ function LicensePlateSearch() {
 
     // 🔹 map backend → UI (เก็บข้อมูลทั้งหมด)
     const mapToViolation = (row) => ({
-        ...row, // เก็บข้อมูลดิบทั้งหมด
+        ...row, // ✅ image_path, plate_pic_url, target_sub_url จะติดมาด้วย
         id: row.pass_id,
         lpr: row.plate_no || "ไม่ทราบทะเบียน",
         camera: `CAM-${row.crossing_id}`,
@@ -50,14 +49,11 @@ function LicensePlateSearch() {
         try {
             setLoading(true);
             setError(null);
-            console.log("📤 REQUEST:", payload);
 
             const res = await apiClient.post(
                 "/api/data_search_vehicle",
                 payload
             );
-
-            console.log("📥 RESPONSE:", res.data);
 
             if (res.data.status !== "success") {
                 throw new Error("API returned non-success status");
@@ -92,33 +88,24 @@ function LicensePlateSearch() {
     };
 
     const handleSearch = (params) => {
-        console.log("🔍 SEARCH PARAMS:", params);
-
         const payload = {
             date: params?.date || "today",
         };
 
-        if (params?.plate) {
-            payload.plate_no = params.plate;
-        }
-        if (params?.location) {
-            payload.camera = params.location;
-        }
-        if (params?.vehicleType) {
-            payload.vehicle_type = params.vehicleType;
-        }
+        if (params?.plate) payload.plate_no = params.plate;
+        if (params?.location) payload.camera = params.location;
+        if (params?.vehicleType) payload.vehicle_type = params.vehicleType;
 
         fetchViolations(payload);
     };
 
-    // 🔹 ฟังก์ชันเปิด Modal
+    // 🔹 เปิด Modal
     const handleRowClick = (vehicle) => {
-        console.log("🔍 Selected vehicle:", vehicle);
         setSelectedVehicle(vehicle);
         setIsModalOpen(true);
     };
 
-    // 🔹 ฟังก์ชันปิด Modal
+    // 🔹 ปิด Modal
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setSelectedVehicle(null);
@@ -153,32 +140,24 @@ function LicensePlateSearch() {
                     </div>
                 )}
 
-                {/* Error Message */}
+                {/* Error */}
                 {error && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
                         <p className="text-sm text-red-800">{error}</p>
                     </div>
                 )}
 
-                {/* Main Content */}
-                <div className="grid grid-cols-1">
-                    <div className="col-span-1">
-                        <ViolationList
-                            title={
-                                loading
-                                    ? "กำลังโหลด..."
-                                    : `รายการทั้งหมด`
-                            }
-                            violations={violations}
-                            type="lprsearch"
-                            loading={loading}
-                            onRowClick={handleRowClick}
-                        />
-                    </div>
-                </div>
+                {/* Table */}
+                <ViolationList
+                    title={loading ? "กำลังโหลด..." : "รายการทั้งหมด"}
+                    violations={violations}
+                    type="lprsearch"
+                    loading={loading}
+                    onRowClick={handleRowClick}
+                />
             </div>
 
-            {/* 🔹 Modal แสดงรายละเอียด */}
+            {/* 🔹 Modal */}
             <VehicleDetailModal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}

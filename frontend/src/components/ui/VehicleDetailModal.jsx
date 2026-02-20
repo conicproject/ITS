@@ -1,16 +1,25 @@
-// frontend/src/components/ui/VehicleDetailModal.jsx
 import React from 'react';
-import { FaTimes, FaCar, FaMapMarkerAlt, FaClock, FaTachometerAlt } from 'react-icons/fa';
+import {
+    FaTimes,
+    FaCar,
+    FaMapMarkerAlt,
+    FaClock,
+    FaTachometerAlt
+} from 'react-icons/fa';
 
 export const VehicleDetailModal = ({ isOpen, onClose, data }) => {
     if (!isOpen || !data) return null;
+
+    const vehicleImage = data.image_path || data.target_sub_url;
+    const plateImage = data.plate_pic_url;
+    const clean = (v) => !v || v.toLowerCase?.() === "unknown" ? null : v;
 
     const detailSections = [
         {
             title: "ข้อมูลทะเบียนรถ",
             icon: <FaCar className="w-5 h-5" />,
             fields: [
-                { label: "หมายเลขทะเบียน", value: data.lpr || data.plate_no },
+                { label: "หมายเลขทะเบียน", value: clean(data.lpr) || clean(data.plate_no) || "-" },
                 { label: "จังหวัด", value: data.province || data.plate_province },
                 { label: "ประเภททะเบียน", value: data.plate_type },
                 { label: "สีป้ายทะเบียน", value: data.plate_color },
@@ -62,19 +71,21 @@ export const VehicleDetailModal = ({ isOpen, onClose, data }) => {
     return (
         <>
             {/* Backdrop */}
-            <div 
-                className="fixed inset-0 bg-black/50 absolute inset-0 z-[50]"
+            <div
+                className="fixed inset-0 bg-black/50 z-[50]"
                 onClick={onClose}
             />
 
             {/* Modal */}
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
-                    
+                <div className="bg-white rounded-lg shadow-2xl max-w-5xl w-full max-h-[90vh] overflow-hidden">
+
                     {/* Header */}
                     <div className="bg-gradient-to-r from-green-600 to-green-700 text-white p-6 flex justify-between items-center">
                         <div>
-                            <h2 className="text-2xl font-bold">รายละเอียดยานพาหนะ</h2>
+                            <h2 className="text-2xl font-bold">
+                                รายละเอียดยานพาหนะ
+                            </h2>
                             <p className="text-green-100 text-sm mt-1">
                                 ทะเบียน: {data.lpr || data.plate_no || "ไม่ทราบ"}
                             </p>
@@ -88,10 +99,67 @@ export const VehicleDetailModal = ({ isOpen, onClose, data }) => {
                     </div>
 
                     {/* Content */}
-                    <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)]">
+                    <div className="p-6 overflow-y-auto max-h-[calc(90vh-140px)] space-y-6">
+
+                        {/* ================== รูปภาพ ================== */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {/* รูปรถ */}
+                            <div className="border border-gray-200 rounded-lg p-4">
+                                <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                                    ภาพรถ
+                                </h3>
+                                {vehicleImage ? (
+                                    <a
+                                        href={vehicleImage}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <img
+                                            src={vehicleImage}
+                                            alt="vehicle"
+                                            className="w-full h-[300px] object-cover rounded border cursor-pointer hover:opacity-80 transition"
+                                        />
+                                    </a>
+                                ) : (
+                                    <div className="h-[320px] flex items-center justify-center bg-gray-100 text-gray-500 rounded">
+                                        ไม่พบรูปภาพรถ
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* รูปป้ายทะเบียน */}
+                            <div className="border border-gray-200 rounded-lg p-4">
+                                <h3 className="text-sm font-semibold text-gray-700 mb-2">
+                                    ภาพป้ายทะเบียน
+                                </h3>
+                                {plateImage ? (
+                                    <a
+                                        href={plateImage}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        <img
+                                            src={plateImage}
+                                            alt="plate"
+                                            className="w-full h-[300px] object-cover rounded border cursor-pointer hover:opacity-80 transition"
+                                        />
+                                    </a>
+                                ) : (
+                                    <div className="h-[320px] flex items-center justify-center bg-gray-100 text-gray-500 rounded">
+                                        ไม่พบภาพป้ายทะเบียน
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+
+                        {/* ================== ข้อมูล ================== */}
                         <div className="space-y-6">
                             {detailSections.map((section, idx) => (
-                                <div key={idx} className="border border-gray-200 rounded-lg p-4">
+                                <div
+                                    key={idx}
+                                    className="border border-gray-200 rounded-lg p-4"
+                                >
                                     <div className="flex items-center gap-2 text-green-700 font-semibold mb-4 pb-2 border-b border-gray-200">
                                         {section.icon}
                                         <span>{section.title}</span>
@@ -104,7 +172,7 @@ export const VehicleDetailModal = ({ isOpen, onClose, data }) => {
                                                         {field.label}
                                                     </span>
                                                     <span className="text-sm font-medium text-gray-800">
-                                                        {field.value || "-"}
+                                                        {field.value}
                                                     </span>
                                                 </div>
                                             )
@@ -113,6 +181,7 @@ export const VehicleDetailModal = ({ isOpen, onClose, data }) => {
                                 </div>
                             ))}
                         </div>
+
                     </div>
                 </div>
             </div>

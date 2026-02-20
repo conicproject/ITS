@@ -175,62 +175,61 @@ class DataVehicleRepository:
 
     def data_search_vehicle(self, date, province=None, lpr=None, camera=None, vehicle_type=None):
         """
-        🔹 แก้ไข: ค้นหาข้อมูลจาก VEHICLE_PASS โดยตรง (ไม่ใช่ extract_data)
-        - date: datetime.date (required)
-        - province: str (optional)
-        - lpr: str (optional - ค้นหาทะเบียนรถ)
-        - camera: int (optional - CROSSING_ID)
+        ค้นหาข้อมูลจาก VEHICLE_PASS + VEHICLE_URL
         """
 
         conn = None
         cursor = None
+
         try:
             conn = self.postgres_conn.get_connection()
             cursor = conn.cursor()
 
-            # 🔹 เริ่มสร้าง WHERE clause
-            conditions = ["DATE(pass_time) = %s"]
-            params = [date]
+            # ✅ เช็คเวลาเฉพาะ vehicle_pass
+            conditions = ["vp.pass_time >= %s", "vp.pass_time < %s"]
+            params = [date, date + timedelta(days=1)]
 
-            # 🔹 กรองตามจังหวัด (ถ้ามี)
+            # จังหวัด
             if province:
-                conditions.append("plate_province = %s")
+                conditions.append("vp.plate_province = %s")
                 params.append(province)
 
-            # 🔹 กรองตามทะเบียนรถ (ใช้ ILIKE สำหรับ case-insensitive)
+            # ทะเบียน
             if lpr:
-                conditions.append("plate_no ILIKE %s")
+                conditions.append("vp.plate_no ILIKE %s")
                 params.append(f"%{lpr}%")
 
-            # 🔹 กรองตามกล้อง (CROSSING_ID)
+            # กล้อง
             if camera:
-                conditions.append("crossing_id = %s")
+                conditions.append("vp.crossing_id = %s")
                 params.append(int(camera))
 
+            # ประเภทรถ
             if vehicle_type:
-                conditions.append("vehicle_type = %s")
+                conditions.append("vp.vehicle_type = %s")
                 params.append(vehicle_type)
 
             where_clause = " AND ".join(conditions)
 
-            # 🔹 Query จาก VEHICLE_PASS
             sql = f"""
-                SELECT 
-                    pass_id, crossing_id, crossing_index_code, lane_no, 
-                    direction_index, plate_no, plate_type, pass_time, 
-                    vehicle_speed, vehicle_len, plate_color, vehicle_color, 
-                    vehicle_type, vehicle_color_depth, vehicle_logo, 
-                    vehicle_sub_logo, vehicle_model, plate_province
-                FROM vehicle_pass
+                SELECT
+                    vp.pass_id, vp.crossing_id, vp.crossing_index_code, vp.lane_no, vp.plate_no,
+                    vp.direction_index, vp.vehicle_color, vp.vehicle_type, vp.vehicle_color_depth,
+                    vp.vehicle_logo, vp.vehicle_sub_logo, vp.vehicle_model, vp.plate_province,
+                    vp.pass_time,
+                    vu.plate_pic_url, vu.image_path, vu.target_sub_url
+                FROM vehicle_pass vp
+                LEFT JOIN vehicle_url vu
+                    ON vp.pass_id = vu.pass_id
                 WHERE {where_clause}
-                ORDER BY pass_time DESC
+                ORDER BY vp.pass_time DESC
                 LIMIT 100
             """
 
-            logger.debug(f"🔎 SQL: {sql}")
-            logger.debug(f"📦 PARAMS: {params}")
+            logger.debug("🔎 SQL: %s", sql)
+            logger.debug("📦 PARAMS: %s", params)
 
-            cursor.execute(sql, tuple(params))
+            cursor.execute(sql, params)
             rows = cursor.fetchall()
 
             if not rows:
@@ -239,12 +238,12 @@ class DataVehicleRepository:
 
             columns = [desc[0] for desc in cursor.description]
             result = [dict(zip(columns, row)) for row in rows]
-            
-            logger.info(f"✅ Found {len(result)} records")
+
+            logger.info("✅ Found %s records", len(result))
             return result
 
-        except Exception as e:
-            logger.exception("❌ Error searching VEHICLE_PASS from Postgres:")
+        except Exception:
+            logger.exception("❌ Error searching VEHICLE_PASS + VEHICLE_URL:")
             return []
 
         finally:
