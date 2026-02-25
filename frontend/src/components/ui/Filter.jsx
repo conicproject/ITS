@@ -1,126 +1,162 @@
-// frontend/src/components/ui/Filter.jsx
-import React, { useState } from 'react';
-import { FaSearch, FaCalendar } from 'react-icons/fa';
-import { FilterConfig } from '../../config/FilterConfig';
+import React, { useState } from "react";
+import { 
+  FaSearch, 
+  FaMapMarkerAlt, 
+  FaCar, 
+  FaRedo 
+} from "react-icons/fa";
 
-export const Filter = ({ type = "license", onSearch }) => {
-  const config = FilterConfig[type] || {};
-  const showPlate = config.showPlate ?? false;
-  const showLocation = config.showLocation ?? false;
-  const showVehicleType = config.showVehicleType ?? false;
-  const showDateRange = config.showDateRange ?? false;
-  const placeholderPlate = config.placeholder ?? "ค้นหา";
-  const placeholderLocation = config.placeholderLocation ?? "ค้นหาจุดติดตั้ง";
+export const Filter = ({ onSearch }) => {
+  // State สำหรับเก็บค่าการค้นหา
+  const [filters, setFilters] = useState({
+    lpr: "",        // ทะเบียน
+    location: "",   // จุดติดตั้ง
+    type: "",       // ประเภทรถ
+    startDate: "",  // วันเริ่มต้น
+    endDate: "",    // วันสิ้นสุด
+  });
 
-  const [plate, setPlate] = useState("");
-  const [location, setLocation] = useState("");
-  const [vehicleType, setVehicleType] = useState("");
-  const [date, setDate] = useState("");
+  const vehicleTypes = [
+    "รถยนต์",
+    "รถกระบะ",
+    "รถตู้",
+    "จักรยานยนต์",
+    "รถบรรทุก",
+    "รถยนต์ไฟฟ้า",
+  ];
 
-  // 🔹 สร้าง options สำหรับวันที่ย้อนหลัง 7 วัน
-  const getDateOptions = () => {
-    const options = [{ value: "today", label: "วันนี้" }];
-    const today = new Date();
-    
-    for (let i = 1; i <= 7; i++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
-      const label = date.toLocaleDateString('th-TH', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-      options.push({ value: dateStr, label });
-    }
-    
-    return options;
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
   };
 
   const handleSearch = () => {
-    onSearch?.({
-      plate,
-      location,
-      vehicleType,
-      date: date || "today"
-    });
+    onSearch?.(filters);
   };
 
   const handleReset = () => {
-    setPlate("");
-    setLocation("");
-    setVehicleType("");
-    setDate("");
-    onSearch?.({ date: "today" });
+    const resetState = {
+      lpr: "",
+      location: "",
+      type: "",
+      startDate: "",
+      endDate: "",
+    };
+    setFilters(resetState);
+    onSearch?.(resetState);
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4 mb-4">
-      <div className="flex flex-wrap items-center gap-3 w-full">
-        <FaSearch className="w-5 h-5 text-gray-500 flex-shrink-0" />
+    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 w-full">
+      
+      {/* --- Header --- */}
+      <div className="flex items-center gap-2 mb-4 text-gray-800">
+        <FaSearch className="w-4 h-4 text-gray-500" />
+        <h2 className="text-base font-bold">ค้นหาป้ายทะเบียน</h2>
+      </div>
 
-        {/* Date Picker - แสดงเสมอ */}
-        <div className="flex items-center gap-2 flex-1 min-w-[200px]">
-          <FaCalendar className="w-4 h-4 text-gray-500" />
+      {/* --- Inputs Row --- */}
+      <div className="flex flex-col lg:flex-row items-stretch gap-3">
+        
+        {/* 1. ทะเบียนรถ (มีไอคอนข้างใน) */}
+        <div className="relative flex-1 group">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-600 transition-colors">
+            <FaSearch />
+          </div>
+          <input
+            type="text"
+            name="lpr"
+            value={filters.lpr}
+            onChange={handleChange}
+            placeholder="ค้นหาป้ายทะเบียน"
+            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+          />
+        </div>
+
+        {/* 2. จุดติดตั้ง (มีไอคอนข้างใน) */}
+        <div className="relative flex-1 group">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-600 transition-colors">
+            <FaMapMarkerAlt />
+          </div>
+          <input
+            type="text"
+            name="location"
+            value={filters.location}
+            onChange={handleChange}
+            placeholder="ค้นหาจุดติดตั้ง"
+            className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all"
+          />
+        </div>
+
+        {/* 3. ประเภทรถ */}
+        <div className="relative flex-1 lg:max-w-[180px] group">
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-green-600 transition-colors">
+            <FaCar />
+          </div>
           <select
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 focus:ring-2 focus:ring-green-500"
+            name="type"
+            value={filters.type}
+            onChange={handleChange}
+            className="w-full pl-10 pr-8 py-2.5 bg-gray-50 border border-gray-300 rounded-lg text-sm text-gray-600 appearance-none focus:bg-white focus:outline-none focus:ring-2 focus:ring-green-500 cursor-pointer transition-all"
           >
-            {getDateOptions().map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
+            <option value="">ทุกประเภทรถ</option>
+            {vehicleTypes.map((type) => (
+              <option key={type} value={type}>
+                {type}
               </option>
             ))}
           </select>
         </div>
 
-        {showPlate && (
+        {/* 4. ช่วงวันที่ (Start - End) */}
+        <div className="flex items-center gap-2 w-full lg:w-auto bg-gray-50 border border-gray-300 rounded-lg px-2 lg:px-3 py-1">
           <input
-            type="text"
-            placeholder={placeholderPlate}
-            value={plate}
-            onChange={(e) => setPlate(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px] focus:ring-2 focus:ring-green-500"
+            type="date"
+            name="startDate"
+            value={filters.startDate}
+            onChange={handleChange}
+            className="flex-1 lg:w-32 bg-transparent text-sm text-gray-600 focus:outline-none py-1.5 cursor-pointer"
           />
-        )}
-
-        {showLocation && (
+          <span className="text-gray-400 text-xs whitespace-nowrap px-1">ถึง</span>
           <input
-            type="text"
-            placeholder={placeholderLocation}
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px] focus:ring-2 focus:ring-green-500"
+            type="date"
+            name="endDate"
+            value={filters.endDate}
+            onChange={handleChange}
+            className="flex-1 lg:w-32 bg-transparent text-sm text-gray-600 focus:outline-none py-1.5 cursor-pointer"
           />
-        )}
+        </div>
 
-        {showVehicleType && (
-          <select
-            value={vehicleType}
-            onChange={(e) => setVehicleType(e.target.value)}
-            className="border border-gray-300 rounded px-3 py-2 text-sm flex-1 min-w-[200px] focus:ring-2 focus:ring-green-500"
+        {/* --- Buttons --- */}
+        <div className="flex gap-2 w-full lg:w-auto">
+          <button
+            onClick={handleSearch}
+            className="flex-1 lg:flex-none bg-green-700 hover:bg-green-800 text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 shadow-sm whitespace-nowrap"
           >
-            <option value="">เลือกประเภทยานพาหนะ</option>
-            <option value="twoWheelVehicle">รถจักรยานยนต์</option>
-            <option value="vehicle">รถยนต์</option>
-            <option value="SUVMPV">SUV/MPV</option>
-          </select>
-        )}
+            <FaSearch className="w-3 h-3" />
+            ค้นหา
+          </button>
+          
+          <button
+            onClick={handleReset}
+            className="lg:hidden bg-gray-100 hover:bg-gray-200 text-gray-600 px-4 py-2.5 rounded-lg text-sm transition-colors flex items-center justify-center border border-gray-200"
+            title="ล้างค่า"
+          >
+            <FaRedo className="w-3.5 h-3.5" />
+          </button>
+           {/* Desktop Reset Button (Optional: Small icon) */}
+           <button
+            onClick={handleReset}
+            className="hidden lg:flex items-center justify-center w-10 bg-white border border-gray-300 text-gray-400 hover:text-green-600 hover:border-green-600 rounded-lg transition-all"
+            title="ล้างค่า"
+          >
+            <FaRedo className="w-3.5 h-3.5" />
+          </button>
+        </div>
 
-        <button
-          onClick={handleSearch}
-          className="bg-green-700 text-white px-6 py-2 rounded text-sm hover:bg-green-800 flex-shrink-0 transition-colors"
-        >
-          ค้นหา
-        </button>
-
-        <button
-          onClick={handleReset}
-          className="bg-gray-500 text-white px-6 py-2 rounded text-sm hover:bg-gray-600 flex-shrink-0 transition-colors"
-        >
-          รีเซ็ต
-        </button>
       </div>
     </div>
   );

@@ -1,143 +1,168 @@
 // frontend/src/pages/IncidentAccident/function/special-event.jsx
-import React, { useState, useMemo } from "react";
-import { FaExclamationTriangle, FaCar, FaWrench } from "react-icons/fa";
+import React, { useState } from "react";
 import IncidentHeader from "../../../components/ui/IncidentHeader";
-import StatsCard from "../../../components/ui/StatsCard";
 import IncidentMap from "../../../components/ui/IncidentMap";
 import HotspotsPanel from "../../../components/ui/HotspotsPanel";
 import IncidentTable from "../../../components/ui/IncidentTable";
 
-function SpecialEvent() {
- const [selectedSort, setSelectedSort] = useState("ล่าสุด");
-  const [selectedStatus, setSelectedStatus] = useState("ทั้งหมด");
-  const [currentPage, setCurrentPage] = useState(1);
+// Import IncidentStats เพื่อใช้แสดง Card สถิติให้คำนวณอัตโนมัติ
+import IncidentStats from "../../../components/ui/IncidentStats";
+// Import Icon สำหรับจุดบนแผนที่และ Hotspots
+import RelateAccidentIcon from "../../../components/ui/Icon_Incident/relate-accident"; 
 
+function SpecialEvent() {
+  const [currentPage, setCurrentPage] = useState(1);
   const mapCenter = [13.7563, 100.5018];
 
-  const incidents = [
+  // ข้อมูลจำลองสำหรับ "กิจกรรมพิเศษ" (หมวด SE)
+  const incidentData = [
     {
-      id: "1",
-      type: "ไฟไฟม้",
-      location: "ถนนพหลโยธิน แขวงจันทรเกษม",
-      datetime: "7/10/2568 16:28:59",
-      severity: "Severe",
+      id: "SE-2025001",
+      type: "กิจกรรมพิเศษ",
+      category: "กิจกรรมพิเศษ", // ระบุ category สำหรับให้ตารางดึงสี/Icon
+      subtype: "festival",
+      location: "สนามหลวง (งานเทศกาลประเพณี)",
+      datetime: "2025-02-03 18:00:00",
+      severity: "Medium",
       status: "Verified",
+      displayStatus: "In-Process",
       cctv: true,
-      lat: 13.7563,
-      lng: 100.5018,
+      lat: 13.7552,
+      lng: 100.4931,
+      vehicle: "-",
     },
     {
-      id: "2",
-      type: "สารเคมีรั่วไหล",
-      location: "ถนนสาธรใต้ แขวงยานนาวา",
-      datetime: "26/9/2568 16:28:59",
-      severity: "Minor",
+      id: "SE-2025002",
+      type: "กิจกรรมพิเศษ",
+      category: "กิจกรรมพิเศษ",
+      subtype: "marathon",
+      location: "รอบสวนลุมพินี (งานวิ่งมาราธอน)",
+      datetime: "2025-02-04 04:30:00",
+      severity: "High",
+      status: "In Progress",
+      displayStatus: "In-Process",
+      cctv: true,
+      lat: 13.7310,
+      lng: 100.5415,
+      vehicle: "-",
+    },
+    {
+      id: "SE-2025003",
+      type: "กิจกรรมพิเศษ",
+      category: "กิจกรรมพิเศษ",
+      subtype: "concert",
+      location: "สนามกีฬาหัวหมาก (คอนเสิร์ตใหญ่)",
+      datetime: "2025-02-05 16:00:00",
+      severity: "Medium",
+      status: "New",
+      displayStatus: "New",
+      cctv: true,
+      lat: 13.7553,
+      lng: 100.6225,
+      vehicle: "-",
+    },
+    {
+      id: "SE-2025004",
+      type: "กิจกรรมพิเศษ",
+      category: "กิจกรรมพิเศษ",
+      subtype: "protest",
+      location: "ถนนราชดำเนิน (การชุมนุม)",
+      datetime: "2025-02-03 14:00:00",
+      severity: "High",
       status: "Verified",
+      displayStatus: "In-Process",
       cctv: true,
-      lat: 13.7463,
-      lng: 100.5118,
+      lat: 13.7568,
+      lng: 100.5019,
+      vehicle: "-",
     },
     {
-      id: "3",
-      type: "ควันพิษ",
-      location: "ถนนสุขุมวิท แขวงคลองตัน",
-      datetime: "22/9/2568 16:28:59",
-      severity: "Severe",
+      id: "SE-2025005",
+      type: "กิจกรรมพิเศษ",
+      category: "กิจกรรมพิเศษ",
+      subtype: "event",
+      location: "ถนนสีลม (ปิดถนนจัดกิจกรรมคนเดิน)",
+      datetime: "2025-02-08 17:00:00",
+      severity: "Low",
       status: "New",
+      displayStatus: "New",
       cctv: true,
-      lat: 13.7663,
-      lng: 100.4918,
+      lat: 13.7270,
+      lng: 100.5330,
+      vehicle: "-",
     },
     {
-      id: "4",
-      type: "ไฟไฟม้",
-      location: "ถนนเพชรบุรี แขวงมักกะสัน",
-      datetime: "19/9/2568 16:28:59",
-      severity: "Severe",
-      status: "New",
+      id: "SE-2025006",
+      type: "กิจกรรมพิเศษ",
+      category: "กิจกรรมพิเศษ",
+      subtype: "event",
+      location: "ศูนย์ประชุมสิริกิติ์ (งานจัดแสดงสินค้า)",
+      datetime: "2025-02-06 09:00:00",
+      severity: "Low",
+      status: "Verified",
+      displayStatus: "In-Process",
       cctv: true,
-      lat: 13.7363,
-      lng: 100.5218,
+      lat: 13.7235,
+      lng: 100.5583,
+      vehicle: "-",
     },
   ];
 
-  const incidentMarkers = useMemo(() => {
-    const colorMap = {
-      "ไฟไฟม้": "#ef4444",
-      "ควันพิษ": "#f59e0b",
-      "สารเคมีรั่วไหล": "#3b82f6",
-    };
+  const [incidents] = useState(incidentData);
 
-    return incidents.map((item, index) => ({
-      id: index,
-      position: [item.lat, item.lng],
-      type: item.type,
-      severity: item.severity,
-      color: colorMap[item.type] || "#6b7280",
-    }));
-  }, [incidents]);
-
-  const stats = [
-    { label: "จำนวนอุบัติเหตุทั้งหมด", value: 50, icon: FaExclamationTriangle, color: "text-yellow-500" },
-    { label: "รถชน (Collision)", value: 20, icon: FaCar, color: "text-red-500" },
-    { label: "รถเสีย (Breakdown)", value: 19, icon: FaWrench, color: "text-blue-500" },
-    { label: "รถคว่ำ (Overturn)", value: 11, icon: FaExclamationTriangle, color: "text-purple-500" },
-  ];
-
+  // ปรับ Hotspots ให้เข้ากับพื้นที่ที่มีการจัดกิจกรรมบ่อย
   const hotspots = [
     {
       rank: 1,
-      name: "แยกร็อกทอง-ร่มเกล้า",
-      location: "สี่แยกร็อกทอง-ร่มเกล้า",
-      time: "แหล่งอุบัติเหตุต่อเนื่อง",
-      incidents: "ประมวลคำเข้อมูล: 12 เคส",
-      updated: "ปรับปรุงล่าสุด: 2025-01-16 16:29:25",
-      icon: "🚗",
+      name: "รอบสวนลุมพินี",
+      location: "เขตพื้นที่จัดกิจกรรม",
+      time: "กิจกรรมบ่อย: งานวิ่ง/งานเดิน",
+      incidents: "สถิติ: 4 กิจกรรม/เดือน",
+      updated: "10 นาทีที่แล้ว",
+      icon: <RelateAccidentIcon variant="event" size={24} />,
     },
     {
       rank: 2,
-      name: "สะพานพระราม 6",
-      location: "สะพานพระราม 6-ท่าพระ",
-      time: "แหล่งอุบัติเหตุต่อเนื่อง",
-      incidents: "ประมวลคำเข้อมูล: 11 เคส",
-      updated: "ปรับปรุงล่าสุด: 2025-01-15 14:58:02",
-      icon: "🚗",
-    },
-    {
-      rank: 3,
-      name: "แยกอโศก-สุขุมวิท",
-      location: "สี่แยกอโศก-สุขุมวิท",
-      time: "แหล่งอุบัติเหตุต่อเนื่อง",
-      incidents: "ประมวลคำเข้อมูล: 9 เคส",
-      updated: "ปรับปรุงล่าสุด: 2025-01-14 13:48:20",
-      icon: "🚗",
+      name: "ถนนราชดำเนิน",
+      location: "ลานกิจกรรม / พื้นที่สาธารณะ",
+      time: "กิจกรรมบ่อย: กระทบการจราจร",
+      incidents: "สถิติ: 2 กิจกรรม/เดือน",
+      updated: "1 ชม. ที่แล้ว",
+      icon: <RelateAccidentIcon variant="event" size={24} />,
     },
   ];
 
   return (
-    <div className="fix-function-page-y-auto bg-gray-50 p-6">
+    <div className="fix-function-page-y-auto bg-gray-50 p-6 min-h-screen flex flex-col">
       <IncidentHeader
-        title="เหตุการณ์อันตรายพิเศษ"
-        subtitle="Hazardous Incidents"
+        title="เหตุการณ์พิเศษจากกิจกรรมมนุษย์"
+        subtitle="Special Events & Human Activities"
         onExport={() => console.log("Export")}
         onAddIncident={() => console.log("Add Incident")}
       />
 
-      <StatsCard stats={stats} />
+      <div className="mt-2 mb-6">
+        {/* เรียกใช้ Component สถิติที่รับ Props ไปคำนวณ Auto */}
+        <IncidentStats incidents={incidents} />
+      </div>
 
-      <div className="grid grid-cols-12 gap-6 mb-6">
-        <div className="col-span-8">
+      <div className="grid grid-cols-12 gap-6 mb-6 flex-grow">
+        <div className="col-span-12 lg:col-span-8 h-full min-h-[400px]">
           <IncidentMap
-            incidentMarkers={incidentMarkers}
+            incidents={incidents}
             mapCenter={mapCenter}
+            zoom={12}
           />
         </div>
-        <div className="col-span-4">
-          <HotspotsPanel hotspots={hotspots} />
+        <div className="col-span-12 lg:col-span-4 h-full">
+          <HotspotsPanel 
+            title="พื้นที่จัดกิจกรรมบ่อย" 
+            hotspots={hotspots} 
+          />
         </div>
       </div>
 
-      <div className="mt-6">
+      <div className="mt-auto">
         <IncidentTable
           incidents={incidents}
           currentPage={currentPage}
@@ -148,6 +173,5 @@ function SpecialEvent() {
     </div>
   );
 }
-
 
 export default SpecialEvent;

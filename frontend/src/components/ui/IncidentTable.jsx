@@ -2,13 +2,19 @@
 import React, { useState, useMemo } from "react";
 import { 
   FaSearch, FaFilter, FaChevronLeft, FaChevronRight, FaEye, 
-  FaCarCrash, FaExclamationTriangle, FaMapMarkerAlt, FaCalendarAlt, 
-  FaMotorcycle, FaCarSide, FaTools, FaWater, FaRoad, FaFlag, FaFireAlt
+  FaMapMarkerAlt, FaCalendarAlt
 } from "react-icons/fa";
 
+// 1. Import ไฟล์ Icon ทั้ง 5 หมวดของคุณเข้ามา
+import RelateAccidentIcon from "./Icon_Incident/relate-accident";
+import RoadObstructionIcon from "./Icon_Incident/road-obstruction";
+import HazardousIncidentIcon from "./Icon_Incident/hazardous-incident";
+import IrregularitieIcon from "./Icon_Incident/irregularitie";
+import SpecialEventIcon from "./Icon_Incident/special-event";
+
 // Helper Colors
-const getSeverityColor = (s) => (s === "Severe" ? "text-red-600 bg-red-50 border border-red-100" : s === "Moderate" ? "text-yellow-600 bg-yellow-50 border border-yellow-100" : "text-green-600 bg-green-50 border border-green-100");
-const getStatusColor = (s) => (s === "Verified" ? "text-blue-700 bg-blue-50 border border-blue-100" : s === "New" ? "text-red-600 bg-red-50 border border-red-100 animate-pulse" : "text-gray-600 bg-gray-100 border border-gray-200");
+const getSeverityColor = (s) => (s === "Severe" || s === "High" ? "text-red-600 bg-red-50 border border-red-100" : s === "Moderate" || s === "Medium" ? "text-yellow-600 bg-yellow-50 border border-yellow-100" : "text-green-600 bg-green-50 border border-green-100");
+const getStatusColor = (s) => (s === "Verified" || s === "Closed" ? "text-blue-700 bg-blue-50 border border-blue-100" : s === "New" ? "text-red-600 bg-red-50 border border-red-100 animate-pulse" : "text-purple-600 bg-purple-50 border border-purple-100");
 
 const IncidentTable = ({ 
   incidents = [], 
@@ -17,16 +23,14 @@ const IncidentTable = ({
   showVehicleColumn = true
 }) => {
   
-  // --- States สำหรับระบบ Filter ---
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [currentPage, setCurrentPage] = useState(1);
 
-  // --- Filtering Logic (ทำงานทุกครั้งที่ค่า State เปลี่ยน) ---
+  // --- Filtering Logic ---
   const filteredIncidents = useMemo(() => {
     return incidents.filter((item) => {
-      // 1. ค้นหาจาก Search Text (Case Insensitive)
       const searchLower = searchTerm.toLowerCase();
       const matchSearch = 
         item.id.toLowerCase().includes(searchLower) ||
@@ -34,11 +38,9 @@ const IncidentTable = ({
         item.location.toLowerCase().includes(searchLower) ||
         (item.vehicle && item.vehicle.toLowerCase().includes(searchLower));
 
-      // 2. กรองตาม Category
-      const matchCategory = selectedCategory === "All" || item.category === selectedCategory;
+      const itemCategory = item.category || item.type;
+      const matchCategory = selectedCategory === "All" || itemCategory === selectedCategory;
 
-      // 3. กรองตาม Status
-      // (รองรับทั้ง status จริง และ displayStatus)
       const statusCheck = item.displayStatus || item.status;
       const matchStatus = selectedStatus === "All" || statusCheck === selectedStatus;
 
@@ -46,15 +48,36 @@ const IncidentTable = ({
     });
   }, [incidents, searchTerm, selectedCategory, selectedStatus]);
 
-  // --- Pagination Logic (คำนวณจากข้อมูลที่กรองแล้ว) ---
-  const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage);
+  // --- Pagination Logic ---
+  const totalPages = Math.ceil(filteredIncidents.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
   const currentData = filteredIncidents.slice(startIndex, startIndex + itemsPerPage);
 
-  // Reset หน้าเป็น 1 เมื่อมีการเปลี่ยน Filter
   React.useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedCategory, selectedStatus]);
+
+  // 2. ฟังก์ชันเลือก Icon ให้ตรงกับหมวดหมู่ (Category)
+  const renderIcon = (item) => {
+    const category = item.category || item.type;
+    const subtype = item.subtype || item.type;
+
+    switch (category) {
+      case "สิ่งกีดขวาง":
+        return <RoadObstructionIcon variant={subtype} size={36} />;
+      case "อันตราย":
+      case "อันตรายพิเศษ":
+        return <HazardousIncidentIcon variant={subtype} size={36} />;
+      case "ความผิดปกติ":
+        return <IrregularitieIcon variant={subtype} size={36} />;
+      case "กิจกรรมพิเศษ":
+        return <SpecialEventIcon variant={subtype} size={36} />;
+      case "อุบัติเหตุ":
+      case "รถเสีย":
+      default:
+        return <RelateAccidentIcon variant={subtype} size={36} />;
+    }
+  };
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
@@ -68,7 +91,7 @@ const IncidentTable = ({
           </div>
 
           <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
-            {/* 1. Search Box */}
+            {/* Search Box */}
             <div className="relative w-full sm:w-64">
                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs" />
                <input 
@@ -79,7 +102,7 @@ const IncidentTable = ({
                />
             </div>
 
-            {/* 2. Category Filter */}
+            {/* Category Filter */}
             <div className="relative">
               <select 
                 value={selectedCategory}
@@ -92,12 +115,12 @@ const IncidentTable = ({
                 <option value="สิ่งกีดขวาง">สิ่งกีดขวาง</option>
                 <option value="อันตราย">อันตราย/ภัยพิบัติ</option>
                 <option value="กิจกรรมพิเศษ">กิจกรรมพิเศษ</option>
-                <option value="ก่อสร้าง">งานก่อสร้าง</option>
+                <option value="ความผิดปกติ">ความผิดปกติ</option>
               </select>
               <FaFilter className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs pointer-events-none" />
             </div>
 
-            {/* 3. Status Filter */}
+            {/* Status Filter */}
             <div className="relative">
               <select 
                 value={selectedStatus}
@@ -136,29 +159,23 @@ const IncidentTable = ({
               currentData.map((item, i) => (
                 <tr key={i} className="hover:bg-blue-50/30 transition-colors group">
                   <td className="py-4 px-6 font-medium text-blue-600 font-mono">{item.id}</td>
+                  
+                  {/* --- 3. แสดง Icon ตามที่ฟังก์ชัน renderIcon เลือกมาให้ --- */}
                   <td className="py-4 px-6">
                     <div className="flex items-center gap-3">
-                       <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm shadow-sm shrink-0
-                          ${item.category === 'อุบัติเหตุ' ? 'bg-red-100 text-red-600' : 
-                            item.category === 'รถเสีย' ? 'bg-orange-100 text-orange-600' : 
-                            item.category === 'อันตราย' ? 'bg-rose-100 text-rose-600' :
-                            item.category === 'สิ่งกีดขวาง' ? 'bg-yellow-100 text-yellow-600' :
-                            'bg-blue-100 text-blue-600'}`}>
-                          {item.category === 'อุบัติเหตุ' ? <FaCarCrash/> : 
-                           item.category === 'รถเสีย' ? <FaTools/> : 
-                           item.category === 'อันตราย' ? <FaFireAlt/> :
-                           item.category === 'สิ่งกีดขวาง' ? <FaExclamationTriangle/> :
-                           item.category === 'กิจกรรมพิเศษ' ? <FaFlag/> : <FaRoad/>}
+                       <div className="shrink-0 flex items-center justify-center">
+                          {renderIcon(item)}
                        </div>
                        <div className="flex flex-col">
-                         <span className="text-gray-900 font-medium">{item.category}</span>
-                         <span className="text-[10px] text-gray-500">{item.type}</span>
+                         <span className="text-gray-900 font-medium">{item.category || item.type}</span>
+                         <span className="text-[10px] text-gray-500 uppercase">{item.subtype || item.type}</span>
                        </div>
                     </div>
                   </td>
+
                   {showVehicleColumn && (
                     <td className="py-4 px-6">
-                      {item.vehicle !== "-" ? (
+                      {item.vehicle && item.vehicle !== "-" ? (
                         <span className="text-gray-700 font-medium">{item.vehicle}</span>
                       ) : (
                         <span className="text-gray-300 text-xs">-</span>
@@ -217,14 +234,13 @@ const IncidentTable = ({
             <button 
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
               disabled={currentPage === 1}
-              className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 transition-all shadow-sm"
+              className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 text-gray-500 transition-all shadow-sm"
             >
               <FaChevronLeft className="text-xs" />
             </button>
 
             <div className="hidden sm:flex gap-1">
               {[...Array(totalPages)].map((_, i) => {
-                // Logic การแสดงเลขหน้าแบบย่อ (ถ้าหน้าเยอะเกินไป)
                 if (totalPages > 7 && Math.abs(currentPage - (i + 1)) > 2 && i !== 0 && i !== totalPages - 1) {
                    if (i === 1 || i === totalPages - 2) return <span key={i} className="w-8 h-8 flex items-center justify-center text-gray-400">...</span>;
                    return null;
@@ -233,17 +249,13 @@ const IncidentTable = ({
                   <button 
                     key={i} 
                     onClick={() => setCurrentPage(i + 1)} 
-                    className={`w-8 h-8 flex items-center justify-center border rounded-lg text-xs font-bold transition-all shadow-sm
-                      ${currentPage === i + 1 
-                        ? 'bg-blue-600 text-white border-blue-600' 
-                        : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                    className={`w-8 h-8 flex items-center justify-center border rounded-lg text-xs font-bold transition-all shadow-sm ${currentPage === i + 1 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                   >
                     {i + 1}
                   </button>
                 );
               })}
             </div>
-             {/* Mobile Page Counter */}
              <span className="sm:hidden text-xs font-bold text-gray-700 bg-white px-3 py-1.5 rounded border border-gray-200">
                 {currentPage} / {totalPages}
              </span>
@@ -251,7 +263,7 @@ const IncidentTable = ({
             <button 
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
               disabled={currentPage === totalPages}
-              className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed text-gray-500 transition-all shadow-sm"
+              className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 text-gray-500 transition-all shadow-sm"
             >
               <FaChevronRight className="text-xs" />
             </button>

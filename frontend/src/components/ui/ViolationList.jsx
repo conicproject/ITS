@@ -1,11 +1,11 @@
+// frontend/src/components/ui/ViolationList.jsx
 import { ViolationCard } from './ViolationCard';
-import { FaListUl, FaLayerGroup } from 'react-icons/fa';
 
 /**
  * Component แสดงรายการฝ่าฝืนทั้งหมด
  */
 export const ViolationList = ({ 
-  title = "รายการความเร็วเกินกำหนด", 
+  title, 
   violations = [], 
   type,
   timeRange,
@@ -38,8 +38,7 @@ export const ViolationList = ({
         </h2>
       </div>
       
-      {/* Scrollable List */}
-      <div className="p-2 md:p-4 overflow-y-auto custom-scrollbar flex-1 bg-gray-50/50">
+      <div className="divide-y divide-gray-200">
         {violations.length > 0 ? (
           violations.map((violation, index) => (
             <ViolationCard 

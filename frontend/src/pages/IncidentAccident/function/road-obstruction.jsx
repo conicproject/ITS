@@ -1,151 +1,183 @@
 // frontend/src/pages/IncidentAccident/function/road-obstruction.jsx
 import React, { useState, useMemo } from "react";
-import { FaExclamationTriangle, FaCar, FaWrench } from "react-icons/fa";
 import IncidentHeader from "../../../components/ui/IncidentHeader";
-import StatsCard from "../../../components/ui/StatsCard";
 import IncidentMap from "../../../components/ui/IncidentMap";
 import HotspotsPanel from "../../../components/ui/HotspotsPanel";
 import IncidentTable from "../../../components/ui/IncidentTable";
 
-import { incidentData } from "../DataTest/incidentMockData";
-import { hotspotsData } from "../DataTest/hotspotsData";
+// Import IncidentStats เพื่อใช้แสดง Card สถิติเหมือนหน้า Dashboard
+import IncidentStats from "../../../components/ui/IncidentStats";
+// Import Icon สำหรับจุดบนแผนที่
+import RelateAccidentIcon from "../../../components/ui/Icon_Incident/relate-accident"; 
 
 function RoadObstruction() {
-  const [selectedSort, setSelectedSort] = useState("ล่าสุด");
-  const [selectedStatus, setSelectedStatus] = useState("ทั้งหมด");
   const [currentPage, setCurrentPage] = useState(1);
-
   const mapCenter = [13.7563, 100.5018];
 
-  const incidents = [
+  // ดึงข้อมูล "สิ่งกีดขวาง" (หมวด OB) และเพิ่ม category เพื่อให้ตารางแสดงไอคอนสีเหลือง
+  const incidentData = [
     {
-      id: "1",
-      type: "ไฟไฟม้",
-      location: "ถนนพหลโยธิน แขวงจันทรเกษม",
-      datetime: "7/10/2568 16:28:59",
-      severity: "Severe",
+      id: "OB-2025001",
+      type: "สิ่งกีดขวาง",
+      category: "สิ่งกีดขวาง", // <-- ตัวกำหนดสี/Icon ในตาราง
+      subtype: "debris",
+      location: "ถนนพระราม 4 หน้าสวนลุมพินี",
+      datetime: "2025-02-03 07:45:00",
+      severity: "Low",
       status: "Verified",
+      displayStatus: "In-Process",
       cctv: true,
-      lat: 13.7563,
-      lng: 100.5018,
+      lat: 13.729,
+      lng: 100.541,
+      vehicle: "-", 
     },
     {
-      id: "2",
-      type: "สารเคมีรั่วไหล",
-      location: "ถนนสาธรใต้ แขวงยานนาวา",
-      datetime: "26/9/2568 16:28:59",
-      severity: "Minor",
+      id: "OB-2025002",
+      type: "สิ่งกีดขวาง",
+      category: "สิ่งกีดขวาง",
+      subtype: "natural",
+      location: "ถนนสุขุมวิท ซอย 24 (ต้นไม้ล้มขวางทาง)",
+      datetime: "2025-02-03 11:20:00",
+      severity: "Medium",
+      status: "In Progress",
+      displayStatus: "In-Process",
+      cctv: false,
+      lat: 13.731,
+      lng: 100.565,
+      vehicle: "-",
+    },
+    {
+      id: "OB-2025003",
+      type: "สิ่งกีดขวาง",
+      category: "สิ่งกีดขวาง",
+      subtype: "collapse",
+      location: "เขตก่อสร้างรถไฟฟ้า ถนนลาดพร้าว",
+      datetime: "2025-02-03 12:00:00",
+      severity: "High",
+      status: "New",
+      displayStatus: "New",
+      cctv: true,
+      lat: 13.785,
+      lng: 100.585,
+      vehicle: "-",
+    },
+    {
+      id: "OB-2025004",
+      type: "สิ่งกีดขวาง",
+      category: "สิ่งกีดขวาง",
+      subtype: "debris",
+      location: "ถ.บรมราชชนนี",
+      datetime: "2025-02-03 18:30:00",
+      severity: "Low",
       status: "Verified",
-      cctv: true,
-      lat: 13.7463,
-      lng: 100.5118,
+      displayStatus: "In-Process",
+      cctv: false,
+      lat: 13.785,
+      lng: 100.456,
+      vehicle: "-",
     },
     {
-      id: "3",
-      type: "ควันพิษ",
-      location: "ถนนสุขุมวิท แขวงคลองตัน",
-      datetime: "22/9/2568 16:28:59",
-      severity: "Severe",
-      status: "New",
+      id: "OB-2025005",
+      type: "สิ่งกีดขวาง",
+      category: "สิ่งกีดขวาง",
+      subtype: "natural",
+      location: "ถนนนครอินทร์",
+      datetime: "2025-02-03 21:00:00",
+      severity: "Low",
+      status: "Verified",
+      displayStatus: "In-Process",
       cctv: true,
-      lat: 13.7663,
-      lng: 100.4918,
+      lat: 13.827,
+      lng: 100.46,
+      vehicle: "-",
     },
     {
-      id: "4",
-      type: "ไฟไฟม้",
-      location: "ถนนเพชรบุรี แขวงมักกะสัน",
-      datetime: "19/9/2568 16:28:59",
-      severity: "Severe",
+      id: "OB-2025006",
+      type: "สิ่งกีดขวาง",
+      category: "สิ่งกีดขวาง",
+      subtype: "collapse",
+      location: "ถ.ประชาชื่น",
+      datetime: "2025-02-03 23:30:00",
+      severity: "High",
       status: "New",
+      displayStatus: "New",
       cctv: true,
-      lat: 13.7363,
-      lng: 100.5218,
+      lat: 13.82,
+      lng: 100.538,
+      vehicle: "-",
     },
   ];
 
-  const incidentMarkers = useMemo(() => {
-    const colorMap = {
-      "ไฟไฟม้": "#ef4444",
-      "ควันพิษ": "#f59e0b",
-      "สารเคมีรั่วไหล": "#3b82f6",
-    };
+  const [incidents] = useState(incidentData);
 
-    return incidents.map((item, index) => ({
-      id: index,
+  // เตรียมข้อมูล Marker สำหรับแผนที่
+  const incidentMarkers = useMemo(() => {
+    return incidents.map((item) => ({
+      id: item.id,
       position: [item.lat, item.lng],
-      type: item.type,
-      severity: item.severity,
-      color: colorMap[item.type] || "#6b7280",
+      type: item.subtype,
+      title: item.location,
+      icon: <RelateAccidentIcon variant={item.subtype} size={32} />,
     }));
   }, [incidents]);
 
-  const stats = [
-    { label: "จำนวนอุบัติเหตุทั้งหมด", value: 50, icon: FaExclamationTriangle, color: "text-yellow-500" },
-    { label: "รถชน (Collision)", value: 20, icon: FaCar, color: "text-red-500" },
-    { label: "รถเสีย (Breakdown)", value: 19, icon: FaWrench, color: "text-blue-500" },
-    { label: "รถคว่ำ (Overturn)", value: 11, icon: FaExclamationTriangle, color: "text-purple-500" },
-  ];
-
+  // ปรับ Hotspots ให้สอดคล้องกับสถานที่
   const hotspots = [
     {
       rank: 1,
-      name: "แยกร็อกทอง-ร่มเกล้า",
-      location: "สี่แยกร็อกทอง-ร่มเกล้า",
-      time: "แหล่งอุบัติเหตุต่อเนื่อง",
-      incidents: "ประมวลคำเข้อมูล: 12 เคส",
-      updated: "ปรับปรุงล่าสุด: 2025-01-16 16:29:25",
-      icon: "🚗",
+      name: "ถนนลาดพร้าว",
+      location: "เขตก่อสร้างรถไฟฟ้า",
+      time: "กีดขวางบ่อย: แบริเออร์ล้ม/วัสดุหล่น",
+      incidents: "สถิติ: 12 เคส/เดือน",
+      updated: "10 นาทีที่แล้ว",
+      icon: <RelateAccidentIcon variant="collapse" size={24} />,
     },
     {
       rank: 2,
-      name: "สะพานพระราม 6",
-      location: "สะพานพระราม 6-ท่าพระ",
-      time: "แหล่งอุบัติเหตุต่อเนื่อง",
-      incidents: "ประมวลคำเข้อมูล: 11 เคส",
-      updated: "ปรับปรุงล่าสุด: 2025-01-15 14:58:02",
-      icon: "🚗",
-    },
-    {
-      rank: 3,
-      name: "แยกอโศก-สุขุมวิท",
-      location: "สี่แยกอโศก-สุขุมวิท",
-      time: "แหล่งอุบัติเหตุต่อเนื่อง",
-      incidents: "ประมวลคำเข้อมูล: 9 เคส",
-      updated: "ปรับปรุงล่าสุด: 2025-01-14 13:48:20",
-      icon: "🚗",
+      name: "ถนนพระราม 4",
+      location: "หน้าสวนลุมพินี",
+      time: "กีดขวางบ่อย: เศษวัสดุตกหล่น",
+      incidents: "สถิติ: 5 เคส/เดือน",
+      updated: "1 ชม. ที่แล้ว",
+      icon: <RelateAccidentIcon variant="debris" size={24} />,
     },
   ];
 
   return (
     <div className="fix-function-page-y-auto bg-gray-50 p-6">
       <IncidentHeader
-        title="เหตุการณ์อันตรายพิเศษ"
-        subtitle="Hazardous Incidents"
+        title="สิ่งกีดขวางบนถนน"
+        subtitle="Road Obstruction Management"
         onExport={() => console.log("Export")}
         onAddIncident={() => console.log("Add Incident")}
       />
 
-      <StatsCard stats={stats} />
+      {/* ส่งข้อมูล incidents ไปคำนวณตัวเลขสถิติอัตโนมัติ */}
+      <IncidentStats incidents={incidents} />
 
       <div className="grid grid-cols-12 gap-6 mb-6">
-        <div className="col-span-8">
+        <div className="col-span-12 lg:col-span-8">
           <IncidentMap
-            incidentMarkers={incidentMarkers}
+            incidents={incidents}
             mapCenter={mapCenter}
+            zoom={11}
           />
         </div>
-        <div className="col-span-4">
-          <HotspotsPanel hotspots={hotspots} />
+        <div className="col-span-12 lg:col-span-4">
+          <HotspotsPanel 
+            title="จุดเสี่ยงสิ่งกีดขวางบ่อย" 
+            hotspots={hotspots} 
+          />
         </div>
       </div>
 
       <div className="mt-6">
+        {/* ในกรณีของสิ่งกีดขวาง มักไม่มีรถคู่กรณี (vehicle = "-") สามารถซ่อนหรือแสดงคอลัมน์รถยนต์ก็ได้ */}
         <IncidentTable
           incidents={incidents}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
-          showVehicleColumn={false}
+          showVehicleColumn={false} 
         />
       </div>
     </div>
