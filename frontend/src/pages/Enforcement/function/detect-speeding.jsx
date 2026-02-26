@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Filter } from "../../../components/ui/Filter"; // ตรวจสอบ path ให้ถูกต้อง
 import { ViolationList } from "../../../components/ui/ViolationList";
 import { MapSidebar } from "../../../components/ui/MapSidebar";
@@ -94,38 +94,32 @@ const DetectSpeeding = () => {
 
   const [violations, setViolations] = useState(mockViolations);
 
+  // ป้องกันการ Scroll บน Background เมื่อเปิด Modal ในมือถือ
+  useEffect(() => {
+    if (selectedViolation && window.innerWidth < 1024) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "auto";
+    }
+    return () => {
+      document.body.style.overflow = "auto";
+    };
+  }, [selectedViolation]);
+
   // --- Logic การค้นหา ---
   const handleSearch = (filters) => {
-    // console.log("Filtering with:", filters);
-
     const filteredData = mockViolations.filter((item) => {
-      // 1. กรองทะเบียน (ค้นหาบางส่วน)
-      const matchLpr = filters.lpr 
-        ? item.lpr.includes(filters.lpr) 
-        : true;
-
-      // 2. กรองสถานที่ (ค้นหาบางส่วน ทั้งชื่อสถานที่ และ รหัสกล้อง)
+      const matchLpr = filters.lpr ? item.lpr.includes(filters.lpr) : true;
       const matchLocation = filters.location
         ? item.location.includes(filters.location) || item.camera.includes(filters.location)
         : true;
+      const matchType = filters.type ? item.type === filters.type : true;
 
-      // 3. กรองประเภทรถ (ค้นหาแบบตรงตัว)
-      const matchType = filters.type 
-        ? item.type === filters.type 
-        : true;
-
-      // 4. กรองวันที่ (เปรียบเทียบ string YYYY-MM-DD)
       let matchDate = true;
       if (filters.startDate || filters.endDate) {
-        // ดึงเฉพาะวันที่จาก item.time ("2025-01-24 14:25" -> "2025-01-24")
-        const itemDateStr = item.time.split(" ")[0]; 
-        
-        if (filters.startDate && itemDateStr < filters.startDate) {
-          matchDate = false;
-        }
-        if (filters.endDate && itemDateStr > filters.endDate) {
-          matchDate = false;
-        }
+        const itemDateStr = item.time.split(" ")[0];
+        if (filters.startDate && itemDateStr < filters.startDate) matchDate = false;
+        if (filters.endDate && itemDateStr > filters.endDate) matchDate = false;
       }
 
       return matchLpr && matchLocation && matchType && matchDate;
@@ -135,11 +129,7 @@ const DetectSpeeding = () => {
   };
 
   const handleSelectViolation = (violation) => {
-    if (window.innerWidth < 1024) {
-      setSelectedViolation(violation);
-    } else {
-      // console.log("Desktop select:", violation.lpr);
-    }
+    setSelectedViolation(violation);
   };
 
   const getMapData = (violation) => {
@@ -158,7 +148,7 @@ const DetectSpeeding = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50 overflow-hidden relative font-sans">
+<div className="w-full h-screen bg-gray-50 relative font-sans overflow-y-auto overflow-x-hidden pb-10">
       {/* --- MOBILE MODAL --- */}
       {selectedViolation && (
         <div className="fixed inset-0 z-[100] lg:hidden flex flex-col items-end justify-end sm:items-center sm:justify-center">
@@ -185,9 +175,9 @@ const DetectSpeeding = () => {
       )}
 
       {/* --- MAIN CONTENT --- */}
-      <div className="w-full mx-auto p-4 md:p-6 flex flex-col h-full max-w-[1600px]">
+      <div className="w-full mx-auto p-4 md:p-6 max-w-[1600px]">
         {/* Header */}
-        <div className="mb-4 shrink-0 flex items-center justify-between z-10">
+        <div className="mb-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3 text-red-600">
             <div className="w-9 h-9 md:w-10 md:h-10 rounded-full border-[3px] border-red-600 flex items-center justify-center shrink-0 shadow-sm bg-white">
               <span className="text-sm font-black">!</span>
@@ -201,48 +191,36 @@ const DetectSpeeding = () => {
             onClick={() => setShowFilter(!showFilter)}
             className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm text-sm font-bold active:scale-95 transition-all text-gray-600 hover:text-blue-600 hover:border-blue-200"
           >
-            <FaFilter
-              className={showFilter ? "text-blue-600" : "text-gray-400"}
-            />
+            <FaFilter className={showFilter ? "text-blue-600" : "text-gray-400"} />
             <span>{showFilter ? "ซ่อน" : "ตัวกรอง"}</span>
-            {showFilter ? (
-              <FaChevronUp className="text-xs" />
-            ) : (
-              <FaChevronDown className="text-xs" />
-            )}
+            {showFilter ? <FaChevronUp className="text-xs" /> : <FaChevronDown className="text-xs" />}
           </button>
         </div>
 
         {/* --- Filter Section --- */}
         <div
           className={`
-            shrink-0 transition-all duration-300 ease-in-out overflow-hidden z-30
-            ${
-              showFilter
-                ? "max-h-[500px] opacity-100 mb-2"
-                : "max-h-0 opacity-0 mb-0 lg:max-h-none lg:opacity-100 lg:mb-4 lg:overflow-visible"
-            }
+            transition-all duration-300 ease-in-out overflow-hidden z-30
+            ${showFilter ? "max-h-[500px] opacity-100 mb-2" : "max-h-0 opacity-0 mb-0 lg:max-h-none lg:opacity-100 lg:mb-4 lg:overflow-visible"}
         `}
         >
-          {/* ส่ง handleSearch ไปให้ Filter Component */}
           <Filter onSearch={handleSearch} />
         </div>
 
         {/* List Content */}
-        <div className="flex flex-1 gap-5 md:gap-8 overflow-hidden relative z-0">
-          <div className="flex-1 min-w-0 h-full">
+        <div className="flex gap-5 md:gap-8 items-start relative z-0">
+          <div className="flex-1 min-w-0">
             <ViolationList
               title="รายการล่าสุด"
               violations={violations}
               timeRange="วันนี้ (Real-time)"
-              onSelectViolation={handleSelectViolation}
+              onRowClick={handleSelectViolation}
             />
           </div>
 
-          {/* Desktop Sidebar */}
-          <div className="hidden lg:block flex-none w-[400px] xl:w-[500px] 2xl:w-[600px]">
-            {/* แสดงข้อมูลตัวแรก หรือตัวที่ถูกเลือก ถ้าไม่มีการเลือก */}
-            <MapSidebar data={getMapData(violations.length > 0 ? violations[0] : null)} />
+          {/* Desktop Sidebar — sticky ติดขวาขณะ scroll ปรับ h-[calc(100vh-3rem)] */}
+          <div className="hidden lg:block flex-none w-[400px] xl:w-[500px] 2xl:w-[600px] sticky top-6 h-[calc(100vh-3rem)]">
+            <MapSidebar data={getMapData(selectedViolation || (violations.length > 0 ? violations[0] : null))} />
           </div>
         </div>
       </div>

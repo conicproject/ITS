@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, Tooltip as LeafletTooltip } from 'react-leaflet';
+import React, { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, Tooltip as LeafletTooltip, useMap } from 'react-leaflet';
 import { FaMapMarkerAlt, FaImage, FaHistory, FaExclamationTriangle, FaCar, FaCamera, FaRoute, FaCheckCircle, FaPalette, FaCarSide, FaTag, FaCubes } from 'react-icons/fa';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -11,6 +11,15 @@ L.Icon.Default.mergeOptions({
   iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
+
+// Component ย้ายพิกัดสมูทๆ ป้องกันแผนที่ขาว/กระพริบ
+const MapUpdater = ({ center, zoom }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, zoom, { animate: true, duration: 0.5 });
+  }, [center, zoom, map]);
+  return null;
+};
 
 const DEFAULT_DATA = {
     plateNumber: "1กก-2345",
@@ -30,19 +39,8 @@ const DEFAULT_DATA = {
 
 export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
   const { 
-    plateNumber, 
-    province,
-    brand,
-    model,
-    color,
-    vehicleType,
-    violationCount, 
-    status, 
-    reason, 
-    latestCamera, 
-    latestTime, 
-    latestLocation, 
-    position 
+    plateNumber, province, brand, model, color, vehicleType,
+    violationCount, status, reason, latestCamera, latestTime, latestLocation, position 
   } = { ...DEFAULT_DATA, ...data };
 
   const [showSequence, setShowSequence] = useState(false);
@@ -62,19 +60,15 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
   };
 
   const sequencePath = [
-    [13.8282, 100.5699],
-    [13.8150, 100.5720],
-    [13.8033, 100.5746],
-    [13.7900, 100.5735],
-    [13.7763, 100.5718]
+    [13.8282, 100.5699], [13.8150, 100.5720], [13.8033, 100.5746],
+    [13.7900, 100.5735], [13.7763, 100.5718]
   ];
 
   const mapCenter = (enableSequence && showSequence) ? [13.8020, 100.5720] : position;
   const mapZoom = (enableSequence && showSequence) ? 13 : 15;
 
   return (
-    <div className="flex flex-col h-full bg-white md:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-x md:border border-gray-100 overflow-hidden font-sans w-full">
-      
+<div className="flex flex-col h-auto bg-white md:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-x md:border border-gray-100 overflow-hidden font-sans w-full">
       {/* Header */}
       <div className="px-3 py-2 md:px-6 md:py-4 border-b border-gray-50 flex justify-between items-center bg-white sticky top-0 z-20 shrink-0">
         <div className="flex items-center gap-2 md:gap-3">
@@ -92,12 +86,10 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
       </div>
 
       <div className="flex-1 overflow-y-auto custom-scrollbar p-3 md:p-5 space-y-3 md:space-y-6 bg-gray-50/30">
-        
         {/* Map Section */}
         <div className="relative group rounded-xl md:rounded-2xl overflow-hidden shadow-sm border border-gray-200 bg-white shrink-0">
             <div className="h-[160px] md:h-[220px] w-full relative z-0">
                 <MapContainer 
-                    key={`${mapCenter[0]}-${mapCenter[1]}-${mapZoom}`}
                     center={mapCenter} 
                     zoom={mapZoom} 
                     style={{ height: '100%', width: '100%' }} 
@@ -106,6 +98,7 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
                     dragging={true}
                 >
                     <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <MapUpdater center={mapCenter} zoom={mapZoom} />
                     <Marker position={position}><Popup>{latestLocation}</Popup></Marker>
                     {enableSequence && showSequence && (
                         <>
@@ -136,12 +129,8 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
 
         {/* Content Info */}
         <div className="space-y-4">
-            {/* --- ส่วนที่ 1: Grid ข้อมูลรถ และ รูปภาพ (ความสูงเท่ากัน) --- */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-                
-                {/* Left Column: ข้อมูลทะเบียน + รายละเอียดตัวรถ */}
                 <div className="flex flex-col gap-3 h-full">
-                    {/* ส่วนเลขทะเบียน */}
                     <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 text-center relative overflow-hidden shrink-0">
                         <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${isGreenList ? 'from-green-500 to-emerald-500' : 'from-red-500 to-orange-500'}`}></div>
                         <label className="text-[10px] text-gray-400 font-bold uppercase mb-2 block tracking-wider">ทะเบียนที่ตรวจจับได้</label>
@@ -151,47 +140,21 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
                         </div>
                     </div>
 
-                    {/* ส่วนรายละเอียดตัวรถ (ใช้ flex-1 เพื่อให้ยืดเต็มพื้นที่ที่เหลือในคอลัมน์ซ้าย) */}
                     <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-3 flex-1 flex flex-col justify-center">
                         <h4 className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">รายละเอียดยานพาหนะ</h4>
-                        
                         <div className="space-y-2.5">
                             <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100"><FaTag className="text-blue-500 w-3.5 h-3.5" /></div>
-                                <div>
-                                    <p className="text-[9px] text-gray-400 font-bold uppercase leading-none">ยี่ห้อรถ (Brand)</p>
-                                    <p className="text-xs font-bold text-gray-800">{brand}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100"><FaCarSide className="text-purple-500 w-3.5 h-3.5" /></div>
-                                <div>
-                                    <p className="text-[9px] text-gray-400 font-bold uppercase leading-none">รุ่นรถ (Model)</p>
-                                    <p className="text-xs font-bold text-gray-800">{model}</p>
-                                </div>
-                            </div>
-
-                            <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100"><FaPalette className="text-orange-500 w-3.5 h-3.5" /></div>
-                                <div>
-                                    <p className="text-[9px] text-gray-400 font-bold uppercase leading-none">สีรถ (Color)</p>
-                                    <p className="text-xs font-bold text-gray-800">{color}</p>
-                                </div>
+                                <div><p className="text-[9px] text-gray-400 font-bold uppercase leading-none">สีรถ (Color)</p><p className="text-xs font-bold text-gray-800">{color}</p></div>
                             </div>
-
                             <div className="flex items-center gap-3">
                                 <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100"><FaCubes className="text-emerald-500 w-3.5 h-3.5" /></div>
-                                <div>
-                                    <p className="text-[9px] text-gray-400 font-bold uppercase leading-none">ประเภทรถ (Type)</p>
-                                    <p className="text-xs font-bold text-gray-800">{vehicleType}</p>
-                                </div>
+                                <div><p className="text-[9px] text-gray-400 font-bold uppercase leading-none">ประเภทรถ (Type)</p><p className="text-xs font-bold text-gray-800">{vehicleType}</p></div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* Right Column: ภาพยานพาหนะ (ปรับให้ความสูงยืดตามฝั่งซ้ายด้วย h-full ในจอใหญ่) */}
                 <div className="bg-gray-900 rounded-xl overflow-hidden shadow-md relative h-auto lg:h-full flex flex-col border border-gray-700 min-h-[200px]">
                     <div className="flex-1 flex items-center justify-center bg-black/80">
                         <div className="text-center">
@@ -202,7 +165,6 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
                 </div>
             </div>
 
-            {/* --- ส่วนที่ 2: สถานะการฝ่าฝืน (ย้ายออกมานอก Grid เพื่อให้เต็มความกว้าง) --- */}
             <div className={`${alertTheme.bg} rounded-xl p-4 border flex items-center gap-3 w-full shadow-sm`}>
                 <div className="p-2 bg-white/50 rounded-full shrink-0">
                     {alertTheme.icon}
@@ -216,7 +178,6 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
                 </div>
             </div>
 
-            {/* ไทม์ไลน์การตรวจพบ */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 shrink-0 pb-6"> 
                 <div className="flex items-center gap-2 mb-4">
                     <FaHistory className="text-gray-400 w-3.5 h-3.5" />
