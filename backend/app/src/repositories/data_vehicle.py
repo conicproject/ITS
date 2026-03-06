@@ -216,11 +216,13 @@ class DataVehicleRepository:
                     vp.pass_id, vp.crossing_id, vp.crossing_index_code, vp.lane_no, vp.plate_no,
                     vp.direction_index, vp.vehicle_color, vp.vehicle_type, vp.vehicle_color_depth,
                     vp.vehicle_logo, vp.vehicle_sub_logo, vp.vehicle_model, vp.plate_province,
-                    vp.pass_time,
+                    vp.pass_time, vp.vehicle_speed, vt.type_nameth,
                     vu.plate_pic_url, vu.image_path, vu.target_sub_url
                 FROM vehicle_pass vp
                 LEFT JOIN vehicle_url vu
                     ON vp.pass_id = vu.pass_id
+                LEFT JOIN vehicle_type vt
+                    ON vp.vehicle_type = vt.type_name
                 WHERE {where_clause}
                 ORDER BY vp.pass_time DESC
                 LIMIT 100

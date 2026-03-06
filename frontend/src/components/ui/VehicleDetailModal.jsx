@@ -29,7 +29,7 @@ export const VehicleDetailModal = ({ isOpen, onClose, data }) => {
             title: "ข้อมูลยานพาหนะ",
             icon: <FaCar className="w-5 h-5" />,
             fields: [
-                { label: "ประเภทยานพาหนะ", value: data.type || data.vehicle_type },
+                { label: "ประเภทยานพาหนะ", value: data.type_nameth || data.type || data.vehicle_type },
                 { label: "สียานพาหนะ", value: data.color || data.vehicle_color },
                 { label: "ความยาวยานพาหนะ", value: data.vehicle_len ? `${data.vehicle_len} ม.` : null },
                 { label: "โลโก้ยี่ห้อ", value: data.vehicle_logo },

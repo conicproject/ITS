@@ -8,6 +8,7 @@ from src.controller.camera import CameraController
 from src.controller.vehicle import VehicleController
 from src.controller.data_vehicle import DataVehicleController
 from src.controller.open_api import OpenAPIController
+from src.controller.checkpoint import CheckpointController
 
 router = APIRouter()
 user_controller = UserController()
@@ -18,8 +19,10 @@ camera_controller = CameraController()
 vehicle_controller = VehicleController()
 data_vehicle_controller = DataVehicleController()
 open_api_controller = OpenAPIController()
+checkpoint_controller = CheckpointController()
 
 # Auth endpoints
+router.add_api_route("/get_auth", open_api_controller.get_auth, methods=["GET"], tags=["Data"])   
 router.add_api_route("/auth/login", auth_controller.login, methods=["POST"], tags=["Authentication"])
 
 # User endpoints - protected
@@ -37,10 +40,10 @@ router.add_api_route("/menus", menu_controller.get_menus, methods=["GET"], tags=
 router.add_api_route("/camera-status", camera_controller.get_camera, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
 router.add_api_route("/traffic-detail/{record_type}",  vehicle_controller.get_traffic_detail, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
 
-# break : pull data vehicle
 # api data_vehicle
 router.add_api_route("/data_vehicle", data_vehicle_controller.get_data_vehicle, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
 router.add_api_route("/data_search_vehicle", data_vehicle_controller.data_search_vehicle, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
-
-router.add_api_route("/get_auth", open_api_controller.get_auth, methods=["GET"], tags=["Data"])   
 router.add_api_route("/get_data_yesterday", open_api_controller.get_data_yesterday, methods=["GET"], tags=["Data"])   
+
+# api checkpoint
+router.add_api_route("/checkpoint", checkpoint_controller.get_checkpoint, methods=["GET"], tags=["Data"])

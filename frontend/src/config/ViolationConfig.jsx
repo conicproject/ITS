@@ -6,7 +6,7 @@ const baseFields = [
 ];
 
 const speedField = { label: "ความเร็ว", key: "speed", optional: true };
-const typeField = { label: "ประเภทยานพาหนะ", key: "type", optional: true };
+const typeField = { label: "ประเภทยานพาหนะ", key: "type_nameth", optional: true };
 const laneField = { label: "เลน", key: "lane", optional: true };
 
 export const statusColors = {
