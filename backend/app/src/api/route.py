@@ -42,6 +42,7 @@ router.add_api_route("/traffic-detail/{record_type}",  vehicle_controller.get_tr
 
 # api data_vehicle
 router.add_api_route("/data_vehicle", data_vehicle_controller.get_data_vehicle, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+router.add_api_route("/data_vehicle_5m", data_vehicle_controller.get_data_vehicle_5m, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
 router.add_api_route("/data_search_vehicle", data_vehicle_controller.data_search_vehicle, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
 router.add_api_route("/get_data_yesterday", open_api_controller.get_data_yesterday, methods=["GET"], tags=["Data"])   
 

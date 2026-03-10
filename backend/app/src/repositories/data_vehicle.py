@@ -173,6 +173,58 @@ class DataVehicleRepository:
         finally:
             self._close_oracle()
 
+    def get_data_vehicle_5m(self):
+        """ดึงข้อมูลใหม่จาก Oracle (เฉพาะของวันนั้น และหลัง last_time)"""
+        try:
+            self._open_oracle()
+
+            logger.info(f"🔍 Fetching Oracle data since {self.last_time}")
+
+            # 🔹 แก้ไข: ใช้ FETCH FIRST แทน LIMIT (Oracle syntax)
+            sql = """
+                SELECT pr.PROJECT_NAME, ch.CHECKPOINT_ID, ch.CHECKPOINT_NICKNAME, la.ROAD_DIRECTION,
+                       dt.DISTRICT_NAME, vt.TYPE_NAMETH, vp.PLATE_NO, p.PROVINCE_NAMETH,
+                       vu.PLATE_PIC_URL, vu.IMAGE_PATH,
+                       ch.LATITUDE, ch.LONGTITUDE, vp.LANE_NO, rd.ROAD_NAME,
+                       vc.COLOR_NAMETH, vp.VEHICLE_SPEED, vp.PASS_TIME
+                FROM XVOT_XVOTDB_USER.VEHICLE_PASS vp
+                JOIN CHECKPOINT ch ON ch.AREA_CODE = vp.AREA_CODE 
+                JOIN VEHICLE_TYPE vt ON vt.TYPE_NAME = vp.VEHICLE_TYPE
+                JOIN VEHICLE_COLOR vc ON vc.COLOR_NAME = vp.VEHICLE_COLOR
+                JOIN PROJECT pr ON pr.PROJECT_ID = ch.PROJECT_ID 
+                JOIN LANE la ON la.CHECKPOINT_ID = ch.CHECKPOINT_ID AND la.LANE_CODE = vp.LANE_NO
+                JOIN DISTRICT dt ON dt.DISTRICT_ID = ch.DISTRICT_ID
+                JOIN ROAD rd ON rd.ROAD_ID = ch.ROAD_ID
+                JOIN CAMERA c ON c.CAMERA_ID = la.CAMERA_ID
+                JOIN XVOT_XVOTDB_USER.VEHICLE_URL vu ON vu.PASS_ID = vp.PASS_ID
+                JOIN PROVINCE p ON p.PROVINCE_ID = vp.PLATE_PROVINCE
+                WHERE vp.PASS_TIME >= TRUNC(SYSDATE)
+                  AND vp.PASS_TIME < TRUNC(SYSDATE) + 1
+                  AND vp.PASS_TIME > TO_TIMESTAMP(:last_time, 'YYYY-MM-DD HH24:MI:SS')
+                ORDER BY vp.PASS_TIME
+                FETCH FIRST 100 ROWS ONLY
+            """
+
+            params = {"last_time": self.last_time.strftime("%Y-%m-%d %H:%M:%S")}
+            self.oracle_cursor.execute(sql, params)
+            columns = [col[0] for col in self.oracle_cursor.description]
+            rows = [dict(zip(columns, row)) for row in self.oracle_cursor.fetchall()]
+
+            logger.info(f"📊 Oracle returned {len(rows)} rows.")
+            if rows:
+                latest_time = rows[-1]["PASS_TIME"]
+                logger.info(f"✅ Found {len(rows)} new records → latest PASS_TIME = {latest_time}")
+                self.last_time = latest_time
+            else:
+                logger.info("⏳ No new data found in Oracle.")
+            return rows
+
+        except Exception as e:
+            logger.exception("❌ Error querying Oracle:")
+            return []
+        finally:
+            self._close_oracle()
+
     def data_search_vehicle(self, date, province=None, lpr=None, camera=None, vehicle_type=None):
         """
         ค้นหาข้อมูลจาก VEHICLE_PASS + VEHICLE_URL

@@ -22,6 +22,20 @@ class DataVehicleService:
             logger.exception("❌ Error in get_data_vehicle service:")
             raise
 
+    def get_data_vehicle_5m(self):
+        """ดึงข้อมูลล่าสุดจาก Oracle"""
+        try:
+            data = self.data_vehicle.get_data_vehicle_5m()
+            if not data:
+                logger.info("⏳ No new data from Oracle")
+                return []
+            
+            logger.info(f"✅ Retrieved {len(data)} records from Oracle")
+            return data
+        except Exception as e:
+            logger.exception("❌ Error in get_data_vehicle service:")
+            raise
+
     def data_search_vehicle(self, date, province=None, lpr=None, camera=None, vehicle_type=None):
         """
         รองรับการ search หลายเงื่อนไข
