@@ -9,7 +9,23 @@ input:-webkit-autofill {
   transition: background-color 5000s ease-in-out 0s;
   box-shadow: inset 0 0 20px 20px transparent;
 }
+/* ... ของเดิม (ขาขึ้น) ... */
+@keyframes slide-up-mobile {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.animate-slide-up-mobile {
+  animation: slide-up-mobile 0.3s ease-out forwards;
+}
 
+/* --- ของใหม่ (ขาลง) --- */
+@keyframes slide-down-mobile {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+.animate-slide-down-mobile {
+  animation: slide-down-mobile 0.3s ease-in forwards;
+}
 .navbar{
   z-index: unset!important;
 }

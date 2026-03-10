@@ -1,500 +1,814 @@
-import React, { useState, useEffect } from "react";
+// src/pages/IncidentAccident/dashboard.jsx
+import React, { useState, useMemo } from "react";
 import {
-  FaExclamationTriangle,
-  FaCar,
+  FaLayerGroup,
   FaBell,
-  FaSearch,
-  FaMapMarkerAlt,
-  FaVideo,
-  FaBicycle,
-  FaMotorcycle,
-  FaBus,
-  FaEye,
-  FaChevronLeft,
-  FaChevronRight,
+  FaSpinner,
+  FaCheckSquare,
+  FaCarCrash,
+  FaTools,
+  FaExclamationTriangle,
+  FaChartBar,
+  FaHistory,
+  FaTimes,
+  FaRoad,
+  FaFireAlt,
 } from "react-icons/fa";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-import { useMap } from "react-leaflet";
-import { BarChart } from '../../components/ui/BarChart';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import { Bar } from "react-chartjs-2";
 
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
+// --- Imports Components ---
+import DateTimeDisplay from "../../components/ui/DateTimeDisplay";
+import IncidentMap from "../../components/ui/IncidentMap";
+import HotspotsPanel from "../../components/ui/HotspotsPanel";
+import IncidentTable from "../../components/ui/IncidentTable";
+// Import IncidentStats เข้ามาใช้งาน
+import IncidentStats from "../../components/ui/IncidentStats";
 
-function FitBounds({ incidents }) {
-  const map = useMap();
+// --- MOCK DATA SECTION ---
 
-  useEffect(() => {
-    if (!incidents || incidents.length === 0) return;
+const incidentData = [
+  // --- 1. ระบบเก็บและแสดงข้อมูลอุบัติเหตุ (สีแดง) ---
+  {
+    id: "AC-2025001",
+    type: "อุบัติเหตุ",
+    subtype: "crash",
+    location: "ถนนพหลโยธิน หน้าเซ็นทรัลลาดพร้าว",
+    datetime: "2025-02-03 08:15:00",
+    severity: "High",
+    status: "New",
+    cctv: true,
+    lat: 13.816,
+    lng: 100.561,
+    brand: "Honda",
+    color: "ดำ",
+    plate: "กข 1234",
+  },
+  {
+    id: "AC-2025002",
+    type: "อุบัติเหตุ",
+    subtype: "rollover",
+    location: "ทางพิเศษศรีรัช ช่วงทางลงอนุสาวรีย์ชัยฯ",
+    datetime: "2025-02-03 09:30:00",
+    severity: "High",
+    status: "Verified",
+    cctv: true,
+    lat: 13.766,
+    lng: 100.536,
+    brand: "Isuzu",
+    color: "ขาว",
+    plate: "ถน 999",
+  },
+  {
+    id: "AC-2025003",
+    type: "อุบัติเหตุ",
+    subtype: "breakdown",
+    location: "ถนนเพชรบุรีตัดใหม่ ใกล้แยกคลองตัน",
+    datetime: "2025-02-03 10:05:00",
+    severity: "Medium",
+    status: "In Progress",
+    cctv: false,
+    lat: 13.743,
+    lng: 100.598,
+    brand: "Toyota",
+    color: "เทา",
+    plate: "2กข 5566",
+  },
 
-    const bounds = L.latLngBounds(
-      incidents.map((i) => [i.lat, i.lng])
-    );
+  // --- 2. ระบบเก็บและแสดงข้อมูลสิ่งกีดขวางบนถนน (สีเหลือง) ---
+  {
+    id: "OB-2025001",
+    type: "สิ่งกีดขวาง",
+    subtype: "debris",
+    location: "ถนนพระราม 4 หน้าสวนลุมพินี",
+    datetime: "2025-02-03 07:45:00",
+    severity: "Low",
+    status: "Verified",
+    cctv: true,
+    lat: 13.729,
+    lng: 100.541,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "OB-2025002",
+    type: "สิ่งกีดขวาง",
+    subtype: "natural",
+    location: "ถนนสุขุมวิท ซอย 24 (ต้นไม้ล้มขวางทาง)",
+    datetime: "2025-02-03 11:20:00",
+    severity: "Medium",
+    status: "In Progress",
+    cctv: false,
+    lat: 13.731,
+    lng: 100.565,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "OB-2025003",
+    type: "สิ่งกีดขวาง",
+    subtype: "collapse",
+    location: "เขตก่อสร้างรถไฟฟ้า ถนนลาดพร้าว",
+    datetime: "2025-02-03 12:00:00",
+    severity: "High",
+    status: "New",
+    cctv: true,
+    lat: 13.785,
+    lng: 100.585,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
 
-    map.fitBounds(bounds, {
-      padding: [40, 40],
-      maxZoom: 20,
-    });
-  }, [incidents, map]);
+  // --- 3. ระบบเก็บและแสดงข้อมูลเหตุการณ์อันตรายพิเศษ (สีน้ำเงิน) ---
+  {
+    id: "HZ-2025001",
+    type: "อันตรายพิเศษ",
+    subtype: "fire",
+    location: "ชุมชนใกล้ถนนพระราม 3",
+    datetime: "2025-02-03 13:10:00",
+    severity: "High",
+    status: "New",
+    cctv: true,
+    lat: 13.697,
+    lng: 100.531,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "HZ-2025002",
+    type: "อันตรายพิเศษ",
+    subtype: "chemical",
+    location: "ถ.กาญจนาภิเษก ช่วงคลังสินค้า",
+    datetime: "2025-02-03 14:00:00",
+    severity: "High",
+    status: "In Progress",
+    cctv: true,
+    lat: 13.702,
+    lng: 100.412,
+    brand: "Truck",
+    color: "เหลือง",
+    plate: "80-xxxx",
+  },
+  {
+    id: "HZ-2025003",
+    type: "อันตรายพิเศษ",
+    subtype: "smoke",
+    location: "อุโมงค์ดินแดง (กลุ่มควันหนาแน่น)",
+    datetime: "2025-02-03 15:45:00",
+    severity: "Medium",
+    status: "Verified",
+    cctv: true,
+    lat: 13.762,
+    lng: 100.551,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
 
-  return null;
+  // --- 4. ความผิดปกติของถนนและระบบกำกับจราจร (สีส้ม) ---
+  {
+    id: "RG-2025001",
+    type: "ความผิดปกติ",
+    subtype: "road_work",
+    location: "ถนนวิภาวดีรังสิต ขาออก กม. 18",
+    datetime: "2025-02-03 22:00:00",
+    severity: "Medium",
+    status: "Verified",
+    cctv: true,
+    lat: 13.832,
+    lng: 100.556,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "RG-2025002",
+    type: "ความผิดปกติ",
+    subtype: "traffic_light",
+    location: "แยกอโศก-มนตรี",
+    datetime: "2025-02-03 16:30:00",
+    severity: "Medium",
+    status: "In Progress",
+    cctv: true,
+    lat: 13.737,
+    lng: 100.56,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "RG-2025003",
+    type: "ความผิดปกติ",
+    subtype: "breakdown",
+    location: "บนสะพานพระราม 8 ขาเข้า",
+    datetime: "2025-02-03 17:15:00",
+    severity: "Low",
+    status: "New",
+    cctv: true,
+    lat: 13.769,
+    lng: 100.493,
+    brand: "Mazda",
+    color: "แดง",
+    plate: "3กย 789",
+  },
+
+  // --- ข้อมูลเพิ่มเติม ---
+  {
+    id: "AC-2025004",
+    type: "อุบัติเหตุ",
+    subtype: "crash",
+    location: "แยกปทุมวัน",
+    datetime: "2025-02-03 18:00:00",
+    severity: "Medium",
+    status: "In Progress",
+    cctv: true,
+    lat: 13.746,
+    lng: 100.53,
+    brand: "Bus",
+    color: "น้ำเงิน",
+    plate: "10-2233",
+  },
+  {
+    id: "OB-2025004",
+    type: "สิ่งกีดขวาง",
+    subtype: "debris",
+    location: "ถ.บรมราชชนนี",
+    datetime: "2025-02-03 18:30:00",
+    severity: "Low",
+    status: "Verified",
+    cctv: false,
+    lat: 13.785,
+    lng: 100.456,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "RG-2025004",
+    type: "ความผิดปกติ",
+    subtype: "road_work",
+    location: "ถ.รามคำแหง",
+    datetime: "2025-02-03 19:00:00",
+    severity: "Low",
+    status: "Verified",
+    cctv: true,
+    lat: 13.759,
+    lng: 100.615,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "HZ-2025004",
+    type: "อันตรายพิเศษ",
+    subtype: "fire",
+    location: "โกดังสินค้า ราษฎร์บูรณะ",
+    datetime: "2025-02-03 19:45:00",
+    severity: "High",
+    status: "New",
+    cctv: true,
+    lat: 13.682,
+    lng: 100.505,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "AC-2025005",
+    type: "อุบัติเหตุ",
+    subtype: "rollover",
+    location: "วงแหวนกาญจนา",
+    datetime: "2025-02-03 20:15:00",
+    severity: "High",
+    status: "In Progress",
+    cctv: false,
+    lat: 13.65,
+    lng: 100.43,
+    brand: "Truck",
+    color: "ส้ม",
+    plate: "70-xxxx",
+  },
+  {
+    id: "RG-2025005",
+    type: "ความผิดปกติ",
+    subtype: "traffic_light",
+    location: "แยกดินแดง",
+    datetime: "2025-02-03 20:45:00",
+    severity: "Medium",
+    status: "New",
+    cctv: true,
+    lat: 13.762,
+    lng: 100.54,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "OB-2025005",
+    type: "สิ่งกีดขวาง",
+    subtype: "natural",
+    location: "ถนนนครอินทร์",
+    datetime: "2025-02-03 21:00:00",
+    severity: "Low",
+    status: "Verified",
+    cctv: true,
+    lat: 13.827,
+    lng: 100.46,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "AC-2025006",
+    type: "อุบัติเหตุ",
+    subtype: "breakdown",
+    location: "ทางด่วนฉลองรัช",
+    datetime: "2025-02-03 21:30:00",
+    severity: "Low",
+    status: "In Progress",
+    cctv: true,
+    lat: 13.79,
+    lng: 100.605,
+    brand: "Nissan",
+    color: "น้ำเงิน",
+    plate: "1กข 4455",
+  },
+  {
+    id: "HZ-2025005",
+    type: "อันตรายพิเศษ",
+    subtype: "smoke",
+    location: "ถ.กิ่งแก้ว",
+    datetime: "2025-02-03 22:15:00",
+    severity: "Medium",
+    status: "Verified",
+    cctv: false,
+    lat: 13.655,
+    lng: 100.685,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "RG-2025006",
+    type: "ความผิดปกติ",
+    subtype: "road_work",
+    location: "ถ.สาทรใต้",
+    datetime: "2025-02-03 23:00:00",
+    severity: "Low",
+    status: "In Progress",
+    cctv: true,
+    lat: 13.722,
+    lng: 100.528,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "OB-2025006",
+    type: "สิ่งกีดขวาง",
+    subtype: "collapse",
+    location: "ถ.ประชาชื่น",
+    datetime: "2025-02-03 23:30:00",
+    severity: "High",
+    status: "New",
+    cctv: true,
+    lat: 13.82,
+    lng: 100.538,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+  {
+    id: "AC-2025007",
+    type: "อุบัติเหตุ",
+    subtype: "crash",
+    location: "แยกราชประสงค์",
+    datetime: "2025-02-04 00:15:00",
+    severity: "Medium",
+    status: "New",
+    cctv: true,
+    lat: 13.744,
+    lng: 100.54,
+    brand: "Taxi",
+    color: "เหลืองเขียว",
+    plate: "ทห 111",
+  },
+  {
+    id: "HZ-2025006",
+    type: "อันตรายพิเศษ",
+    subtype: "chemical",
+    location: "ท่าเรือคลองเตย",
+    datetime: "2025-02-04 01:00:00",
+    severity: "High",
+    status: "Verified",
+    cctv: true,
+    lat: 13.708,
+    lng: 100.575,
+    brand: "-",
+    color: "-",
+    plate: "-",
+  },
+];
+
+const hotspotsData = [
+  {
+    rank: 1,
+    location: "แยกรัชโยธิน",
+    incidentCount: 15,
+    severityLevel: "Critical",
+    mostCommonType: "รถชน",
+    trend: "+20%",
+    activeIncidents: [
+      { id: "HZ-001", type: "รถชน" },
+      { id: "HZ-002", type: "รถชน" },
+    ],
+  },
+  {
+    rank: 2,
+    location: "สะพานตากสิน",
+    incidentCount: 12,
+    severityLevel: "High",
+    mostCommonType: "รถเสีย",
+    trend: "+5%",
+    activeIncidents: [{ id: "VH-003", type: "รถเสีย" }],
+  },
+  {
+    rank: 3,
+    location: "แยกศาลาแดง",
+    incidentCount: 8,
+    severityLevel: "Medium",
+    mostCommonType: "ฝ่าไฟแดง",
+    trend: "-10%",
+    activeIncidents: [],
+  },
+];
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+);
+
+// --- History Modal ---
+function HistoryModal({ hotspot, onClose }) {
+  if (!hotspot) return null;
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <div className="bg-gray-50 px-4 py-3 border-b flex justify-between items-center sticky top-0">
+          <div>
+            <h3 className="text-lg font-bold text-gray-800">
+              {hotspot.location}
+            </h3>
+            <span className="text-xs text-gray-500">ประวัติเหตุการณ์</span>
+          </div>
+          <button onClick={onClose}>
+            <FaTimes className="text-gray-400 hover:text-red-500 text-xl" />
+          </button>
+        </div>
+        <div className="p-4 overflow-y-auto space-y-4">
+          {hotspot.history?.map((item, idx) => (
+            <div key={idx} className="flex gap-3 border-b pb-2 last:border-0">
+              <div
+                className={`w-2 h-full rounded-full ${item.type.includes("ชน") ? "bg-red-500" : "bg-blue-500"}`}
+              ></div>
+              <div>
+                <div className="font-bold text-sm">{item.type}</div>
+                <div className="text-xs text-gray-500">ID: {item.id}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
 }
 
+// --- Main Dashboard ---
 function IncidentAccidentDashboard() {
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [selectedHotspot, setSelectedHotspot] = useState(null);
 
-  const incidents = [
-    {
-      id: "#1061",
-      type: "รถยนต์",
-      vehicle: "Bus",
-      location: "ถนนพหลโยธิน กรุงเทพมหานคร",
-      datetime: "7/10/2568 16:28:59",
-      severity: "Severe",
-      status: "Verified",
-      cctv: true,
-      lat: 13.812657,
-      lng: 100.717611,
-    },
-    {
-      id: "#1024",
-      type: "รถยนต์",
-      vehicle: "Bicycle",
-      location: "ถนนพระรามที่ 4 กรุงเทพมหานคร",
-      datetime: "26/9/2568 16:28:59",
-      severity: "Minor",
-      status: "In-Process",
-      cctv: true,
-      lat: 13.813343,
-      lng: 100.718194,
-    },
-    {
-      id: "#1042",
-      type: "รถยนต์",
-      vehicle: "Bus",
-      location: "ถนนสุขุมวิท กรุงเทพมหานคร",
-      datetime: "20/9/2568 16:28:59",
-      severity: "Minor",
-      status: "Verified",
-      cctv: true,
-      lat: 13.812528,
-      lng: 100.718307,
-    },
-    {
-      id: "#1021",
-      type: "รถยนต์",
-      vehicle: "Motorcycle",
-      location: "ถนนพระรามที่ 4 กรุงเทพมหานคร",
-      datetime: "20/9/2568 16:28:59",
-      severity: "Minor",
-      status: "Verified",
-      cctv: true,
-      lat: 13.812129,
-      lng: 100.717101,
-    },
-    {
-      id: "#1027",
-      type: "รถยนต์",
-      vehicle: "Bicycle",
-      location: "ถนนพหลโยธิน กรุงเทพมหานคร",
-      datetime: "19/9/2568 16:28:59",
-      severity: "Severe",
-      status: "Verified",
-      cctv: true,
-      lat: 13.812865,
-      lng: 100.717024,
-    },
+  // --- 1. Data Adapter (Updated Logic) ---
+  const incidents = useMemo(() => {
+    return incidentData.map((item) => {
+      // 1.1 จัด Category ให้ตรงกับ Prefix ของ ID และ Subtype ใน incidentData
+      let category = "อื่นๆ";
 
-    // ===== random ใกล้ center =====
-    {
-      id: "#1029",
-      type: "รถจักรยาน",
-      vehicle: "Car",
-      location: "ถนนสาทรใต้ เขตสาทร",
-      datetime: "19/9/2568 16:28:59",
-      severity: "Severe",
-      status: "New",
-      cctv: true,
-      lat: 13.813120,
-      lng: 100.717880,
-    },
-    {
-      id: "#1020",
-      type: "รถยนต์",
-      vehicle: "Bicycle",
-      location: "ถนนพหลโยธิน กรุงเทพมหานคร",
-      datetime: "16/9/2568 16:28:59",
-      severity: "Minor",
-      status: "New",
-      cctv: true,
-      lat: 13.812300,
-      lng: 100.718050,
-    },
-    {
-      id: "#1043",
-      type: "รถยนต์",
-      vehicle: "Bus",
-      location: "ถนนพระรามที่ 4 กรุงเทพมหานคร",
-      datetime: "12/9/2568 16:28:59",
-      severity: "Severe",
-      status: "Closed",
-      cctv: true,
-      lat: 13.813500,
-      lng: 100.716950,
-    },
-    {
-      id: "#1012",
-      type: "รถยนต์",
-      vehicle: "Motorcycle",
-      location: "ถนนพหลโยธิน กรุงเทพมหานคร",
-      datetime: "11/9/2568 16:28:59",
-      severity: "Moderate",
-      status: "Verified",
-      cctv: true,
-      lat: 13.812050,
-      lng: 100.717950,
-    },
-    {
-      id: "#1015",
-      type: "รถยนต์",
-      vehicle: "Motorcycle",
-      location: "ถนนพหลโยธิน กรุงเทพมหานคร",
-      datetime: "11/9/2568 16:28:59",
-      severity: "Moderate",
-      status: "Closed",
-      cctv: true,
-      lat: 13.813750,
-      lng: 100.718300,
-    },
-  ];
+      if (item.id.startsWith("AC")) {
+        category = item.subtype === "breakdown" ? "รถเสีย" : "อุบัติเหตุ";
+      } else if (item.id.startsWith("OB")) {
+        category = "สิ่งกีดขวาง";
+      } else if (item.id.startsWith("HZ")) {
+        category = "อันตราย";
+      } else if (item.id.startsWith("RG")) {
+        if (item.subtype === "breakdown") category = "รถเสีย";
+        else if (item.subtype === "road_work") category = "ก่อสร้าง";
+        else category = "จราจร";
+      }
 
+      // 1.2 สร้างข้อมูลยานพาหนะ (Vehicle Info)
+      let vehicleInfo = "-";
 
-  const totalPages = Math.ceil(incidents.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentIncidents = incidents.slice(startIndex, endIndex);
+      if (item.brand && item.brand !== "-") {
+        vehicleInfo = `${item.brand} ${item.color !== "-" ? item.color : ""} ${item.plate !== "-" ? "(" + item.plate + ")" : ""}`;
+      } else if (
+        item.subtype &&
+        (category === "รถเสีย" || category === "อุบัติเหตุ")
+      ) {
+        const parts = item.subtype.split("_");
+        if (parts.length > 1) {
+          const typeName = parts[1];
+          vehicleInfo = typeName.charAt(0).toUpperCase() + typeName.slice(1);
+        } else {
+          vehicleInfo =
+            item.subtype.charAt(0).toUpperCase() + item.subtype.slice(1);
+        }
+      }
 
-  const getSeverityColor = (severity) => {
-    switch (severity) {
-      case "Severe": return "text-red-500 bg-red-50";
-      case "Moderate": return "text-yellow-600 bg-yellow-50";
-      case "Minor": return "text-green-600 bg-green-50";
-      default: return "text-gray-500 bg-gray-50";
-    }
+      return {
+        ...item,
+        type: item.type,
+        category: category,
+        subtype: item.subtype,
+        datetime: item.datetime,
+        vehicle: vehicleInfo,
+        displayStatus:
+          item.status === "New"
+            ? "New"
+            : item.status === "Closed"
+              ? "Closed"
+              : "In-Process",
+      };
+    });
+  }, []);
+
+  const hotspots = useMemo(() => {
+    return hotspotsData.map((h) => ({
+      ...h,
+      count: h.incidentCount,
+      level:
+        h.severityLevel === "Critical"
+          ? "วิกฤต"
+          : h.severityLevel === "High"
+            ? "สูง"
+            : "กลาง",
+      detail: `${h.mostCommonType} (${h.trend})`,
+      history: h.activeIncidents.map((inc) => ({
+        id: inc.id,
+        type: inc.type,
+        status: "Active",
+      })),
+    }));
+  }, []);
+
+  // --- Stats Calculation สำหรับ Section 2 (Categorization Counts) ---
+  const statCounts = useMemo(() => {
+    return {
+      accident: incidents.filter(
+        (i) => i.category === "อุบัติเหตุ" || i.category === "อันตราย",
+      ).length,
+      breakdown: incidents.filter((i) => i.category === "รถเสีย").length,
+      obstruction: incidents.filter((i) => i.category === "สิ่งกีดขวาง").length,
+      traffic: incidents.filter(
+        (i) => i.category === "จราจร" || i.category === "ก่อสร้าง",
+      ).length,
+    };
+  }, [incidents]);
+
+  // --- Chart Config ---
+  const chartData = {
+    labels: Array.from(
+      { length: 12 },
+      (_, i) => `${(i * 2).toString().padStart(2, "0")}:00`,
+    ),
+    datasets: [
+      {
+        label: "New",
+        data: [2, 4, 1, 5, 2, 3, 6, 4, 2, 1, 3, 2],
+        backgroundColor: "#EF4444",
+        borderRadius: 4,
+      },
+      {
+        label: "Resolved",
+        data: [1, 3, 2, 4, 3, 4, 5, 3, 3, 2, 4, 3],
+        backgroundColor: "#10B981",
+        borderRadius: 4,
+      },
+    ],
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "Verified": return "text-yellow-700 bg-yellow-100";
-      case "In-Process": return "text-orange-600 bg-orange-100";
-      case "New": return "text-blue-600 bg-blue-100";
-      case "Closed": return "text-gray-600 bg-gray-200";
-      default: return "text-gray-500 bg-gray-100";
-    }
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: "top",
+        align: "end",
+        labels: { boxWidth: 10, usePointStyle: true },
+      },
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { grid: { borderDash: [4, 4] } },
+    },
   };
-  // ข้อมูลสำหรับ Bar Chart
-  const barData = Array.from({ length: 24 }, (_, i) => ({
-    hour: `${i.toString().padStart(2, '0')}:00`,
-    vehicles: Math.floor(Math.random() * 60) + 10,
-    speed: Math.floor(Math.random() * 30) + 40
-  }));
+
+  // --- Reusable Stat Card Component (ใช้เฉพาะ Section 2 แล้ว) ---
+  const StatCard = ({
+    title,
+    count,
+    icon: Icon,
+    colorClass,
+    bgClass,
+    borderClass,
+  }) => (
+    <div
+      className={`p-4 rounded-xl shadow-sm border ${bgClass} ${borderClass} flex items-center justify-between transition-transform hover:scale-[1.02] duration-200`}
+    >
+      <div className="flex flex-col">
+        <span className="text-gray-500 text-xs font-bold uppercase tracking-wider mb-1">
+          {title}
+        </span>
+        <span className={`text-2xl font-bold ${colorClass}`}>{count}</span>
+      </div>
+      <div
+        className={`w-12 h-12 rounded-full flex items-center justify-center text-xl bg-white ${colorClass} shadow-sm`}
+      >
+        <Icon />
+      </div>
+    </div>
+  );
+
   return (
-    <div className="fix-function-page-y-auto p-6 bg-white flex flex-col gap-6">
-      {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm p-4">
-        <h2 className="text-xl font-bold text-gray-800">Dashboard</h2>
-        <p className="text-sm text-gray-500">Vehicle Incident Data</p>
-      </div>
+    <div className="h-screen overflow-y-auto w-full bg-slate-50 p-4 md:p-6 font-sans text-gray-800 pb-20">
+      <HistoryModal
+        hotspot={selectedHotspot}
+        onClose={() => setSelectedHotspot(null)}
+      />
 
-      {/* สรุปเหตุการณ์ทั้งหมด */}
-      <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">สรุปเหตุการณ์ทั้งหมด</h3>
-        <div className="grid grid-cols-4 gap-4">
-          {[
-            { label: "เหตุการณ์ทั้งหมด", value: 5, color: "text-blue-600", bgColor: "bg-blue-50" },
-            { label: "ใหม่ (Active)", value: 2, color: "text-red-500", bgColor: "bg-red-50" },
-            { label: "กำลังดำเนินการ", value: 2, color: "text-orange-500", bgColor: "bg-orange-50" },
-            { label: "แก้ไขแล้ว", value: 1, color: "text-green-600", bgColor: "bg-green-50" },
-          ].map((item, i) => (
-            <div key={i} className={`p-6 ${item.bgColor} rounded-lg shadow-sm flex flex-col items-center justify-center`}>
-              <p className="text-gray-600 text-sm mb-2">{item.label}</p>
-              <p className={`text-4xl font-bold ${item.color}`}>{item.value}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ประเภทเหตุการณ์ */}
-      <div>
-        <h3 className="text-sm font-semibold text-gray-700 mb-3">ประเภทเหตุการณ์</h3>
-        <div className="grid grid-cols-3 gap-4">
-          {[
-            { label: "อุบัติเหตุ/เฉี่ยวชน", value: 2, icon: <FaCar />, color: "text-purple-600", bgColor: "bg-purple-50" },
-            { label: "สิ่งกีดขวาง", value: 2, icon: <FaExclamationTriangle />, color: "text-yellow-600", bgColor: "bg-yellow-50" },
-            { label: "กิจกรรมพิเศษ", value: 1, icon: <FaBell />, color: "text-blue-600", bgColor: "bg-blue-50" },
-          ].map((item, i) => (
-            <div key={i} className={`p-6 ${item.bgColor} rounded-lg shadow-sm flex items-center gap-4`}>
-              <div className={`text-3xl ${item.color}`}>{item.icon}</div>
-              <div>
-                <p className="text-gray-600 text-sm">{item.label}</p>
-                <p className={`text-3xl font-bold ${item.color}`}>{item.value}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Alert Warning */}
-      <div className="w-full p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-3">
-        <div className="bg-red-100 p-2 rounded-full">
-          <FaBell className="text-lg text-red-600" />
-        </div>
-        <div>
-          <span className="font-semibold">แจ้งเตือนความหนาแน่นสูง</span>
-          <p className="text-sm">ผลการคาดการณ์บริเวณจุดต่าง ๆ 5 รายการ และอัตโนมัติ 1 รายการ ที่ตรวจจับพบว่ามีความหนาแน่นสูงเข้มข้น</p>
-        </div>
-      </div>
-
-      {/* Map & Hotspots */}
-      <div className="grid grid-cols-3 gap-4">
-        {/* Map */}
-        <div className="col-span-2 bg-white rounded-lg shadow-sm overflow-hidden h-full">
-          {/* <div className="bg-gray-800 text-white p-3 flex items-center gap-2">
-            <FaMapMarkerAlt />
-            <span className="text-sm font-medium">แผนที่จุด - กรุงเทพมหานคร</span>
-          </div> */}
-
-          <div className="h-full">
-            <MapContainer
-              center={[13.7563, 100.5018]}
-              zoom={11}
-              className="h-full w-full"
-            >
-              <TileLayer
-                attribution="&copy; OpenStreetMap"
-                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-              />
-
-              {/* ⭐ auto zoom ตาม incident */}
-              <FitBounds incidents={incidents} />
-
-              {incidents.map((i) => (
-                <Marker key={i.id} position={[i.lat, i.lng]}>
-                  <Popup>
-                    <p className="font-semibold">{i.id}</p>
-                    <p>{i.location}</p>
-                    <p className="text-xs">{i.datetime}</p>
-                    <p className="text-xs text-red-500">
-                      ระดับ: {i.severity}
-                    </p>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
-
-          </div>
-
-        </div>
-
-        {/* Hotspots */}
-        <div className="space-y-3">
-          <h3 className="text-sm font-semibold text-gray-700 mb-2">จุดเกิดเหตุบ่อย (Hotspots)</h3>
-          {[
-            { id: 1, location: "ถนนพหลโยธิน", time: "15 นาทีที่แล้ว", detail: "บริเวณจุดตัดแยกกับถนนพระราม 6", level: "สูง", count: 12 },
-            { id: 2, location: "ถนนพระราม 4", time: "จาม", detail: "ช่วงสะพานข้ามคลอง แยกสี่แยกมหานาค", level: "กลาง", count: 10 },
-            { id: 3, location: "ถนนสุขุมวิท", time: "11 นาทีที่แล้ว", detail: "ช่วงห้าแยกอโศก - สถานีบีทีเอส อโศก", level: "ปานกลาง", count: 8 },
-            { id: 4, location: "ถนนรัชดาภิเษก", time: "จาม", detail: "บริเวณหัวลำโพง ใกล้สถานีรถไฟฟ้า MRT", level: "กลาง", count: 7 },
-            { id: 5, location: "ทางด่วนกรุงเทพ", time: "11 นาทีที่แล้ว", detail: "ช่วงบางนา-อาจณรงค์ ช่วงเข้าออกที่ 2", level: "สูง", count: 9 },
-          ].map((spot) => (
-            <div key={spot.id} className="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-2">
-                <div>
-                  <p className="font-bold text-gray-800">#{spot.id} {spot.location}</p>
-                  <p className="text-xs text-gray-500">{spot.time}</p>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded ${spot.level === 'สูง' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'}`}>
-                  {spot.count}
-                </span>
-              </div>
-              <p className="text-xs text-gray-600 mb-2">{spot.detail}</p>
-              <div className="flex items-center gap-2">
-                <button className="text-xs bg-gray-100 hover:bg-gray-200 px-2 py-1 rounded">รายละเอียด</button>
-                <span className="text-xs text-gray-500">อัปเดต: 2021-03-18 13:30:20</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 24h Graph */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold text-gray-800">แนวโน้มเหตุการณ์ (24 ชั่วโมง)</h3>
-          <div className="flex gap-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-red-500 rounded"></div>
-              <span className="text-gray-600">เหตุการณ์ที่เกิดขึ้น</span>
-              <span className="font-semibold text-red-500">59 รายการ</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-green-500 rounded"></div>
-              <span className="text-gray-600">แก้ไขแล้ว</span>
-              <span className="font-semibold text-green-600">43 รายการ</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-gray-600">อัตราความสำเร็จ</span>
-              <span className="font-semibold text-blue-600">73%</span>
-            </div>
+      {/* --- Header --- */}
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
+        <div className="flex items-center gap-3">
+          <span className="text-red-600 bg-red-50 p-2 rounded-lg">
+            <FaCarCrash className="w-6 h-6" />
+          </span>
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-slate-800">
+              Traffic Incident
+            </h1>
+            <p className="text-xs text-slate-500">
+              Real-time Monitoring Dashboard
+            </p>
           </div>
         </div>
-        <div className="mb-6">
-          <BarChart 
-            data={barData}
-            height={300}
-            title="📊 ปริมาณรถตามเวลา"
-            showTitle={true}
-            colors={['#8B5CF6', '#EF4444']}
+        <DateTimeDisplay />
+      </div>
+
+      {/* --- Section 1: สถานะการดำเนินการ (Operational Status) นำ IncidentStats มาใช้ --- */}
+      <div className="mb-6">
+        <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-3 text-sm md:text-base">
+          <FaLayerGroup className="text-blue-500" /> สถานะการดำเนินการ
+          (Operational Status)
+        </h3>
+        
+        {/* เรียกใช้ Component ที่แยกไว้ */}
+        <IncidentStats incidents={incidents} />
+
+      </div>
+
+      {/* --- Section 2: จำแนกตามประเภท (Categorization) --- */}
+      <div className="mb-6">
+        <h3 className="font-bold text-gray-800 flex items-center gap-2 mb-3 text-sm md:text-base">
+          <FaCheckSquare className="text-indigo-500" /> จำแนกตามประเภท
+          (Categorization)
+        </h3>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard
+            title="อุบัติเหตุ / อันตราย"
+            count={statCounts.accident}
+            icon={FaCarCrash}
+            colorClass="text-purple-600"
+            bgClass="bg-purple-50"
+            borderClass="border-purple-200"
+          />
+          <StatCard
+            title="ยานพาหนะขัดข้อง"
+            count={statCounts.breakdown}
+            icon={FaTools}
+            colorClass="text-orange-600"
+            bgClass="bg-orange-50"
+            borderClass="border-orange-200"
+          />
+          <StatCard
+            title="สิ่งกีดขวาง / ภัยธรรมชาติ"
+            count={statCounts.obstruction}
+            icon={FaExclamationTriangle}
+            colorClass="text-yellow-600"
+            bgClass="bg-yellow-50"
+            borderClass="border-yellow-200"
+          />
+          <StatCard
+            title="จราจร / กิจกรรม / ก่อสร้าง"
+            count={statCounts.traffic}
+            icon={FaRoad}
+            colorClass="text-blue-600"
+            bgClass="bg-blue-50"
+            borderClass="border-blue-200"
           />
         </div>
       </div>
 
-      {/* Traffic Speed */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h3 className="font-semibold text-gray-800 mb-4">สภาพการจราจร</h3>
-        <div className="space-y-4">
-          {[
-            { road: "ทางหลวง 1", speed: 25, maxSpeed: 80, color: "bg-red-500", label: "ติดขัด" },
-            { road: "ทางด่วนพิเศษ", speed: 65, maxSpeed: 100, color: "bg-yellow-500", label: "ปานกลาง" },
-            { road: "ถนนพระราม 4", speed: 20, maxSpeed: 60, color: "bg-red-600", label: "ติดขัดมาก" },
-            { road: "ถนนรัชดาภิเษก", speed: 55, maxSpeed: 80, color: "bg-green-500", label: "คล่องตัว" },
-            { road: "ทางหลวง 9", speed: 70, maxSpeed: 90, color: "bg-green-600", label: "คล่องตัวดี" },
-          ].map((r, i) => (
-            <div key={i}>
-              <div className="flex justify-between text-sm mb-2">
-                <span className="font-medium text-gray-700">{r.road}</span>
-                <div className="flex items-center gap-3">
-                  <span className="text-gray-600">{r.speed} กม./ชม.</span>
-                  <span className={`text-xs px-2 py-1 rounded ${r.speed < 30 ? 'bg-red-100 text-red-700' : r.speed < 50 ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
-                    {r.label}
-                  </span>
-                  <span className="text-xs text-gray-500">เฉลี่ย {r.maxSpeed} กม./ชม.</span>
-                </div>
-              </div>
-              <div className="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
-                <div className={`h-full ${r.color} rounded-full transition-all`} style={{ width: `${(r.speed / r.maxSpeed) * 100}%` }}></div>
-              </div>
-            </div>
-          ))}
+      {/* --- Section 3: Map & Hotspots --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-[500px] relative z-0">
+          <IncidentMap
+            incidents={incidents}
+            mapCenter={[13.78, 100.56]}
+            zoom={11}
+          />
+        </div>
+        <div className="lg:col-span-1 h-[500px]">
+          <HotspotsPanel
+            hotspots={hotspots}
+            onHotspotClick={setSelectedHotspot}
+          />
         </div>
       </div>
 
-      {/* Latest Incidents Table */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold text-gray-800">เหตุการณ์ล่าสุด</h3>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
-              <FaSearch className="text-gray-400" />
-              <input className="bg-transparent outline-none text-sm w-48" placeholder="ค้นหารายการเหตุการณ์นี้..." />
-            </div>
-            <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none">
-              <option>ทั้งหมด</option>
-            </select>
-            <select className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none">
-              <option>ทั้งหมด</option>
-            </select>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700">แสดง 30 รายการ</button>
+      {/* --- Section 4: Graphs & Table --- */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Graph */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-200 h-[350px]">
+          <div className="flex items-center gap-2 mb-4">
+            <FaChartBar className="text-blue-500" />
+            <h3 className="font-semibold text-gray-800">
+              แนวโน้มเหตุการณ์ (24 ชม.)
+            </h3>
+          </div>
+          <div className="h-[250px] w-full">
+            <Bar data={chartData} options={chartOptions} />
           </div>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-gray-200 text-gray-600 text-left">
-                <th className="py-3 px-2 font-medium">รหัส</th>
-                <th className="py-3 px-2 font-medium">ประเภทยาน</th>
-                <th className="py-3 px-2 font-medium">ประเภทเหตุ</th>
-                <th className="py-3 px-2 font-medium">ตำแหน่ง</th>
-                <th className="py-3 px-2 font-medium">วันที่-เวลา</th>
-                <th className="py-3 px-2 font-medium">ระดับ</th>
-                <th className="py-3 px-2 font-medium">สถานะ</th>
-                <th className="py-3 px-2 font-medium">กล้อง</th>
-                <th className="py-3 px-2 font-medium"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentIncidents.map((incident, i) => (
-                <tr key={i} className="border-b border-gray-100 hover:bg-gray-50">
-                  <td className="py-3 px-2 font-medium text-gray-800">{incident.id}</td>
-                  <td className="py-3 px-2 text-gray-700">{incident.type}</td>
-                  <td className="py-3 px-2 text-gray-700">{incident.vehicle}</td>
-                  <td className="py-3 px-2 text-gray-600">{incident.location}</td>
-                  <td className="py-3 px-2 text-gray-600">{incident.datetime}</td>
-                  <td className="py-3 px-2">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getSeverityColor(incident.severity)}`}>
-                      {incident.severity}
-                    </span>
-                  </td>
-                  <td className="py-3 px-2">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(incident.status)}`}>
-                      {incident.status}
-                    </span>
-                  </td>
-                  <td className="py-3 px-2">
-                    <div className="flex items-center gap-1 text-red-500">
-                      <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-                      <span className="text-xs">CCTV</span>
-                    </div>
-                  </td>
-                  <td className="py-3 px-2">
-                    <button className="text-gray-400 hover:text-gray-600">
-                      <FaEye />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Pagination */}
-        <div className="flex justify-between items-center mt-4 text-sm">
-          <span className="text-gray-600">หน้า 1 จาก 5 (500 รายการทั้งหมด)</span>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-              className="px-3 py-1 border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-50"
-              disabled={currentPage === 1}
-            >
-              <FaChevronLeft className="text-xs" />
-            </button>
-            {[...Array(Math.min(5, totalPages))].map((_, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrentPage(i + 1)}
-                className={`px-3 py-1 border rounded ${currentPage === i + 1 ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 hover:bg-gray-50'}`}
-              >
-                {i + 1}
-              </button>
+        {/* Traffic List */}
+        <div className="lg:col-span-1 bg-white rounded-xl shadow-sm p-6 border border-gray-200 h-[350px] overflow-y-auto">
+          <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+            <FaRoad className="text-gray-400" /> สภาพจราจร (เส้นทางหลัก)
+          </h3>
+          <div className="space-y-4">
+            {[
+              { n: "พหลโยธิน", s: 35, m: 80, c: "bg-yellow-500", t: "ชะลอตัว" },
+              {
+                n: "วิภาวดีรังสิต",
+                s: 70,
+                m: 100,
+                c: "bg-green-500",
+                t: "คล่องตัว",
+              },
+              { n: "ลาดพร้าว", s: 15, m: 60, c: "bg-red-600", t: "ติดขัดมาก" },
+              { n: "สุขุมวิท", s: 20, m: 60, c: "bg-red-500", t: "ติดขัด" },
+            ].map((r, i) => (
+              <div key={i} className="group">
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="font-medium text-gray-700">{r.n}</span>
+                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded">
+                    {r.t} ({r.s} km/h)
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-gray-100 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full ${r.c} rounded-full transition-all duration-500 group-hover:opacity-80`}
+                    style={{ width: `${(r.s / r.m) * 100}%` }}
+                  ></div>
+                </div>
+              </div>
             ))}
-            <span className="px-2">...</span>
-            <button
-              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-              className="px-3 py-1 border border-gray-200 rounded hover:bg-gray-50 disabled:opacity-50"
-              disabled={currentPage === totalPages}
-            >
-              <FaChevronRight className="text-xs" />
-            </button>
           </div>
+        </div>
+
+        {/* Table */}
+        <div className="lg:col-span-3">
+          <IncidentTable
+            incidents={incidents}
+            currentPage={currentPage}
+            onPageChange={setCurrentPage}
+          />
         </div>
       </div>
     </div>

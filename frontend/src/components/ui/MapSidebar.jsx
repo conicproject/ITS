@@ -1,11 +1,10 @@
-// frontend/src/components/ui/MapSidebar.jsx
-import React from 'react';
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
-import { FaMapMarkerAlt } from 'react-icons/fa';
+import React, { useState, useEffect } from 'react';
+import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, Tooltip as LeafletTooltip, useMap } from 'react-leaflet';
+import { FaMapMarkerAlt, FaImage, FaHistory, FaExclamationTriangle, FaCar, FaCamera, FaRoute, FaCheckCircle, FaPalette, FaCarSide, FaTag, FaCubes } from 'react-icons/fa';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 
-// Fix default marker icon issue in React-Leaflet
+// --- Fix Leaflet Icon ---
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
@@ -13,105 +12,211 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
 });
 
-/**
- * Component ส่วนด้านข้างแสดงแผนที่และข้อมูล
- * @param {string} cameraId - รหัสกล้อง
- * @param {Array} position - [latitude, longitude] ตำแหน่งกล้อง
- * @param {Object} stats - สถิติต่างๆ
- */
-export const MapSidebar = ({ 
-  cameraId = "1xn-2345", 
-  position = [13.7563, 100.5018], // Default: Bangkok
-  stats = {
-    totalDays: 3,
-    hasViolation: true,
-    violations: []
-  }
-}) => {
+// Component ย้ายพิกัดสมูทๆ ป้องกันแผนที่ขาว/กระพริบ
+const MapUpdater = ({ center, zoom }) => {
+  const map = useMap();
+  useEffect(() => {
+    map.setView(center, zoom, { animate: true, duration: 0.5 });
+  }, [center, zoom, map]);
+  return null;
+};
+
+const DEFAULT_DATA = {
+    plateNumber: "1กก-2345",
+    province: "กรุงเทพมหานคร", 
+    brand: "TOYOTA",
+    model: "Camry",
+    color: "ขาว",
+    vehicleType: "รถเก๋ง",
+    violationCount: 0,
+    status: "ปกติ",
+    reason: "-",
+    latestCamera: "-",
+    latestTime: "-",
+    latestLocation: "-",
+    position: [13.7763, 100.5718] 
+};
+
+export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
+  const { 
+    plateNumber, province, brand, model, color, vehicleType,
+    violationCount, status, reason, latestCamera, latestTime, latestLocation, position 
+  } = { ...DEFAULT_DATA, ...data };
+
+  const [showSequence, setShowSequence] = useState(false);
+
+  const isGreenList = status.includes('Green List') && !status.includes('No');
+  
+  const alertTheme = isGreenList ? {
+      bg: 'bg-green-50 border-green-100',
+      textHead: 'text-green-700',
+      textBody: 'text-green-600',
+      icon: <FaCheckCircle className="text-green-500 w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5" />,
+  } : {
+      bg: 'bg-red-50 border-red-100',
+      textHead: 'text-red-600',
+      textBody: 'text-red-400',
+      icon: <FaExclamationTriangle className="text-red-500 w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5" />,
+  };
+
+  const sequencePath = [
+    [13.8282, 100.5699], [13.8150, 100.5720], [13.8033, 100.5746],
+    [13.7900, 100.5735], [13.7763, 100.5718]
+  ];
+
+  const mapCenter = (enableSequence && showSequence) ? [13.8020, 100.5720] : position;
+  const mapZoom = (enableSequence && showSequence) ? 13 : 15;
+
   return (
-    <div className="bg-white rounded-lg shadow-sm p-4">
-      <h3 className="font-medium mb-3">รายละเอียดยานพาหนะ</h3>
-      
-      {/* แผนที่ Leaflet */}
-      <div className="mb-4">
-        <div className="relative rounded border border-gray-200 overflow-hidden" style={{ height: '250px' }}>
-          <MapContainer 
-            center={position} 
-            zoom={13} 
-            style={{ height: '100%', width: '100%' }}
-            scrollWheelZoom={false}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            <Marker position={position}>
-              <Popup>
-                กล้อง: {cameraId}
-              </Popup>
-            </Marker>
-          </MapContainer>
-        </div>
-        <div className="mt-2 text-sm text-gray-600 flex items-center">
-          <FaMapMarkerAlt className="w-4 h-4 mr-1" />
-          ตำแหน่งกล้อง: {cameraId}
+<div className="flex flex-col h-auto bg-white md:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-x md:border border-gray-100 overflow-hidden font-sans w-full">
+      {/* Header */}
+      <div className="px-3 py-2 md:px-6 md:py-4 border-b border-gray-50 flex justify-between items-center bg-white sticky top-0 z-20 shrink-0">
+        <div className="flex items-center gap-2 md:gap-3">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm shrink-0">
+                <FaCar className="w-4 h-4 md:w-5 md:h-5" />
+            </div>
+            <div className="min-w-0">
+                <h2 className="text-sm md:text-base font-bold text-gray-800 leading-tight truncate">ข้อมูลยานพาหนะ</h2>
+                <div className="flex items-center gap-1.5 mt-0.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
+                    <span className="text-[10px] text-gray-500 font-medium tracking-wide">Live Tracking</span>
+                </div>
+            </div>
         </div>
       </div>
 
-      {/* ภาพกล้อง */}
-      <div className="bg-black rounded mb-4 flex items-center justify-center" style={{ height: '200px' }}>
-        <div className="text-white text-sm">
-          {cameraId}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-3 md:p-5 space-y-3 md:space-y-6 bg-gray-50/30">
+        {/* Map Section */}
+        <div className="relative group rounded-xl md:rounded-2xl overflow-hidden shadow-sm border border-gray-200 bg-white shrink-0">
+            <div className="h-[160px] md:h-[220px] w-full relative z-0">
+                <MapContainer 
+                    center={mapCenter} 
+                    zoom={mapZoom} 
+                    style={{ height: '100%', width: '100%' }} 
+                    scrollWheelZoom={false} 
+                    zoomControl={false} 
+                    dragging={true}
+                >
+                    <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                    <MapUpdater center={mapCenter} zoom={mapZoom} />
+                    <Marker position={position}><Popup>{latestLocation}</Popup></Marker>
+                    {enableSequence && showSequence && (
+                        <>
+                            <Polyline positions={sequencePath} pathOptions={{ color: '#2563eb', weight: 5, opacity: 0.8, lineCap: 'round', lineJoin: 'round' }} />
+                            {sequencePath.slice(0, sequencePath.length - 1).map((pos, index) => (
+                                <CircleMarker key={index} center={pos} radius={6} pathOptions={{ color: '#2563eb', fillColor: 'white', fillOpacity: 1, weight: 2 }}>
+                                    <LeafletTooltip direction="top" permanent className="sequence-tooltip font-bold text-blue-600 text-[10px] !bg-white/90 !border-blue-100 !shadow-sm !px-1.5 !py-0.5 !rounded-md">
+                                        {index === 0 ? 'Start' : index + 1}
+                                    </LeafletTooltip>
+                                </CircleMarker>
+                            ))}
+                        </>
+                    )}
+                </MapContainer>
+            </div>
+            <div className="absolute top-2 left-2 md:top-3 md:left-3 z-[400] bg-white/95 backdrop-blur-md pl-2 pr-2 py-1 md:pr-3 md:py-1.5 rounded-lg shadow-lg border border-gray-100 flex items-center gap-2 max-w-[85%]">
+                <div className="bg-red-50 p-1 rounded-lg text-red-500 shrink-0"><FaMapMarkerAlt className="w-3 h-3" /></div>
+                <div className="min-w-0"><div className="text-[10px] md:text-xs font-bold text-gray-800 leading-none truncate">{latestLocation}</div></div>
+            </div>
+            {enableSequence && (
+                <div className="absolute bottom-2 right-2 md:bottom-3 md:right-3 z-[400]">
+                    <button onClick={() => setShowSequence(!showSequence)} className={`p-2 rounded-lg shadow-md border ${showSequence ? 'bg-blue-600 text-white border-blue-700' : 'bg-white text-gray-600'}`}>
+                        <FaRoute className="w-3.5 h-3.5" />
+                    </button>
+                </div>
+            )}
+        </div>
+
+        {/* Content Info */}
+        <div className="space-y-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+                <div className="flex flex-col gap-3 h-full">
+                    <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 text-center relative overflow-hidden shrink-0">
+                        <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${isGreenList ? 'from-green-500 to-emerald-500' : 'from-red-500 to-orange-500'}`}></div>
+                        <label className="text-[10px] text-gray-400 font-bold uppercase mb-2 block tracking-wider">ทะเบียนที่ตรวจจับได้</label>
+                        <div className="inline-block border-2 border-black rounded-lg px-6 py-2 bg-white shadow-inner max-w-full">
+                            <span className="text-2xl md:text-3xl font-black text-gray-900 block leading-none">{plateNumber}</span>
+                            <span className="text-xs font-bold text-gray-600 block mt-1">{province}</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-3 flex-1 flex flex-col justify-center">
+                        <h4 className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">รายละเอียดยานพาหนะ</h4>
+                        <div className="space-y-2.5">
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100"><FaPalette className="text-orange-500 w-3.5 h-3.5" /></div>
+                                <div><p className="text-[9px] text-gray-400 font-bold uppercase leading-none">สีรถ (Color)</p><p className="text-xs font-bold text-gray-800">{color}</p></div>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100"><FaCubes className="text-emerald-500 w-3.5 h-3.5" /></div>
+                                <div><p className="text-[9px] text-gray-400 font-bold uppercase leading-none">ประเภทรถ (Type)</p><p className="text-xs font-bold text-gray-800">{vehicleType}</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="bg-gray-900 rounded-xl overflow-hidden shadow-md relative h-auto lg:h-full flex flex-col border border-gray-700 min-h-[200px]">
+                    <div className="flex-1 flex items-center justify-center bg-black/80">
+                        <div className="text-center">
+                            <FaImage className="text-white/20 w-10 h-10 mx-auto mb-2" />
+                            <div className="text-[10px] text-white/30 font-mono">Image Car Detection</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className={`${alertTheme.bg} rounded-xl p-4 border flex items-center gap-3 w-full shadow-sm`}>
+                <div className="p-2 bg-white/50 rounded-full shrink-0">
+                    {alertTheme.icon}
+                </div>
+                <div className="min-w-0 flex-1">
+                    <div className={`text-sm font-bold ${alertTheme.textHead} mb-0.5`}>สถานะ: {status}</div>
+                    <p className={`text-xs ${alertTheme.textBody} leading-relaxed`}>
+                        {reason} 
+                        {!isGreenList && <span className="font-bold underline ml-1">{violationCount > 0 ? `(ประวัติ ${violationCount} ครั้ง)` : ''}</span>}
+                    </p>
+                </div>
+            </div>
+
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 shrink-0 pb-6"> 
+                <div className="flex items-center gap-2 mb-4">
+                    <FaHistory className="text-gray-400 w-3.5 h-3.5" />
+                    <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">ประวัติการตรวจพบ</h3>
+                </div>
+                <div className="relative border-l-2 border-dashed border-gray-200 ml-1.5 space-y-6 pl-5 py-1">
+                    {enableSequence && showSequence && (
+                        <div className="space-y-6">
+                            <div className="relative opacity-40">
+                                <div className="absolute -left-[27px] top-1 w-2.5 h-2.5 bg-gray-300 rounded-full border-2 border-white"></div>
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="text-[9px] font-bold text-gray-400 uppercase">แยกรัชโยธิน</span>
+                                    <div className="text-xs font-bold text-gray-800">14:05 น.</div>
+                                </div>
+                            </div>
+                            <div className="relative opacity-60">
+                                <div className="absolute -left-[27px] top-1 w-2.5 h-2.5 bg-gray-400 rounded-full border-2 border-white"></div>
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="text-[9px] font-bold text-gray-400 uppercase">แยกรัชดา-ลาดพร้าว</span>
+                                    <div className="text-xs font-bold text-gray-800">14:15 น.</div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    <div className="relative">
+                        <div className={`absolute -left-[27px] top-1 w-2.5 h-2.5 rounded-full border-2 border-white ring-1 ${isGreenList ? 'bg-green-500 ring-green-100' : 'bg-red-500 ring-red-100'}`}></div>
+                        <div className="flex flex-col gap-0.5">
+                            <span className="text-[9px] font-bold text-gray-400 uppercase">ตำแหน่งปัจจุบัน</span>
+                            <div className="text-sm font-bold text-gray-800">{latestTime}</div>
+                            <div className="text-xs text-gray-500 flex items-center gap-1.5">
+                                <FaCamera className="w-3 h-3 text-gray-400" />
+                                <span className="truncate">{latestCamera}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
       </div>
-
-      <button className="w-full bg-white border border-gray-300 rounded py-2 text-sm hover:bg-gray-50 transition-colors">
-        Image Cap
-      </button>
-
-      {/* สถิติ */}
-      <div className="mt-4 grid grid-cols-3 gap-4 text-center">
-        <div>
-          <div className="text-2xl font-bold text-blue-600">{stats.totalDays}</div>
-          <div className="text-xs text-gray-600">วันทั้งหมด</div>
-        </div>
-        <div>
-          {stats.hasViolation ? (
-            <div className="text-sm px-2 py-1 bg-red-100 text-red-600 rounded">
-              มีการละเมิด
-            </div>
-          ) : (
-            <div className="text-sm px-2 py-1 bg-green-100 text-green-600 rounded">
-              ไม่มีการละเมิด
-            </div>
-          )}
-        </div>
-        <div className="text-xs text-gray-600">
-          ข้อมูลเพิ่มเติม
-        </div>
-      </div>
-
-      {/* ข้อมูลการละเมิด */}
-      {stats.hasViolation && (
-        <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded">
-          <div className="text-sm font-medium text-orange-800">
-            มีข้อมูลการละเมิดในระบบ
-          </div>
-        </div>
-      )}
-
-      {/* ตารางข้อมูล */}
-      {stats.violations && stats.violations.length > 0 && (
-        <div className="mt-4 text-xs space-y-2">
-          {stats.violations.map((v, index) => (
-            <div key={index} className="grid grid-cols-3 gap-2 text-gray-600">
-              <div>{v.camera}</div>
-              <div>{v.datetime}</div>
-              <div>{v.type}</div>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   );
 };
