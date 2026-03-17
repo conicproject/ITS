@@ -155,9 +155,13 @@ const DetectLane = () => {
         {/* 1. Header & Toggle */}
         <div className="mb-4 flex items-center justify-between z-10">
             <div className="flex items-center gap-3 text-red-600">
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-full border-[3px] border-red-600 flex items-center justify-center shrink-0 shadow-sm bg-white">
-                <span className="text-sm font-black">!</span>
-              </div>
+            <div className="w-9 h-9 md:w-15 md:h-15 rounded-full border-[3px] border-red-600 flex items-center justify-center shrink-0 shadow-sm bg-white overflow-hidden">
+              <img
+                src="/assets/function_icon/enforcement_function/enforecment_5.png"
+                alt="Enforcement Icon"
+                className="w-full h-full object-cover"
+              />
+            </div>
               <h1 className="text-lg md:text-2xl font-black text-gray-800 line-clamp-1 tracking-tight">ฝ่าฝืนช่องทาง (Lane)</h1>
             </div>
 

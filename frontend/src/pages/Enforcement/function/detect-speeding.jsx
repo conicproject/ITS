@@ -111,14 +111,16 @@ const DetectSpeeding = () => {
     const filteredData = mockViolations.filter((item) => {
       const matchLpr = filters.lpr ? item.lpr.includes(filters.lpr) : true;
       const matchLocation = filters.location
-        ? item.location.includes(filters.location) || item.camera.includes(filters.location)
+        ? item.location.includes(filters.location) ||
+          item.camera.includes(filters.location)
         : true;
       const matchType = filters.type ? item.type === filters.type : true;
 
       let matchDate = true;
       if (filters.startDate || filters.endDate) {
         const itemDateStr = item.time.split(" ")[0];
-        if (filters.startDate && itemDateStr < filters.startDate) matchDate = false;
+        if (filters.startDate && itemDateStr < filters.startDate)
+          matchDate = false;
         if (filters.endDate && itemDateStr > filters.endDate) matchDate = false;
       }
 
@@ -148,7 +150,7 @@ const DetectSpeeding = () => {
   };
 
   return (
-<div className="w-full h-screen bg-gray-50 relative font-sans overflow-y-auto overflow-x-hidden pb-10">
+    <div className="w-full h-screen bg-gray-50 relative font-sans overflow-y-auto overflow-x-hidden pb-10">
       {/* --- MOBILE MODAL --- */}
       {selectedViolation && (
         <div className="fixed inset-0 z-[100] lg:hidden flex flex-col items-end justify-end sm:items-center sm:justify-center">
@@ -179,8 +181,12 @@ const DetectSpeeding = () => {
         {/* Header */}
         <div className="mb-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3 text-red-600">
-            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full border-[3px] border-red-600 flex items-center justify-center shrink-0 shadow-sm bg-white">
-              <span className="text-sm font-black">!</span>
+            <div className="w-9 h-9 md:w-15 md:h-15 rounded-full border-[3px] border-red-600 flex items-center justify-center shrink-0 shadow-sm bg-white overflow-hidden">
+              <img
+                src="/assets/function_icon/enforcement_function/enforecment_1.png"
+                alt="Enforcement Icon"
+                className="w-full h-full object-cover"
+              />
             </div>
             <h1 className="text-lg md:text-2xl font-black text-gray-800 line-clamp-1 tracking-tight">
               ตรวจจับความเร็ว
@@ -191,9 +197,15 @@ const DetectSpeeding = () => {
             onClick={() => setShowFilter(!showFilter)}
             className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm text-sm font-bold active:scale-95 transition-all text-gray-600 hover:text-blue-600 hover:border-blue-200"
           >
-            <FaFilter className={showFilter ? "text-blue-600" : "text-gray-400"} />
+            <FaFilter
+              className={showFilter ? "text-blue-600" : "text-gray-400"}
+            />
             <span>{showFilter ? "ซ่อน" : "ตัวกรอง"}</span>
-            {showFilter ? <FaChevronUp className="text-xs" /> : <FaChevronDown className="text-xs" />}
+            {showFilter ? (
+              <FaChevronUp className="text-xs" />
+            ) : (
+              <FaChevronDown className="text-xs" />
+            )}
           </button>
         </div>
 
@@ -220,7 +232,12 @@ const DetectSpeeding = () => {
 
           {/* Desktop Sidebar — sticky ติดขวาขณะ scroll ปรับ h-[calc(100vh-3rem)] */}
           <div className="hidden lg:block flex-none w-[400px] xl:w-[500px] 2xl:w-[600px] sticky top-6 h-[calc(100vh-3rem)]">
-            <MapSidebar data={getMapData(selectedViolation || (violations.length > 0 ? violations[0] : null))} />
+            <MapSidebar
+              data={getMapData(
+                selectedViolation ||
+                  (violations.length > 0 ? violations[0] : null),
+              )}
+            />
           </div>
         </div>
       </div>

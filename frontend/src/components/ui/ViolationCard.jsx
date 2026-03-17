@@ -85,16 +85,6 @@ export const ViolationCard = ({ violation, type, onClick }) => {
                 </span>
               )}
             </div>
-
-            {/* ส่วนแสดงเวลา */}
-            {violation.time && (
-              <div className="flex items-center gap-1.5 text-[11px] font-medium text-gray-400 mt-0.5">
-                <svg className="w-3.5 h-3.5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                {violation.time}
-              </div>
-            )}
             
           </div>
 
@@ -109,9 +99,9 @@ export const ViolationCard = ({ violation, type, onClick }) => {
         {fields.length > 0 && (
           <div className="grid grid-cols-2 gap-x-6 gap-y-0 border-t border-gray-100 pt-2.5 mt-2">
             {fields.map((field, idx) => {
-              if (field.key === 'time') return null;
-
-              const value = violation[field.key];
+              // แมปค่า key 'date' จาก config ไปหา violation.time ใน mock data
+              const value = field.key === 'date' ? violation.time : violation[field.key];
+              
               if (field.optional && !value) return null;
               const isHighSpeed = field.key === 'speed' && status === 'สูง';
               
