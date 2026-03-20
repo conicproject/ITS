@@ -19,16 +19,26 @@ logger = logging.getLogger(__name__)
 
 
 class DataVehicleRepository:
-    """ดึงข้อมูลจาก Oracle และบันทึกลง Postgres แบบ Realtime"""
+    _instance = None
 
     BATCH_LIMIT = 5000
 
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self):
+        if self._initialized:
+            return  # ✅ ถ้าเคย init แล้ว → ข้ามเลย
+
         logger.info("🚀 Initializing DataVehicleRepository...")
         self.oracle_conn = OracleConnection()
         self.postgres_conn = PostgresConnection()
         self.last_time = self._get_last_time_from_db()
         logger.info(f"🕓 Initial last_time = {self.last_time}")
+        self._initialized = True
 
     # ---------------- Oracle ----------------
     def _open_oracle(self):
@@ -50,7 +60,6 @@ class DataVehicleRepository:
 
     # ---------------- Postgres ----------------
     def _get_last_time_from_db(self):
-        """อ่านเวลาล่าสุดจากข้อมูลที่บันทึกใน Postgres"""
         conn = None
         cursor = None
         try:
@@ -72,7 +81,7 @@ class DataVehicleRepository:
             return last_time
 
         except Exception as e:
-            logger.exception("❌ Error reading last sync time from Postgres:")
+            logger.info("⏭️ extract_data not ready yet, using default last_time")  # ✅ ไม่มี traceback
             return datetime.now() - timedelta(minutes=5)
         finally:
             if cursor:
@@ -173,57 +182,174 @@ class DataVehicleRepository:
         finally:
             self._close_oracle()
 
-    def get_data_vehicle_5m(self):
-        """ดึงข้อมูลใหม่จาก Oracle (เฉพาะของวันนั้น และหลัง last_time)"""
+    # data_vehicle.py — แก้ record_5m ให้รับ slot time
+    def record_5m(self, slot_start: datetime, slot_end: datetime):
+        conn = None
+        cursor = None
         try:
-            self._open_oracle()
+            conn = self.postgres_conn.get_connection()
+            cursor = conn.cursor()
 
-            logger.info(f"🔍 Fetching Oracle data since {self.last_time}")
+            logger.info(f"📊 Aggregating vehicle_pass → record [{slot_start} → {slot_end}]")
 
-            # 🔹 แก้ไข: ใช้ FETCH FIRST แทน LIMIT (Oracle syntax)
             sql = """
-                SELECT pr.PROJECT_NAME, ch.CHECKPOINT_ID, ch.CHECKPOINT_NICKNAME, la.ROAD_DIRECTION,
-                       dt.DISTRICT_NAME, vt.TYPE_NAMETH, vp.PLATE_NO, p.PROVINCE_NAMETH,
-                       vu.PLATE_PIC_URL, vu.IMAGE_PATH,
-                       ch.LATITUDE, ch.LONGTITUDE, vp.LANE_NO, rd.ROAD_NAME,
-                       vc.COLOR_NAMETH, vp.VEHICLE_SPEED, vp.PASS_TIME
-                FROM XVOT_XVOTDB_USER.VEHICLE_PASS vp
-                JOIN CHECKPOINT ch ON ch.AREA_CODE = vp.AREA_CODE 
-                JOIN VEHICLE_TYPE vt ON vt.TYPE_NAME = vp.VEHICLE_TYPE
-                JOIN VEHICLE_COLOR vc ON vc.COLOR_NAME = vp.VEHICLE_COLOR
-                JOIN PROJECT pr ON pr.PROJECT_ID = ch.PROJECT_ID 
-                JOIN LANE la ON la.CHECKPOINT_ID = ch.CHECKPOINT_ID AND la.LANE_CODE = vp.LANE_NO
-                JOIN DISTRICT dt ON dt.DISTRICT_ID = ch.DISTRICT_ID
-                JOIN ROAD rd ON rd.ROAD_ID = ch.ROAD_ID
-                JOIN CAMERA c ON c.CAMERA_ID = la.CAMERA_ID
-                JOIN XVOT_XVOTDB_USER.VEHICLE_URL vu ON vu.PASS_ID = vp.PASS_ID
-                JOIN PROVINCE p ON p.PROVINCE_ID = vp.PLATE_PROVINCE
-                WHERE vp.PASS_TIME >= TRUNC(SYSDATE)
-                  AND vp.PASS_TIME < TRUNC(SYSDATE) + 1
-                  AND vp.PASS_TIME > TO_TIMESTAMP(:last_time, 'YYYY-MM-DD HH24:MI:SS')
-                ORDER BY vp.PASS_TIME
-                FETCH FIRST 100 ROWS ONLY
+                INSERT INTO records (
+                    checkpoint_id,
+                    direction,
+                    car_type_id,
+                    volume,
+                    lane_volume,
+                    lane_speed,
+                    avg_speed,
+                    time_range_id,
+                    created_date,
+                    created_at
+                )
+                SELECT
+                    cp.checkpoint_id,
+
+                    -- direction volume
+                    jsonb_object_agg(
+                        dirs.direction_index,
+                        COALESCE(agg.volume, 0)
+                    ) AS direction,
+
+                    vt.type_id,
+
+                    -- ✅ FIX: ใช้ total_agg แทน SUM(agg.volume)
+                    COALESCE(total_agg.total_volume, 0) AS volume,
+
+                    -- lane volume
+                    jsonb_object_agg(
+                        ln.lane_code,
+                        COALESCE(lane_agg.volume, 0)
+                    ) AS lane_volume,
+
+                    -- lane speed
+                    jsonb_object_agg(
+                        ln.lane_code,
+                        COALESCE(lane_agg.avg_speed, 0)
+                    ) AS lane_speed,
+
+                    -- avg speed (weighted)
+                    COALESCE(
+                        SUM(lane_agg.volume * lane_agg.avg_speed)
+                        / NULLIF(SUM(lane_agg.volume), 0),
+                    0)::int AS avg_speed,
+
+                    234,
+                    %(created)s,
+                    NOW()
+
+                FROM checkpoint cp
+
+                -- lock direction
+                CROSS JOIN (
+                    SELECT unnest(ARRAY['eastWest','westEast']) AS direction_index
+                ) dirs
+
+                -- lock vehicle type
+                CROSS JOIN (
+                    SELECT type_id FROM vehicle_type
+                ) vt
+
+                LEFT JOIN lane ln
+                    ON ln.checkpoint_id::int = cp.checkpoint_id
+
+                -- aggregate direction
+                LEFT JOIN (
+                    SELECT
+                        vp.crossing_id,
+                        vp.direction_index,
+                        vt2.type_id,
+                        COUNT(*) AS volume
+                    FROM vehicle_pass vp
+                    LEFT JOIN vehicle_type vt2
+                        ON vp.vehicle_type = vt2.type_name
+                    WHERE vp.pass_time >= %(start)s
+                    AND vp.pass_time < %(end)s
+                    GROUP BY
+                        vp.crossing_id,
+                        vp.direction_index,
+                        vt2.type_id
+                ) agg
+                    ON agg.crossing_id = cp.checkpoint_id
+                    AND agg.direction_index = dirs.direction_index
+                    AND agg.type_id = vt.type_id
+
+                -- ✅ FIX: aggregate total volume แยกต่างหาก
+                LEFT JOIN (
+                    SELECT
+                        vp.crossing_id,
+                        vt2.type_id,
+                        COUNT(*) AS total_volume
+                    FROM vehicle_pass vp
+                    LEFT JOIN vehicle_type vt2
+                        ON vp.vehicle_type = vt2.type_name
+                    WHERE vp.pass_time >= %(start)s
+                    AND vp.pass_time < %(end)s
+                    GROUP BY
+                        vp.crossing_id,
+                        vt2.type_id
+                ) total_agg
+                    ON total_agg.crossing_id = cp.checkpoint_id
+                    AND total_agg.type_id = vt.type_id
+
+                -- aggregate lane
+                LEFT JOIN (
+                    SELECT
+                        vp.crossing_id,
+                        vp.lane_no,
+                        vt2.type_id,
+                        COUNT(*) AS volume,
+                        AVG(vp.vehicle_speed) FILTER (WHERE vp.vehicle_speed IS NOT NULL) AS avg_speed
+                    FROM vehicle_pass vp
+                    LEFT JOIN vehicle_type vt2
+                        ON vp.vehicle_type = vt2.type_name
+                    WHERE vp.pass_time >= %(start)s
+                    AND vp.pass_time < %(end)s
+                    GROUP BY
+                        vp.crossing_id,
+                        vp.lane_no,
+                        vt2.type_id
+                ) lane_agg
+                    ON lane_agg.crossing_id = cp.checkpoint_id
+                    AND lane_agg.lane_no::varchar = ln.lane_code
+                    AND lane_agg.type_id = vt.type_id
+
+                GROUP BY
+                    cp.checkpoint_id,
+                    vt.type_id,
+                    total_agg.total_volume  -- ✅ เพิ่ม total_volume เข้า GROUP BY
+
+                ON CONFLICT (checkpoint_id, car_type_id, created_date)
+                DO UPDATE SET
+                    volume = EXCLUDED.volume,
+                    direction = EXCLUDED.direction,
+                    lane_volume = EXCLUDED.lane_volume,
+                    lane_speed = EXCLUDED.lane_speed,
+                    avg_speed = EXCLUDED.avg_speed;
             """
 
-            params = {"last_time": self.last_time.strftime("%Y-%m-%d %H:%M:%S")}
-            self.oracle_cursor.execute(sql, params)
-            columns = [col[0] for col in self.oracle_cursor.description]
-            rows = [dict(zip(columns, row)) for row in self.oracle_cursor.fetchall()]
+            cursor.execute(sql, {
+                "created": slot_start,
+                "start": slot_start,
+                "end": slot_end
+            })
 
-            logger.info(f"📊 Oracle returned {len(rows)} rows.")
-            if rows:
-                latest_time = rows[-1]["PASS_TIME"]
-                logger.info(f"✅ Found {len(rows)} new records → latest PASS_TIME = {latest_time}")
-                self.last_time = latest_time
-            else:
-                logger.info("⏳ No new data found in Oracle.")
-            return rows
+            conn.commit()
 
-        except Exception as e:
-            logger.exception("❌ Error querying Oracle:")
-            return []
+            logger.info(f"✅ record_5m done [{slot_start.strftime('%H:%M')} → {slot_end.strftime('%H:%M')}]")
+
+        except Exception:
+            logger.exception("❌ Error creating record_5m")
+            if conn:
+                conn.rollback()
         finally:
-            self._close_oracle()
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
 
     def data_search_vehicle(self, date, province=None, lpr=None, camera=None, vehicle_type=None):
         """
