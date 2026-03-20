@@ -1,5 +1,6 @@
 # backend/app/src/services/data_vehicle.py
 from src.repositories.data_vehicle import DataVehicleRepository
+from datetime import datetime  # ✅ เพิ่มบรรทัดนี้
 import logging
 
 logger = logging.getLogger(__name__)
@@ -20,6 +21,14 @@ class DataVehicleService:
             return data
         except Exception as e:
             logger.exception("❌ Error in get_data_vehicle service:")
+            raise
+
+    def record_5m(self, slot_start: datetime, slot_end: datetime):
+        try:
+            self.data_vehicle.record_5m(slot_start, slot_end)
+            logger.info(f"✅ record_5m aggregated [{slot_start} → {slot_end}]")
+        except Exception:
+            logger.exception("❌ Error in record_5m service:")
             raise
 
     def data_search_vehicle(self, date, province=None, lpr=None, camera=None, vehicle_type=None):

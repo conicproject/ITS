@@ -19,16 +19,26 @@ logger = logging.getLogger(__name__)
 
 
 class DataVehicleRepository:
-    """ดึงข้อมูลจาก Oracle และบันทึกลง Postgres แบบ Realtime"""
+    _instance = None
 
     BATCH_LIMIT = 5000
 
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self):
+        if self._initialized:
+            return  # ✅ ถ้าเคย init แล้ว → ข้ามเลย
+
         logger.info("🚀 Initializing DataVehicleRepository...")
         self.oracle_conn = OracleConnection()
         self.postgres_conn = PostgresConnection()
         self.last_time = self._get_last_time_from_db()
         logger.info(f"🕓 Initial last_time = {self.last_time}")
+        self._initialized = True
 
     # ---------------- Oracle ----------------
     def _open_oracle(self):
@@ -50,7 +60,6 @@ class DataVehicleRepository:
 
     # ---------------- Postgres ----------------
     def _get_last_time_from_db(self):
-        """อ่านเวลาล่าสุดจากข้อมูลที่บันทึกใน Postgres"""
         conn = None
         cursor = None
         try:
@@ -72,7 +81,7 @@ class DataVehicleRepository:
             return last_time
 
         except Exception as e:
-            logger.exception("❌ Error reading last sync time from Postgres:")
+            logger.info("⏭️ extract_data not ready yet, using default last_time")  # ✅ ไม่มี traceback
             return datetime.now() - timedelta(minutes=5)
         finally:
             if cursor:
@@ -173,64 +182,234 @@ class DataVehicleRepository:
         finally:
             self._close_oracle()
 
-    def data_search_vehicle(self, date, province=None, lpr=None, camera=None, vehicle_type=None):
-        """
-        🔹 แก้ไข: ค้นหาข้อมูลจาก VEHICLE_PASS โดยตรง (ไม่ใช่ extract_data)
-        - date: datetime.date (required)
-        - province: str (optional)
-        - lpr: str (optional - ค้นหาทะเบียนรถ)
-        - camera: int (optional - CROSSING_ID)
-        """
-
+    # data_vehicle.py — แก้ record_5m ให้รับ slot time
+    def record_5m(self, slot_start: datetime, slot_end: datetime):
         conn = None
         cursor = None
         try:
             conn = self.postgres_conn.get_connection()
             cursor = conn.cursor()
 
-            # 🔹 เริ่มสร้าง WHERE clause
-            conditions = ["DATE(pass_time) = %s"]
-            params = [date]
+            logger.info(f"📊 Aggregating vehicle_pass → record [{slot_start} → {slot_end}]")
 
-            # 🔹 กรองตามจังหวัด (ถ้ามี)
+            sql = """
+                INSERT INTO records (
+                    checkpoint_id,
+                    direction,
+                    car_type_id,
+                    volume,
+                    lane_volume,
+                    lane_speed,
+                    avg_speed,
+                    time_range_id,
+                    created_date,
+                    created_at
+                )
+                SELECT
+                    cp.checkpoint_id,
+
+                    -- direction volume
+                    jsonb_object_agg(
+                        dirs.direction_index,
+                        COALESCE(agg.volume, 0)
+                    ) AS direction,
+
+                    vt.type_id,
+
+                    -- ✅ FIX: ใช้ total_agg แทน SUM(agg.volume)
+                    COALESCE(total_agg.total_volume, 0) AS volume,
+
+                    -- lane volume
+                    jsonb_object_agg(
+                        ln.lane_code,
+                        COALESCE(lane_agg.volume, 0)
+                    ) AS lane_volume,
+
+                    -- lane speed
+                    jsonb_object_agg(
+                        ln.lane_code,
+                        COALESCE(lane_agg.avg_speed, 0)
+                    ) AS lane_speed,
+
+                    -- avg speed (weighted)
+                    COALESCE(
+                        SUM(lane_agg.volume * lane_agg.avg_speed)
+                        / NULLIF(SUM(lane_agg.volume), 0),
+                    0)::int AS avg_speed,
+
+                    234,
+                    %(created)s,
+                    NOW()
+
+                FROM checkpoint cp
+
+                -- lock direction
+                CROSS JOIN (
+                    SELECT unnest(ARRAY['eastWest','westEast']) AS direction_index
+                ) dirs
+
+                -- lock vehicle type
+                CROSS JOIN (
+                    SELECT type_id FROM vehicle_type
+                ) vt
+
+                LEFT JOIN lane ln
+                    ON ln.checkpoint_id::int = cp.checkpoint_id
+
+                -- aggregate direction
+                LEFT JOIN (
+                    SELECT
+                        vp.crossing_id,
+                        vp.direction_index,
+                        vt2.type_id,
+                        COUNT(*) AS volume
+                    FROM vehicle_pass vp
+                    LEFT JOIN vehicle_type vt2
+                        ON vp.vehicle_type = vt2.type_name
+                    WHERE vp.pass_time >= %(start)s
+                    AND vp.pass_time < %(end)s
+                    GROUP BY
+                        vp.crossing_id,
+                        vp.direction_index,
+                        vt2.type_id
+                ) agg
+                    ON agg.crossing_id = cp.checkpoint_id
+                    AND agg.direction_index = dirs.direction_index
+                    AND agg.type_id = vt.type_id
+
+                -- ✅ FIX: aggregate total volume แยกต่างหาก
+                LEFT JOIN (
+                    SELECT
+                        vp.crossing_id,
+                        vt2.type_id,
+                        COUNT(*) AS total_volume
+                    FROM vehicle_pass vp
+                    LEFT JOIN vehicle_type vt2
+                        ON vp.vehicle_type = vt2.type_name
+                    WHERE vp.pass_time >= %(start)s
+                    AND vp.pass_time < %(end)s
+                    GROUP BY
+                        vp.crossing_id,
+                        vt2.type_id
+                ) total_agg
+                    ON total_agg.crossing_id = cp.checkpoint_id
+                    AND total_agg.type_id = vt.type_id
+
+                -- aggregate lane
+                LEFT JOIN (
+                    SELECT
+                        vp.crossing_id,
+                        vp.lane_no,
+                        vt2.type_id,
+                        COUNT(*) AS volume,
+                        AVG(vp.vehicle_speed) FILTER (WHERE vp.vehicle_speed IS NOT NULL) AS avg_speed
+                    FROM vehicle_pass vp
+                    LEFT JOIN vehicle_type vt2
+                        ON vp.vehicle_type = vt2.type_name
+                    WHERE vp.pass_time >= %(start)s
+                    AND vp.pass_time < %(end)s
+                    GROUP BY
+                        vp.crossing_id,
+                        vp.lane_no,
+                        vt2.type_id
+                ) lane_agg
+                    ON lane_agg.crossing_id = cp.checkpoint_id
+                    AND lane_agg.lane_no::varchar = ln.lane_code
+                    AND lane_agg.type_id = vt.type_id
+
+                GROUP BY
+                    cp.checkpoint_id,
+                    vt.type_id,
+                    total_agg.total_volume  -- ✅ เพิ่ม total_volume เข้า GROUP BY
+
+                ON CONFLICT (checkpoint_id, car_type_id, created_date)
+                DO UPDATE SET
+                    volume = EXCLUDED.volume,
+                    direction = EXCLUDED.direction,
+                    lane_volume = EXCLUDED.lane_volume,
+                    lane_speed = EXCLUDED.lane_speed,
+                    avg_speed = EXCLUDED.avg_speed;
+            """
+
+            cursor.execute(sql, {
+                "created": slot_start,
+                "start": slot_start,
+                "end": slot_end
+            })
+
+            conn.commit()
+
+            logger.info(f"✅ record_5m done [{slot_start.strftime('%H:%M')} → {slot_end.strftime('%H:%M')}]")
+
+        except Exception:
+            logger.exception("❌ Error creating record_5m")
+            if conn:
+                conn.rollback()
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+    def data_search_vehicle(self, date, province=None, lpr=None, camera=None, vehicle_type=None):
+        """
+        ค้นหาข้อมูลจาก VEHICLE_PASS + VEHICLE_URL
+        """
+
+        conn = None
+        cursor = None
+
+        try:
+            conn = self.postgres_conn.get_connection()
+            cursor = conn.cursor()
+
+            # ✅ เช็คเวลาเฉพาะ vehicle_pass
+            conditions = ["vp.pass_time >= %s", "vp.pass_time < %s"]
+            params = [date, date + timedelta(days=1)]
+
+            # จังหวัด
             if province:
-                conditions.append("plate_province = %s")
+                conditions.append("vp.plate_province = %s")
                 params.append(province)
 
-            # 🔹 กรองตามทะเบียนรถ (ใช้ ILIKE สำหรับ case-insensitive)
+            # ทะเบียน
             if lpr:
-                conditions.append("plate_no ILIKE %s")
+                conditions.append("vp.plate_no ILIKE %s")
                 params.append(f"%{lpr}%")
 
-            # 🔹 กรองตามกล้อง (CROSSING_ID)
+            # กล้อง
             if camera:
-                conditions.append("crossing_id = %s")
+                conditions.append("vp.crossing_id = %s")
                 params.append(int(camera))
 
+            # ประเภทรถ
             if vehicle_type:
-                conditions.append("vehicle_type = %s")
+                conditions.append("vp.vehicle_type = %s")
                 params.append(vehicle_type)
 
             where_clause = " AND ".join(conditions)
 
-            # 🔹 Query จาก VEHICLE_PASS
             sql = f"""
-                SELECT 
-                    pass_id, crossing_id, crossing_index_code, lane_no, 
-                    direction_index, plate_no, plate_type, pass_time, 
-                    vehicle_speed, vehicle_len, plate_color, vehicle_color, 
-                    vehicle_type, vehicle_color_depth, vehicle_logo, 
-                    vehicle_sub_logo, vehicle_model, plate_province
-                FROM vehicle_pass
+                SELECT
+                    vp.pass_id, vp.crossing_id, vp.crossing_index_code, vp.lane_no, vp.plate_no,
+                    vp.direction_index, vp.vehicle_color, vp.vehicle_type, vp.vehicle_color_depth,
+                    vp.vehicle_logo, vp.vehicle_sub_logo, vp.vehicle_model, vp.plate_province,
+                    vp.pass_time, vp.vehicle_speed, vt.type_nameth,
+                    vu.plate_pic_url, vu.image_path, vu.target_sub_url
+                FROM vehicle_pass vp
+                LEFT JOIN vehicle_url vu
+                    ON vp.pass_id = vu.pass_id
+                LEFT JOIN vehicle_type vt
+                    ON vp.vehicle_type = vt.type_name
                 WHERE {where_clause}
-                ORDER BY pass_time DESC
+                ORDER BY vp.pass_time DESC
                 LIMIT 100
             """
 
-            logger.debug(f"🔎 SQL: {sql}")
-            logger.debug(f"📦 PARAMS: {params}")
+            logger.debug("🔎 SQL: %s", sql)
+            logger.debug("📦 PARAMS: %s", params)
 
-            cursor.execute(sql, tuple(params))
+            cursor.execute(sql, params)
             rows = cursor.fetchall()
 
             if not rows:
@@ -239,12 +418,12 @@ class DataVehicleRepository:
 
             columns = [desc[0] for desc in cursor.description]
             result = [dict(zip(columns, row)) for row in rows]
-            
-            logger.info(f"✅ Found {len(result)} records")
+
+            logger.info("✅ Found %s records", len(result))
             return result
 
-        except Exception as e:
-            logger.exception("❌ Error searching VEHICLE_PASS from Postgres:")
+        except Exception:
+            logger.exception("❌ Error searching VEHICLE_PASS + VEHICLE_URL:")
             return []
 
         finally:

@@ -70,6 +70,10 @@ class OracleRepository:
             all_records = []
             current_start = start_datetime
             with self.oracle_conn_wrapper.get_connection_context() as conn:
+                if conn is None:
+                    logger.warning("⚠️ Oracle unavailable → skip traffic query")
+                    return TrafficResponse(records=[], total=0)
+
                 with conn.cursor() as cursor:
                     while current_start < end_datetime:
                         current_end = min(current_start + delta, end_datetime)
@@ -122,6 +126,10 @@ class OracleRepository:
             end_naive = end_datetime.strftime("%Y-%m-%d %H:%M:%S")
 
             with self.oracle_conn_wrapper.get_connection_context() as conn:
+                if conn is None:
+                    logger.warning("⚠️ Oracle unavailable → skip traffic query")
+                    return TrafficResponse(records=[], total=0)
+
                 with conn.cursor() as cursor:
                     cursor.execute(sql_command, {"start_time": start_naive, "end_time": end_naive})
                     rows = cursor.fetchall()

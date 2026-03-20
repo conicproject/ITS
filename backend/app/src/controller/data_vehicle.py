@@ -22,6 +22,19 @@ class DataVehicleController:
         except Exception as e:
             logger.exception("❌ Error in get_data_vehicle controller:")
             raise HTTPException(status_code=500, detail=str(e))
+    
+    async def record_5m(self):
+        """ดึงข้อมูลล่าสุดจาก Oracle"""
+        try:
+            result = self.service.record_5m()
+            return {
+                "status": "success", 
+                "data": result,
+                "count": len(result)
+            }
+        except Exception as e:
+            logger.exception("❌ Error in get_data_vehicle controller:")
+            raise HTTPException(status_code=500, detail=str(e))
 
     async def data_search_vehicle(self, payload: dict = Body(...)):
         """
