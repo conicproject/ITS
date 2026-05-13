@@ -23,7 +23,7 @@ function MapInitializer({ center }) {
     if (!center) return
     const timer = setTimeout(() => {
       map.invalidateSize()
-      map.setView(center, 19)
+      map.setView(center, 16)
     }, 100)
 
     return () => clearTimeout(timer)

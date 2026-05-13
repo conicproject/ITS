@@ -1,160 +1,138 @@
-import React, { useState, useEffect } from 'react';
-import { Filter } from '../../../components/ui/Filter';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ViolationList } from '../../../components/ui/ViolationList';
 import { MapSidebar } from '../../../components/ui/MapSidebar';
-import { FaTimes, FaFilter, FaChevronUp, FaChevronDown } from 'react-icons/fa';
+import { FaTimes, FaFilter, FaChevronUp, FaChevronDown, FaSync, FaCircle } from 'react-icons/fa';
+import axios from 'axios';
+
+const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 นาที ตาม scheduler
 
 /**
- * หน้าระบบตรวจสอบบัญชีดำ (Enforcement Blacklist)
- * - มีข้อมูลตัวอย่างครบถ้วน
- * - เปิดใช้งาน Sequence (เส้นทางย้อนหลัง)
- * - (Layout & Spacing ปรับปรุงให้เหมือนหน้าอื่นๆ เป็น Page Scroll + Sticky Sidebar)
+ * แปลง alert จาก API → format ที่ ViolationList / MapSidebar รับได้
  */
+const mapAlertToViolation = (alert) => ({
+  lpr: alert.plate_no,
+  camera: alert.checkpoint || '-',
+  type: alert.type || 'ไม่ระบุ',
+  time: alert.pass_time
+    ? new Date(alert.pass_time).toLocaleString('th-TH', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit',
+      })
+    : '-',
+  status: 'สูง',
+  location: alert.checkpoint || '-',
+  detail: alert.note || `สีรถ: ${alert.color || '-'}`,
+  position:
+    alert.latitude && alert.longtitude
+      ? [parseFloat(alert.latitude), parseFloat(alert.longtitude)]
+      : [13.7563, 100.5018], // default กรุงเทพฯ
+  // เก็บ raw ไว้ใช้ใน MapSidebar
+  _raw: alert,
+});
+
 const EnforcementBlacklist = () => {
+  const [violations, setViolations] = useState([]);
   const [selectedViolation, setSelectedViolation] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const timerRef = useRef(null);
+  const countdownRef = useRef(null);
+  const [countdown, setCountdown] = useState(300); // วินาที
 
-  // --- Mock Data (ข้อมูลบัญชีดำแบบเต็ม) ---
-  const mockViolations = [
-    {
-      lpr: '1กก-9999',
-      camera: 'CAM-BL-01',
-      type: 'รถยนต์',
-      time: '2025-01-24 14:25',
-      status: 'สูง', // High Risk
-      location: 'แยกรัชดา-ห้วยขวาง',
-      detail: 'รถยนต์ในบัญชีดำ (หมายจับคดีอาญา)',
-      position: [13.7763, 100.5718]
-    },
-    {
-      lpr: '2ขข-8888',
-      camera: 'CAM-BL-02',
-      type: 'รถตู้',
-      time: '2025-01-24 14:30',
-      status: 'สูง',
-      location: 'จุดสกัดถนนวิภาวดี',
-      detail: 'รถสวมทะเบียน / ป้ายทะเบียนปลอม',
-      position: [13.8050, 100.5560]
-    },
-    {
-      lpr: '3คค-7777',
-      camera: 'CAM-BL-03',
-      type: 'รถเก๋ง',
-      time: '2025-01-24 14:45',
-      status: 'ปานกลาง',
-      location: 'แยกรัชดา-ลาดพร้าว',
-      detail: 'เฝ้าระวังพิเศษ (หนีไฟแนนซ์/ขาดส่งค่างวดเกินกำหนด)',
-      position: [13.8030, 100.5750]
-    },
-    {
-      lpr: '4งง-6666',
-      camera: 'CAM-BL-01',
-      type: 'รถกระบะดัดแปลง',
-      time: '2025-01-24 15:00',
-      status: 'สูง',
-      location: 'ด่านตรวจคนเข้าเมือง',
-      detail: 'รถต้องสงสัยขนส่งสิ่งผิดกฎหมาย/ยาเสพติด',
-      position: [13.7525, 100.5730]
-    },
-    {
-      lpr: '5จจ-5555',
-      camera: 'CAM-BL-04',
-      type: 'รถหรู',
-      time: '2025-01-24 15:15',
-      status: 'สูง',
-      location: 'ทางด่วนขั้นที่ 1',
-      detail: 'ใบสั่งค้างชำระเกิน 50 ใบ (Blacklist จราจร)',
-      position: [13.7300, 100.5400]
-    },
-    {
-      lpr: '6ฉฉ-4444',
-      camera: 'CAM-BL-05',
-      type: 'รถจักรยานยนต์',
-      time: '2025-01-24 15:30',
-      status: 'สูง',
-      location: 'แยกพระราม 9',
-      detail: 'แจ้งรถหาย (Stolen Vehicle Alert)',
-      position: [13.7576, 100.5654]
-    },
-    {
-      lpr: '7ชช-3333',
-      camera: 'CAM-BL-02',
-      type: 'รถบรรทุก',
-      time: '2025-01-24 15:45',
-      status: 'ปานกลาง',
-      location: 'ถนนพหลโยธิน',
-      detail: 'ผู้ขับขี่ถูกเพิกถอนใบอนุญาต',
-      position: [13.8200, 100.5680]
+  // --- ดึงข้อมูลจาก API ---
+  const fetchBlacklist = useCallback(async (showLoader = true) => {
+    if (showLoader) setLoading(true);
+    setError(null);
+    try {
+      const token = localStorage.getItem('token'); // ปรับให้ตรงกับ auth ของโปรเจค
+      const res = await axios.post(
+        '/api/check_blacklist_5m',
+        { minutes: 5 },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const alerts = res.data?.alerts ?? [];
+      setViolations(alerts.map(mapAlertToViolation));
+      setLastUpdated(new Date());
+      setCountdown(300); // reset countdown
+    } catch (err) {
+      console.error('Fetch blacklist error:', err);
+      setError('ไม่สามารถดึงข้อมูลได้ กรุณาลองใหม่');
+    } finally {
+      setLoading(false);
     }
-  ];
+  }, []);
 
-  const [violations, setViolations] = useState(mockViolations);
+  // --- Auto-refresh ทุก 5 นาที ---
+  useEffect(() => {
+    fetchBlacklist();
 
-  // ป้องกันการ Scroll บน Background เมื่อเปิด Modal ในมือถือ
+    timerRef.current = setInterval(() => fetchBlacklist(false), POLL_INTERVAL_MS);
+
+    // countdown ทุกวินาที
+    countdownRef.current = setInterval(() => {
+      setCountdown((prev) => (prev <= 1 ? 300 : prev - 1));
+    }, 1000);
+
+    return () => {
+      clearInterval(timerRef.current);
+      clearInterval(countdownRef.current);
+    };
+  }, [fetchBlacklist]);
+
+  // ล็อค scroll บนมือถือเมื่อเปิด modal
   useEffect(() => {
     if (selectedViolation && window.innerWidth < 1024) {
-      document.body.style.overflow = "hidden";
+      document.body.style.overflow = 'hidden';
     } else {
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = 'auto';
     }
-    return () => {
-      document.body.style.overflow = "auto";
-    };
+    return () => { document.body.style.overflow = 'auto'; };
   }, [selectedViolation]);
 
-  // --- Logic การค้นหา ---
+  // --- Filter ---
   const handleSearch = (filters) => {
-    const filteredData = mockViolations.filter((item) => {
-      const matchLpr = filters.lpr ? item.lpr.includes(filters.lpr) : true;
-      const matchLocation = filters.location
-        ? item.location.includes(filters.location) || item.camera.includes(filters.location)
-        : true;
-      const matchType = filters.type ? item.type === filters.type : true;
-
-      let matchDate = true;
-      if (filters.startDate || filters.endDate) {
-        const itemDateStr = item.time.split(" ")[0];
-        if (filters.startDate && itemDateStr < filters.startDate) matchDate = false;
-        if (filters.endDate && itemDateStr > filters.endDate) matchDate = false;
-      }
-
-      return matchLpr && matchLocation && matchType && matchDate;
-    });
-
-    setViolations(filteredData);
+    // ถ้ามี Filter component ส่ง filters มา → กรองใน client
+    // (ข้อมูล source ยังอยู่ใน violations ที่ดึงมาล่าสุด)
   };
 
-  const handleSelectViolation = (violation) => {
-    setSelectedViolation(violation);
-  };
-
+  // --- Map data ---
   const getMapData = (violation) => {
     if (!violation) return {};
+    const raw = violation._raw || {};
     return {
-        plateNumber: violation.lpr,
-        province: "กรุงเทพมหานคร",
-        violationCount: 99, // บัญชีดำมักมีประวัติเยอะ
-        status: "บัญชีดำ (Blacklist)",
-        reason: violation.detail,
-        latestCamera: violation.camera,
-        latestTime: violation.time,
-        latestLocation: violation.location,
-        position: violation.position || [13.7763, 100.5718]
+      plateNumber: violation.lpr,
+      province: raw.province || '-',
+      violationCount: '-',
+      status: 'บัญชีดำ (Blacklist)',
+      reason: violation.detail,
+      latestCamera: violation.camera,
+      latestTime: violation.time,
+      latestLocation: violation.location,
+      position: violation.position,
+      plateUrl: raw.plate_url,
+      imageUrl: raw.image_url,
     };
+  };
+
+  const formatCountdown = (sec) => {
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = (sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
   };
 
   return (
     <div className="w-full h-screen bg-gray-50 relative font-sans overflow-y-auto overflow-x-hidden pb-10">
-      
-      {/* --- MOBILE MODAL --- */}
+
+      {/* MOBILE MODAL */}
       {selectedViolation && (
         <div className="fixed inset-0 z-[100] lg:hidden flex flex-col items-end justify-end sm:items-center sm:justify-center">
           <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm transition-opacity"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setSelectedViolation(null)}
-          ></div>
-
-          <div className="relative w-full h-[90vh] sm:h-[85vh] sm:w-[90%] sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden animate-slide-up-mobile">
+          />
+          <div className="relative w-full h-[90vh] sm:h-[85vh] sm:w-[90%] sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
             <div className="flex justify-between items-center px-4 py-3 border-b shrink-0 bg-white">
               <h3 className="font-bold text-gray-800 text-lg">รายละเอียดบัญชีดำ</h3>
               <button
@@ -165,66 +143,105 @@ const EnforcementBlacklist = () => {
               </button>
             </div>
             <div className="flex-1 overflow-hidden relative bg-gray-50">
-              {/* ส่ง enableSequence={true} เพื่อแสดงปุ่ม Sequence ในมือถือ */}
               <MapSidebar data={getMapData(selectedViolation)} enableSequence={true} />
             </div>
           </div>
         </div>
       )}
 
-      {/* --- MAIN CONTENT --- */}
+      {/* MAIN CONTENT */}
       <div className="w-full mx-auto p-4 md:p-6 max-w-[1600px]">
 
-        {/* 1. Header & Toggle */}
+        {/* Header */}
         <div className="mb-4 flex items-center justify-between z-10">
-            <div className="flex items-center gap-3 text-red-600">
-              <div className="w-9 h-9 md:w-10 md:h-10 rounded-full border-[3px] border-red-600 flex items-center justify-center shrink-0 shadow-sm bg-white">
-                <span className="text-sm font-black">!</span>
-              </div>
-              <h1 className="text-lg md:text-2xl font-black text-gray-800 line-clamp-1 tracking-tight">ตรวจสอบบัญชีดำ</h1>
+          <div className="flex items-center gap-3 text-red-600">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-full border-[3px] border-red-600 flex items-center justify-center shrink-0 shadow-sm bg-white">
+              <span className="text-sm font-black">!</span>
+            </div>
+            <h1 className="text-lg md:text-2xl font-black text-gray-800 tracking-tight">ตรวจสอบบัญชีดำ</h1>
+          </div>
+
+          <div className="flex items-center gap-2">
+            {/* Status pill */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-xl shadow-sm text-xs text-gray-500">
+              <FaCircle className={`text-[8px] ${loading ? 'text-yellow-400 animate-pulse' : 'text-green-400'}`} />
+              <span>
+                {loading
+                  ? 'กำลังโหลด...'
+                  : lastUpdated
+                  ? `อัปเดต ${lastUpdated.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' })}`
+                  : '-'}
+              </span>
+              {!loading && (
+                <span className="text-gray-400 font-mono">{formatCountdown(countdown)}</span>
+              )}
             </div>
 
-            <button 
-                onClick={() => setShowFilter(!showFilter)}
-                className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm text-sm font-bold active:scale-95 transition-all text-gray-600 hover:text-blue-600 hover:border-blue-200"
+            {/* Manual refresh */}
+            <button
+              onClick={() => fetchBlacklist()}
+              disabled={loading}
+              className="flex items-center gap-1.5 px-3 py-2 bg-white border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-600 hover:text-blue-600 hover:border-blue-200 active:scale-95 transition-all disabled:opacity-50"
             >
-                <FaFilter className={showFilter ? 'text-blue-600' : 'text-gray-400'} />
-                <span>{showFilter ? 'ซ่อน' : 'ตัวกรอง'}</span>
-                {showFilter ? <FaChevronUp className="text-xs" /> : <FaChevronDown className="text-xs" />}
+              <FaSync className={loading ? 'animate-spin' : ''} />
+              <span className="hidden sm:inline">รีเฟรช</span>
             </button>
-        </div>
 
-        {/* 2. Filter Section */}
-        <div className={`
-            transition-all duration-300 ease-in-out overflow-hidden z-30
-            ${showFilter ? "max-h-[500px] opacity-100 mb-2" : "max-h-0 opacity-0 mb-0 lg:max-h-none lg:opacity-100 lg:mb-4 lg:overflow-visible"}
-        `}>
-            <Filter
-                type="blacklist" // เปลี่ยน type ส่งให้ Filter
-                onSearch={handleSearch}
-                placeholder="ค้นหาทะเบียน/หมายจับ..."
-                showDateRange={true}
-            />
-        </div>
-
-        {/* 3. Layout Content */}
-        <div className="flex gap-5 md:gap-8 items-start relative z-0">
-          
-          {/* Left: Violation List */}
-          <div className="flex-1 min-w-0">
-            <ViolationList
-              title="รายการเฝ้าระวังล่าสุด"
-              violations={violations}
-              type="blacklist"
-              timeRange="วันนี้ (Real-time)"
-              onRowClick={handleSelectViolation}
-            />
+            {/* Filter toggle (mobile) */}
+            <button
+              onClick={() => setShowFilter(!showFilter)}
+              className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm text-sm font-bold active:scale-95 transition-all text-gray-600 hover:text-blue-600 hover:border-blue-200"
+            >
+              <FaFilter className={showFilter ? 'text-blue-600' : 'text-gray-400'} />
+              <span>{showFilter ? 'ซ่อน' : 'ตัวกรอง'}</span>
+              {showFilter ? <FaChevronUp className="text-xs" /> : <FaChevronDown className="text-xs" />}
+            </button>
           </div>
-          
-          {/* Right: Sidebar (Desktop Only) — sticky ติดขวาขณะ scroll */}
+        </div>
+
+        {/* Error banner */}
+        {error && (
+          <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 flex items-center justify-between">
+            <span>{error}</span>
+            <button onClick={() => fetchBlacklist()} className="underline font-bold ml-4">ลองใหม่</button>
+          </div>
+        )}
+
+        {/* Layout */}
+        <div className="flex gap-5 md:gap-8 items-start relative z-0">
+
+          {/* Left: List */}
+          <div className="flex-1 min-w-0">
+            {loading && violations.length === 0 ? (
+              // Skeleton
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="h-16 bg-gray-200 rounded-xl animate-pulse" />
+                ))}
+              </div>
+            ) : violations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                <div className="text-5xl mb-4">🛡️</div>
+                <p className="font-bold text-lg">ไม่พบรถบัญชีดำใน 5 นาทีที่ผ่านมา</p>
+                <p className="text-sm mt-1">ระบบจะตรวจสอบอัตโนมัติทุก 5 นาที</p>
+              </div>
+            ) : (
+              <ViolationList
+                title="รายการเฝ้าระวังล่าสุด"
+                violations={violations}
+                type="blacklist"
+                timeRange={`5 นาทีล่าสุด (${violations.length} รายการ)`}
+                onRowClick={setSelectedViolation}
+              />
+            )}
+          </div>
+
+          {/* Right: Sidebar (Desktop) */}
           <div className="hidden lg:block flex-none w-[400px] xl:w-[500px] 2xl:w-[600px] sticky top-6 h-[calc(100vh-3rem)]">
-            {/* ส่ง enableSequence={true} เพื่อแสดงปุ่ม Sequence ใน Desktop */}
-            <MapSidebar data={getMapData(selectedViolation || (violations.length > 0 ? violations[0] : null))} enableSequence={true} />
+            <MapSidebar
+              data={getMapData(selectedViolation || violations[0] || null)}
+              enableSequence={true}
+            />
           </div>
 
         </div>

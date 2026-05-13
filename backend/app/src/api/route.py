@@ -9,6 +9,8 @@ from src.controller.vehicle import VehicleController
 from src.controller.data_vehicle import DataVehicleController
 from src.controller.open_api import OpenAPIController
 from src.controller.checkpoint import CheckpointController
+from src.controller.blacklist import BlacklistController
+from src.controller.vehicle_alarm import VehicleAlarmController
 
 router = APIRouter()
 user_controller = UserController()
@@ -20,6 +22,8 @@ vehicle_controller = VehicleController()
 data_vehicle_controller = DataVehicleController()
 open_api_controller = OpenAPIController()
 checkpoint_controller = CheckpointController()
+blacklist_controller = BlacklistController()
+vehicle_alarm_controller = VehicleAlarmController()
 
 # Auth endpoints
 router.add_api_route("/get_auth", open_api_controller.get_auth, methods=["GET"], tags=["Data"])   
@@ -48,3 +52,14 @@ router.add_api_route("/data_search_vehicle", data_vehicle_controller.data_search
 
 # api checkpoint
 router.add_api_route("/checkpoint", checkpoint_controller.get_checkpoint, methods=["GET"], tags=["Data"])
+
+# api blacklist
+router.add_api_route("/get_blacklist", blacklist_controller.get_blacklist, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+router.add_api_route("/insert_blacklist", blacklist_controller.insert_blacklist, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+router.add_api_route("/delete_blacklist/{blacklist_id}", blacklist_controller.delete_blacklist, methods=["DELETE"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+
+# api check_blacklist
+router.add_api_route("/check_blacklist_5m", blacklist_controller.check_blacklist_5m, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+
+# api get vehicle_alarm
+router.add_api_route("/get_vehicle_alarm",vehicle_alarm_controller.get_vehicle_alarm, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])

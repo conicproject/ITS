@@ -1,5 +1,4 @@
 # backend/app/src/repositories/data_vehicle.py
-
 import json
 import logging
 from datetime import datetime, timedelta

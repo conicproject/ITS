@@ -45,6 +45,8 @@ import DetectSignTraffic from "./pages/Enforcement/function/detect-sign-traffic"
 import DetectStopCrosswalk from "./pages/Enforcement/function/detect-stop-crosswalk";
 import DetectStopZone from "./pages/Enforcement/function/detect-stop-zone";
 import DetectUturn from "./pages/Enforcement/function/detect-uturn";
+import ViolationSearch from "./pages/Enforcement/function/violation-search";
+import ManageBlacklist from "./pages/DataCollection/function/manage-blacklist";
 
 const routes = [
   {
@@ -383,6 +385,17 @@ const routes = [
     ),
   },
   {
+    path: "/enforcement/function/violation-search",
+    name: "ViolationSearch",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <ViolationSearch />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
     path: "/data-collection/function/installation-point",
     name: "InstallationPoint",
     element: (
@@ -422,6 +435,17 @@ const routes = [
       <ProtectedRoute>
         <DefaultLayout>
           <VehicleReport />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/data-collection/function/manage-blacklist",
+    name: "ManageBlacklist",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <ManageBlacklist />
         </DefaultLayout>
       </ProtectedRoute>
     ),
