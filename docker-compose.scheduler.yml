@@ -1,0 +1,46 @@
+services:
+
+  record_scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: record_scheduler
+    environment:
+      - PYTHONPATH=/app
+    env_file:
+      - ./env/.env
+    volumes:
+      - ./backend/app:/app
+    networks:
+      - app-network
+    restart: unless-stopped
+    command:
+      [
+        "python",
+        "scheduler/worker_record_scheduler.py"
+      ]
+
+  blacklist_scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: blacklist_scheduler
+    environment:
+      - PYTHONPATH=/app
+    env_file:
+      - ./env/.env
+    volumes:
+      - ./backend/app:/app
+    networks:
+      - app-network
+    restart: unless-stopped
+    command:
+      [
+        "python",
+        "scheduler/worker_blacklist_scheduler.py"
+      ]
+
+networks:
+  app-network:
+    external: true
+    name: its_app-network

@@ -4642,3 +4642,39 @@
 2026-03-26 06:48:18,583 | INFO |   ✅ (288/288) [23:55 → 00:00]
 2026-03-26 06:48:18,584 | INFO | ============================================================
 2026-03-26 06:48:18,584 | INFO | 🏁 Done — success: 288, failed: 0, total: 288
+2026-05-21 10:33:45,577 | INFO | 🚀 Initializing DataVehicleRepository...
+2026-05-21 10:33:45,607 | INFO | ⏭️ extract_data not ready yet, using default last_time
+2026-05-21 10:33:45,608 | INFO | 🕓 Initial last_time = 2026-05-21 10:28:45.607929
+2026-05-21 10:33:45,608 | INFO | ⏳ Next run at 10:35:00 (in 74.4s)
+2026-05-21 10:33:45,608 | INFO | 🚀 Scheduler started — synced to 5-minute clock slots
+2026-05-21 10:35:00,069 | INFO | ⏰ Running record_5m [10:30 → 10:35]
+2026-05-21 10:35:00,101 | INFO | 📊 Aggregating vehicle_pass → record [2026-05-21 10:30:00 → 2026-05-21 10:35:00]
+2026-05-21 10:35:00,118 | INFO | ✅ record_5m done [10:30 → 10:35]
+2026-05-21 10:35:00,118 | INFO | ✅ record_5m aggregated [2026-05-21 10:30:00 → 2026-05-21 10:35:00]
+2026-05-21 10:35:00,118 | INFO | ✅ record_5m completed
+2026-05-21 10:35:00,119 | INFO | ⏳ Next run at 10:40:00 (in 299.9s)
+2026-05-21 10:38:46,374 | INFO | 🚀 Initializing DataVehicleRepository...
+2026-05-21 10:38:46,405 | INFO | ⏭️ extract_data not ready yet, using default last_time
+2026-05-21 10:38:46,405 | INFO | 🕓 Initial last_time = 2026-05-21 10:33:46.405546
+2026-05-21 10:38:46,406 | INFO | ⏳ Next run at 10:40:00 (in 73.6s)
+2026-05-21 10:38:46,406 | INFO | 🚀 Scheduler started — synced to 5-minute clock slots
+2026-05-21 10:39:53,481 | INFO | 🚀 Initializing DataVehicleRepository...
+2026-05-21 10:39:53,519 | INFO | ⏭️ extract_data not ready yet, using default last_time
+2026-05-21 10:39:53,519 | INFO | 🕓 Initial last_time = 2026-05-21 10:34:53.519570
+2026-05-21 10:39:53,520 | INFO | ⏳ Next run at 10:40:00 (in 6.5s)
+2026-05-21 10:39:53,520 | INFO | 🚀 Scheduler started — synced to 5-minute clock slots
+2026-05-21 10:40:00,006 | INFO | ⏰ Running record_5m [10:35 → 10:40]
+2026-05-21 10:40:00,038 | INFO | 📊 Aggregating vehicle_pass → record [2026-05-21 10:35:00 → 2026-05-21 10:40:00]
+2026-05-21 10:40:00,054 | INFO | ✅ record_5m done [10:35 → 10:40]
+2026-05-21 10:40:00,055 | INFO | ✅ record_5m aggregated [2026-05-21 10:35:00 → 2026-05-21 10:40:00]
+2026-05-21 10:40:00,055 | INFO | ✅ record_5m completed
+2026-05-21 10:40:00,055 | INFO | ⏳ Next run at 10:45:00 (in 299.9s)
+2026-05-21 10:45:00,082 | INFO | ⏰ Running record_5m [10:40 → 10:45]
+2026-05-21 10:45:00,209 | INFO | 📊 Aggregating vehicle_pass → record [2026-05-21 10:40:00 → 2026-05-21 10:45:00]
+2026-05-21 10:45:00,225 | INFO | ✅ record_5m done [10:40 → 10:45]
+2026-05-21 10:45:00,226 | INFO | ✅ record_5m aggregated [2026-05-21 10:40:00 → 2026-05-21 10:45:00]
+2026-05-21 10:45:00,226 | INFO | ✅ record_5m completed
+2026-05-21 10:45:00,226 | INFO | ⏳ Next run at 10:50:00 (in 299.8s)
+2026-05-21 10:49:44,678 | INFO | 🚀 Initializing DataVehicleRepository...
+2026-05-21 10:49:44,709 | INFO | ⏭️ extract_data not ready yet, using default last_time
+2026-05-21 10:49:44,709 | INFO | 🕓 Initial last_time = 2026-05-21 10:44:44.709284
