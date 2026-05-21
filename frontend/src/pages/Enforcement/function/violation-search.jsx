@@ -19,7 +19,7 @@ const getTodayRange = () => {
   const today = new Date().toISOString().split("T")[0];
   return {
     startDate: `${today}T00:00:00`,
-    endDate:   `${today}T23:59:59`,
+    endDate: `${today}T23:59:59`,
   };
 };
 
@@ -30,18 +30,17 @@ const ViolationSearch = () => {
   const [loading, setLoading] = useState(false);
 
   const mapToViolation = (item) => ({
-    lpr:      item.plate_no        ?? "-",
-    camera:   item.crossing_id     ? String(item.crossing_id) : "-",
-    type:     item.vehicle_type    ?? "-",
-    time:     item.pass_time       ?? "-",
-    status:   item.alarm_type      ?? "-",
+    lpr: item.plate_no ?? "-",
+    camera: item.crossing_id ? String(item.crossing_id) : "-",
+    type: item.vehicle_type_th ?? item.vehicle_type ?? "-",  // ✅ ใช้ภาษาไทยก่อน
+    time: item.pass_time ?? "-",
+    status: item.alarm_type ?? "-",
     location: item.direction_index ?? "-",
-    // ✅ แปลงรหัสเป็นข้อความ ถ้าไม่มีใน map ก็แสดงค่าเดิม
-    detail:   VIOLATION_LABEL[item.violative_action] ?? item.violative_action ?? "-",
-    province: item.plate_province  ?? "-",
-    color:    item.vehicle_color   ?? "-",
-    speed:    item.vehicle_speed   ?? null,
-    position: (item.mobile_device_latitude && item.mobile_device_longitude)
+    detail: VIOLATION_LABEL[item.violative_action] ?? item.violative_action ?? "-",
+    province: item.province_name_th ?? item.plate_province ?? "-",  // ✅ ใช้ชื่อจังหวัดภาษาไทย
+    color: item.vehicle_color ?? "-",
+    speed: item.vehicle_speed ?? null,
+    position: item.mobile_device_latitude && item.mobile_device_longitude
       ? [item.mobile_device_latitude, item.mobile_device_longitude]
       : [13.7563, 100.5018],
   });
@@ -59,12 +58,12 @@ const ViolationSearch = () => {
       const { data } = await axios.post(
         "/api/get_vehicle_alarm",
         {
-          plate_no:    filters.plate         || null,
-          alarm_type:  filters.violationType || null,
-          crossing_id: filters.location      ? Number(filters.location) : null,
-          start_date:  startDate,
-          end_date:    endDate,
-          limit:  50,
+          plate_no: filters.plate || null,
+          alarm_type: filters.violationType || null,
+          crossing_id: filters.location ? Number(filters.location) : null,
+          start_date: startDate,
+          end_date: endDate,
+          limit: 50,
           offset: 0,
         },
         { headers: { Authorization: `Bearer ${token}` } }
@@ -92,14 +91,16 @@ const ViolationSearch = () => {
   const getMapData = (violation) => {
     if (!violation) return {};
     return {
-      plateNumber:    violation.lpr,
-      province:       violation.province,
-      status:         violation.status,
-      reason:         violation.detail,
-      latestCamera:   violation.camera,
-      latestTime:     violation.time,
+      plateNumber: violation.lpr,
+      province: violation.province,     // ✅ province_name_th
+      vehicleType: violation.type,          // ✅ vehicle_type_th
+      color: violation.color,
+      status: violation.status,
+      reason: violation.detail,
+      latestCamera: violation.camera,
+      latestTime: violation.time,
       latestLocation: violation.location,
-      position:       violation.position,
+      position: violation.position,
     };
   };
 

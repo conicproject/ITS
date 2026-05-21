@@ -110,9 +110,6 @@ class BlacklistRepository:
             if cur:  cur.close()
             if conn: conn.close()
 
-    # ✅ เพิ่ม method นี้
-    # backend/app/src/repositories/blacklist.py  (เฉพาะ method นี้)
-
     def check_blacklist_in_vehicle_pass(self, minutes: int = 5):
         query = """
             SELECT
@@ -154,13 +151,19 @@ class BlacklistRepository:
                 %(plate_no)s, %(province)s, %(checkpoint)s, %(latitude)s, %(longtitude)s,
                 %(direction)s, %(pass_time)s, %(type)s, %(color)s, 'new'
             )
-            ON CONFLICT (pass_id) DO NOTHING
+            ON CONFLICT (id) DO NOTHING
         """
         conn = None
         cur  = None
         try:
             conn = self.conn.get_connection()
             cur  = conn.cursor()
+
+            # ✅ จุดที่ 2 — ดึง MAX(id) ก่อน
+            cur.execute("SELECT COALESCE(MAX(id), 0) FROM blacklists_passing")
+            max_id = cur.fetchone()[0]
+            logger.info(f"📌 current MAX(id) = {max_id}")
+
             cur.execute(query, {"minutes": minutes})
             rows = cur.fetchall()
             cols = [desc[0] for desc in cur.description]
@@ -168,8 +171,9 @@ class BlacklistRepository:
 
             logger.info(f"🔍 found {len(results)} matches, attempting insert...")
 
-            for idx, r in enumerate(results, start=1):
-                logger.info(f"📝 inserting pass_id={r['pass_id']} plate={r['plate_no']}")
+            # ✅ จุดที่ 2 — เริ่ม idx จาก max_id + 1
+            for idx, r in enumerate(results, start=max_id + 1):
+                logger.info(f"📝 inserting id={idx} pass_id={r['pass_id']} plate={r['plate_no']}")
                 try:
                     cur.execute(insert_query, {
                         "id":           idx,
@@ -198,6 +202,55 @@ class BlacklistRepository:
 
         except Exception as e:
             logger.error(f"❌ ERROR: {e}")
+            if conn:
+                conn.rollback()
+            raise e
+        finally:
+            if cur:  cur.close()
+            if conn: conn.close()
+
+    def insert_violation_from_blacklist(self, results: list):
+        insert_query = """
+            INSERT INTO violation_records (
+                checkpoint_id, direction, car_type_id,
+                volume, time_range_id, created_date, created_at
+            )
+            VALUES (
+                %(checkpoint_id)s, %(direction)s, %(car_type_id)s,
+                %(volume)s, %(time_range_id)s, %(created_date)s, %(created_at)s
+            )
+            RETURNING id
+        """
+        conn = None
+        cur  = None
+        try:
+            conn = self.conn.get_connection()
+            cur  = conn.cursor()
+
+            inserted_ids = []
+            for r in results:
+                pass_time = r.get("pass_time")
+                params = {
+                    "checkpoint_id": r.get("crossing_id"),
+                    "direction":     str(r.get("direction_index") or "")[:10],
+                    "car_type_id":   r.get("vehicle_type"),
+                    "volume":        1,
+                    "time_range_id": None,
+                    "created_date":  pass_time.date() if pass_time else None,
+                    "created_at":    pass_time,
+                }
+                cur.execute(insert_query, params)
+                row_inserted = cur.fetchone()
+                if row_inserted:
+                    inserted_ids.append(row_inserted[0])
+                    logger.info(f"✅ inserted violation_record id={row_inserted[0]}")
+
+            conn.commit()
+            logger.info(f"✅ commit done — {len(inserted_ids)} records inserted into violation_records")
+            return {"inserted": len(inserted_ids), "ids": inserted_ids}
+
+        except Exception as e:
+            logger.error(f"❌ ERROR insert_violation_from_blacklist: {e}")
             if conn:
                 conn.rollback()
             raise e
