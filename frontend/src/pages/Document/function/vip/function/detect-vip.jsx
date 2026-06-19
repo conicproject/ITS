@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Filter } from "../../../components/ui/Filter";
-import { ViolationList } from "../../../components/ui/ViolationList";
-import { MapSidebar } from "../../../components/ui/MapSidebar";
+import { Filter } from "@/components/ui/Filter";
+import { ViolationList } from "@/components/ui/ViolationList";
+import { MapSidebar } from "@/components/ui/MapSidebar";
 import { FaTimes, FaFilter, FaChevronUp, FaChevronDown } from "react-icons/fa";
 import axios from "axios";
 
@@ -13,7 +13,7 @@ const getTodayRange = () => {
   };
 };
 
-const DetectHelmet = () => {
+const DetectVip = () => {
   const [selectedViolation, setSelectedViolation] = useState(null);
   const [showFilter, setShowFilter] = useState(false);
   const [violations, setViolations] = useState([]);
@@ -125,7 +125,7 @@ const DetectHelmet = () => {
               <span className="text-sm font-black">!</span>
             </div>
             <h1 className="text-lg md:text-2xl font-black text-gray-800 tracking-tight">
-              การไม่สวมหมวกนิรภัย
+              การตรวจจับรายการต้องห้าม
             </h1>
           </div>
 
@@ -171,4 +171,4 @@ const DetectHelmet = () => {
   );
 };
 
-export default DetectHelmet;
+export default DetectVip;

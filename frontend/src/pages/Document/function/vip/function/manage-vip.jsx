@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
-import apiClient from "../../../service/client";
+import apiClient from "../../../../../service/client";
 
-function ManageBlacklist() {
+function ManageVip() {
   const [plateNumber, setPlateNumber] = useState('');
   const [province, setProvince]       = useState('');
   const [color, setColor]             = useState('');
@@ -201,4 +201,4 @@ function ManageBlacklist() {
   );
 }
 
-export default ManageBlacklist;
+export default ManageVip;

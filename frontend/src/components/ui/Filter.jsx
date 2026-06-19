@@ -6,10 +6,9 @@ import { FilterConfig } from '../../config/FilterConfig';
 export const Filter = ({ type = "license", onSearch }) => {
   const config = FilterConfig[type] || {};
   const showPlate         = config.showPlate         ?? false;
-  const showLocation      = config.showLocation      ?? false;   // ✅ ถ้าต้องการใช้ ต้องเพิ่มใน FilterConfig
+  const showLocation      = config.showLocation      ?? false;
   const showVehicleType   = config.showVehicleType   ?? false;
   const showViolationType = config.showViolationType ?? false;
-  // showDateRange ยังไม่ได้ใช้ใน JSX — เพิ่ม date picker ตาม flag นี้
   const showDateRange     = config.showDateRange     ?? false;
 
   const todayStr = new Date().toISOString().split('T')[0];
@@ -39,7 +38,6 @@ export const Filter = ({ type = "license", onSearch }) => {
       <div className="flex flex-wrap items-center gap-3 w-full">
         <FaSearch className="w-5 h-5 text-gray-500 flex-shrink-0" />
 
-        {/* Date — แสดงเมื่อ showDateRange = true */}
         {showDateRange && (
           <div className="flex items-center gap-2 flex-1 min-w-[200px]">
             <FaCalendar className="w-4 h-4 text-gray-500" />

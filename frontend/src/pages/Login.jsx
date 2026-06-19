@@ -20,7 +20,7 @@ function Login() {
         try {
           const { data } = await apiClient.get("/api/menus");
           saveMenusToStorage(data); // บันทึกเมนูลง localStorage
-          navigate("/overview", { replace: true });
+          navigate("/overview/dashboard", { replace: true });
         } catch {
           localStorage.removeItem("token");
           localStorage.removeItem("user");
@@ -68,7 +68,7 @@ function Login() {
         console.error("Failed to fetch menus:", menuError);
       }
       
-      navigate("/overview", { replace: true });
+      navigate("/overview/dashboard", { replace: true });
     } catch (err) {
       alert(
         err.response?.data?.detail ||

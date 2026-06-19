@@ -2,7 +2,7 @@
 import Home from "./pages/Home";
 import ManageUser from "./pages/ManageUser";
 import Login from "./pages/Login";
-import Overview from "./pages/Overview";
+import Overview from "./pages/Overview/dashboard";
 import DefaultLayout from "./layouts/DefaultLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import EnforcementDashboard from "./pages/Enforcement/dashboard";
@@ -22,16 +22,14 @@ import DetectLane from "./pages/Enforcement/function/detect-lane";
 import DetectParking from "./pages/Enforcement/function/detect-parking";
 import DetectRedLight from "./pages/Enforcement/function/detect-red-light";
 import DetectSidewalk from "./pages/Enforcement/function/detect-sidewalk";
-import InstallationPoint from "./pages/DataCollection/function/installation-point";
-import LicensePlateSearch from "./pages/DataCollection/function/license-plate-search";
 import RouteAnalysis from "./pages/DataCollection/function/route-analysis";
 import VehicleReport from "./pages/DataCollection/function/vehicle.report";
+import TrafficSignal from "./pages/DataCollection/function/traffic-signal";
 import RelateAccident from "./pages/IncidentAccident/function/relate-accident";
 import Irregularities from "./pages/IncidentAccident/function/irregularitie";
 import RoadObstruction from "./pages/IncidentAccident/function/road-obstruction";
 import SpecialEvent from "./pages/IncidentAccident/function/special-event";
 import SpecialHazard from "./pages/IncidentAccident/function/special-hazard";
-import TrafficSignal from "./pages/OperationManagement/function/traffic-signal";
 import Ambulance from "./pages/OperationManagement/function/Ambulance";
 import VIP from "./pages/OperationManagement/function/vip";
 import Sequence from "./pages/OperationManagement/function/sequence";
@@ -46,7 +44,26 @@ import DetectStopCrosswalk from "./pages/Enforcement/function/detect-stop-crossw
 import DetectStopZone from "./pages/Enforcement/function/detect-stop-zone";
 import DetectUturn from "./pages/Enforcement/function/detect-uturn";
 import ViolationSearch from "./pages/Enforcement/function/violation-search";
-import ManageBlacklist from "./pages/DataCollection/function/manage-blacklist";
+import OverviewFunction from "./pages/Overview/function";
+import InstallationPoint from "./pages/Overview/function/installation-point"
+import LicensePlateSearch from "./pages/Overview/function/license-plate-search";
+import DocumentFunction from "./pages/Document/function";
+import BlacklistFunction from "./pages/Document/function/blacklist/blacklist";
+import GreenlistFunction from "./pages/Document/function/greenlist/greenlist";
+import TaxFunction from "./pages/Document/function/tax/tax";
+import AmbulanceFunction from "./pages/Document/function/ambulance/ambulance";
+import VipFunction from "./pages/Document/function/vip/vip";
+import DetectBlacklist from "./pages/Document/function/blacklist/function/detect-blacklist";
+import ManageBlacklist from "./pages/Document/function/blacklist/function/manage-blacklist";
+import DetectGreenlist from "./pages/Document/function/greenlist/function/detect-greenlist";
+import ManageGreenlist from "./pages/Document/function/greenlist/function/manage-greenlist";
+import DetectTax from "./pages/Document/function/tax/function/detect-tax";
+import ManageTax from "./pages/Document/function/tax/function/manage-tax";
+import DetectAmbulance from "./pages/Document/function/ambulance/function/detect-ambulance";
+import ManageAmbulance from "./pages/Document/function/ambulance/function/manage-ambulance";
+import DetectVip from "./pages/Document/function/vip/function/detect-vip";
+import ManageVip from "./pages/Document/function/vip/function/manage-vip";
+
 
 const routes = [
   {
@@ -77,12 +94,45 @@ const routes = [
     ),
   },
   {
-    path: "/overview",
-    name: "Overview",
+    path: "/overview/dashboard",
+    name: "OverviewDashboard",
     element: (
       <ProtectedRoute>
         <DefaultLayout>
           <Overview />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/overview/function",
+    name: "OverviewFunction",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <OverviewFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/overview/function/installation-point",
+    name: "InstallationPoint",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <InstallationPoint />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/overview/function/license-plate-search",
+    name: "LicensePlateSearch",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <LicensePlateSearch />
         </DefaultLayout>
       </ProtectedRoute>
     ),
@@ -396,28 +446,6 @@ const routes = [
     ),
   },
   {
-    path: "/data-collection/function/installation-point",
-    name: "InstallationPoint",
-    element: (
-      <ProtectedRoute>
-        <DefaultLayout>
-          <InstallationPoint />
-        </DefaultLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
-    path: "/data-collection/function/license-plate-search",
-    name: "LicensePlateSearch",
-    element: (
-      <ProtectedRoute>
-        <DefaultLayout>
-          <LicensePlateSearch />
-        </DefaultLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
     path: "/data-collection/function/route-analysis",
     name: "RouteAnalysis",
     element: (
@@ -440,12 +468,12 @@ const routes = [
     ),
   },
   {
-    path: "/data-collection/function/manage-blacklist",
-    name: "ManageBlacklist",
+    path: "/data-collection/function/traffic-signal",
+    name: "TrafficSignal",
     element: (
       <ProtectedRoute>
         <DefaultLayout>
-          <ManageBlacklist />
+          <TrafficSignal />
         </DefaultLayout>
       </ProtectedRoute>
     ),
@@ -506,17 +534,6 @@ const routes = [
     ),
   },
   {
-    path: "/operation-management/function/traffic-signal",
-    name: "TrafficSignal",
-    element: (
-      <ProtectedRoute>
-        <DefaultLayout>
-          <TrafficSignal />
-        </DefaultLayout>
-      </ProtectedRoute>
-    ),
-  },
-  {
     path: "/operation-management/function/ambulance",
     name: "Ambulance",
     element: (
@@ -545,6 +562,182 @@ const routes = [
       <ProtectedRoute>
         <DefaultLayout>
           <Sequence />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function",
+    name: "DocumentFunction",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DocumentFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/blacklist-function",
+    name: "Blacklistfunction",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <BlacklistFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/detect-blacklist",
+    name: "DetectBlacklist",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectBlacklist />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/manage-blacklist",
+    name: "ManageBlacklist",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <ManageBlacklist />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/greenlist-function",
+    name: "Greenlistfunction",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <GreenlistFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/detect-greenlist",
+    name: "DetectGreenlist",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectGreenlist />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/manage-greenlist",
+    name: "ManageGreenlist",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <ManageGreenlist />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/tax-function",
+    name: "Taxfunction",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <TaxFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/detect-tax",
+    name: "DetectTax",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectTax />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/manage-tax",
+    name: "ManageTax",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <ManageTax />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/ambulance-function",
+    name: "Ambulancefunction",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <AmbulanceFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/detect-ambulance",
+    name: "DetectAmbulance",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectAmbulance />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/manage-ambulance",
+    name: "ManageAmbulance",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <ManageAmbulance />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/vip-function",
+    name: "Vipfunction",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <VipFunction />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/detect-vip",
+    name: "DetectVip",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <DetectVip />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/document/function/manage-vip",
+    name: "ManageVip",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <ManageVip />
         </DefaultLayout>
       </ProtectedRoute>
     ),
