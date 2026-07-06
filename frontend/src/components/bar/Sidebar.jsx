@@ -1,9 +1,8 @@
 // frontend/src/components/Sidebar.jsx
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { BiSolidCube } from "react-icons/bi";
-
 import apiClient from "../../service/client";
+import { BiSolidCube, BiChevronDown } from "react-icons/bi";
 
 function Sidebar({
   sidebarOpen,
@@ -47,12 +46,12 @@ function Sidebar({
     const findPathToExpand = (nodes, targetPath, ancestors = []) => {
       for (const node of nodes) {
         const currentPath = [...ancestors, node.id];
-        
-        if (node.path === targetPath || 
-            (node.path && targetPath.startsWith(node.path + '/'))) {
+        if (
+          node.path === targetPath ||
+          (node.path && targetPath.startsWith(node.path + "/"))
+        ) {
           return currentPath;
         }
-        
         if (node.children?.length) {
           const found = findPathToExpand(node.children, targetPath, currentPath);
           if (found) return found;
@@ -63,9 +62,9 @@ function Sidebar({
 
     const pathToExpand = findPathToExpand(menus, location.pathname);
     if (pathToExpand) {
-      setExpandedMenus(prev => ({
+      setExpandedMenus((prev) => ({
         ...prev,
-        ...Object.fromEntries(pathToExpand.map(id => [id, true]))
+        ...Object.fromEntries(pathToExpand.map((id) => [id, true])),
       }));
     }
   }, [location.pathname, menus, loaded]);
@@ -78,8 +77,10 @@ function Sidebar({
 
       const search = (nodes, depth = 0) => {
         for (const node of nodes) {
-          if (node.path && 
-              (targetPath === node.path || targetPath.startsWith(node.path + '/'))) {
+          if (
+            node.path &&
+            (targetPath === node.path || targetPath.startsWith(node.path + "/"))
+          ) {
             if (depth > maxDepth) {
               maxDepth = depth;
               closest = node.path;
@@ -101,26 +102,24 @@ function Sidebar({
   // Pre-compute which nodes have active descendants
   const nodesWithActiveDescendants = useMemo(() => {
     const activeSet = new Set();
-    
+
     const checkDescendants = (node) => {
       if (node.path === closestMatchPath) {
         activeSet.add(node.id);
         return true;
       }
-      
       if (node.children?.length) {
-        const hasActive = node.children.some(child => checkDescendants(child));
+        const hasActive = node.children.some((child) => checkDescendants(child));
         if (hasActive) {
           activeSet.add(node.id);
           return true;
         }
       }
-      
       return false;
     };
 
     const traverse = (nodes) => {
-      nodes.forEach(node => checkDescendants(node));
+      nodes.forEach((node) => checkDescendants(node));
     };
 
     traverse(menus);
@@ -128,136 +127,143 @@ function Sidebar({
   }, [menus, closestMatchPath]);
 
   const toggleMenu = useCallback((nodeId) => {
-    setExpandedMenus(prev => ({
+    setExpandedMenus((prev) => ({
       ...prev,
-      [nodeId]: !prev[nodeId]
+      [nodeId]: !prev[nodeId],
     }));
   }, []);
 
   const showSidebar = (sidebarLocked || sidebarOpen) && loaded;
 
-  const renderMenuItem = useCallback((node, level) => {
-    const isActive = node.path === closestMatchPath;
-    const hasChildren = node.children?.length > 0;
-    const isExpanded = expandedMenus[node.id];
-    const isSubmenu = level > 0;
-    const hasActiveDescendant = nodesWithActiveDescendants.has(node.id);
+  const renderMenuItem = useCallback(
+    (node, level) => {
+      const isActive = node.path === closestMatchPath;
+      const hasChildren = node.children?.length > 0;
+      const isExpanded = expandedMenus[node.id];
+      const isSubmenu = level > 0;
+      const hasActiveDescendant = nodesWithActiveDescendants.has(node.id);
 
-    const baseStyle = {
-      display: "flex",
-      alignItems: "center",
-      gap: "10px",
-      padding: isSubmenu ? "6px 12px" : "10px 12px",
-      borderRadius: "6px",
-      fontSize: isSubmenu ? "0.875rem" : "0.95rem",
-      transition: "all 0.2s ease",
-      whiteSpace: "nowrap"
-    };
+      const baseStyle = {
+        display: "flex",
+        alignItems: "center",
+        gap: "10px",
+        padding: isSubmenu ? "6px 12px" : "10px 12px",
+        borderRadius: "6px",
+        fontSize: isSubmenu ? "0.875rem" : "0.95rem",
+        transition: "all 0.2s ease",
+        whiteSpace: "nowrap",
+      };
 
-    // Leaf node with path
-    if (node.path && !hasChildren) {
-      return (
-        <Link
-          to={node.path}
-          style={{
-            ...baseStyle,
-            color: isActive ? "#fff" : "#374151",
-            backgroundColor: isActive ? "#02754B" : "transparent",
-            textDecoration: "none",
-            fontWeight: isActive ? "600" : "500",
-          }}
-          onMouseEnter={(e) => !isActive && (e.currentTarget.style.backgroundColor = "#F3F4F6")}
-          onMouseLeave={(e) => !isActive && (e.currentTarget.style.backgroundColor = "transparent")}
-          onClick={() => isMobile && setSidebarOpen(false)}
-        >
-          <BiSolidCube />
-          <span>{node.label}</span>
-        </Link>
-      );
-    }
-
-    // Parent node with children
-    if (hasChildren) {
-      return (
-        <div>
-          <div
+      // Leaf node with path
+      if (node.path && !hasChildren) {
+        return (
+          <Link
+            to={node.path}
             style={{
               ...baseStyle,
-              justifyContent: "space-between",
-              color: hasActiveDescendant ? "#02754B" : "#374151",
-              fontWeight: hasActiveDescendant ? "600" : "500",
-              cursor: "pointer",
-              backgroundColor: "transparent",
+              color: isActive ? "rgb(56, 189, 248)" : "#374151",
+              backgroundColor: isActive ? "rgba(56, 189, 248, 0.1)" : "transparent",
+              textDecoration: "none",
+              fontWeight: isActive ? "600" : "500",
             }}
-            onClick={() => toggleMenu(node.id)}
-            onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "#F3F4F6")}
-            onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = "transparent")}
+            onMouseEnter={(e) =>
+              !isActive && (e.currentTarget.style.backgroundColor = "rgba(56, 189, 248, 0.1)")
+            }
+            onMouseLeave={(e) =>
+              !isActive && (e.currentTarget.style.backgroundColor = "transparent")
+            }
+            onClick={() => isMobile && setSidebarOpen(false)}
           >
-            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              <BiSolidCube />
-              <span>{node.label}</span>
+            <BiSolidCube />
+            <span>{node.label}</span>
+          </Link>
+        );
+      }
+
+      // Parent node with children
+      if (hasChildren) {
+        return (
+          <div>
+            <div
+              style={{
+                ...baseStyle,
+                justifyContent: "space-between",
+                color: hasActiveDescendant ? "#fff" : "#374151",
+                fontWeight: hasActiveDescendant ? "600" : "500",
+                cursor: "pointer",
+                backgroundColor: hasActiveDescendant ? "rgba(255, 255, 255, 0.09)" : "transparent",
+              }}
+              onClick={() => toggleMenu(node.id)}
+              onMouseEnter={(e) =>
+                (e.currentTarget.style.backgroundColor = "rgba(56, 189, 248, 0.1)")
+              }
+              onMouseLeave={(e) => {
+                if (!hasActiveDescendant) {
+                  e.currentTarget.style.backgroundColor = "transparent";
+                } else {
+                  e.currentTarget.style.backgroundColor = "rgba(56, 189, 248, 0.1)";
+                }
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <BiSolidCube />
+                <span>{node.label}</span>
+              </div>
+              <BiChevronDown
+                style={{
+                  fontSize: "1.1rem",
+                  transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
+                  transition: "transform 0.2s ease",
+                  color: "#9CA3AF",
+                }}
+              />
+
             </div>
-            <span style={{ 
-              fontSize: "0.7rem", 
-              transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)",
-              transition: "transform 0.2s ease",
-              color: hasActiveDescendant ? "#02754B" : "#9CA3AF"
-            }}>
-              ▼
-            </span>
+            {isExpanded && (
+              <div style={{ marginTop: "4px" }}>
+                {renderMenu(node.children, level + 1)}
+              </div>
+            )}
           </div>
-          {isExpanded && (
-            <div style={{ marginTop: "4px" }}>
-              {renderMenu(node.children, level + 1)}
-            </div>
-          )}
-        </div>
+        );
+      }
+
+      return null;
+    },
+    [closestMatchPath, expandedMenus, nodesWithActiveDescendants, isMobile, setSidebarOpen, toggleMenu]
+  );
+
+  const renderMenu = useCallback(
+    (nodes, level = 0) => {
+      const paddingLeft = 12 + level * 16;
+      return (
+        <ul style={{ listStyle: "none", paddingLeft, paddingRight: 12, margin: 0 }}>
+          {nodes.map((node) => (
+            <li key={node.id} style={{ margin: level > 0 ? "4px 0" : "8px 0" }}>
+              {renderMenuItem(node, level)}
+            </li>
+          ))}
+        </ul>
       );
-    }
-
-    return null;
-  }, [closestMatchPath, expandedMenus, nodesWithActiveDescendants, isMobile, setSidebarOpen, toggleMenu]);
-
-  const renderMenu = useCallback((nodes, level = 0) => {
-    const paddingLeft = 12 + (level * 16);
-
-    return (
-      <ul style={{ 
-        listStyle: "none", 
-        paddingLeft, 
-        paddingRight: 12, 
-        margin: 0 
-      }}>
-        {nodes.map((node) => (
-          <li key={node.id} style={{ margin: level > 0 ? "4px 0" : "8px 0" }}>
-            {renderMenuItem(node, level)}
-          </li>
-        ))}
-      </ul>
-    );
-  }, [renderMenuItem]);
+    },
+    [renderMenuItem]
+  );
 
   return (
     <>
       <style>
         {`
           @keyframes slideDown {
-            from {
-              opacity: 0;
-              transform: translateY(-10px);
-            }
-            to {
-              opacity: 1;
-              transform: translateY(0);
-            }
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
           }
         `}
       </style>
+
       <aside
         style={{
           width: showSidebar ? 270 : 0,
           height: "100vh",
-          background: "#F5F6FA",
           display: "flex",
           flexDirection: "column",
           position: "relative",
@@ -266,6 +272,8 @@ function Sidebar({
           zIndex: 50,
           transition: "width 0.3s ease-in-out",
           overflow: "hidden",
+          borderRight: "1px solid rgba(255, 255, 255, 0.07)",
+          background: "linear-gradient(rgba(10, 17, 35, 0.85), rgba(8, 13, 28, 0.92))",
         }}
       >
         {/* Logo Section */}
@@ -278,15 +286,15 @@ function Sidebar({
           }}
         >
           <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
-            <div 
-              style={{ 
-                background: "#02754B", 
-                width: "44px", 
+            <div
+              style={{
+                background: "#02754B",
+                width: "44px",
                 height: "44px",
                 borderRadius: "8px",
                 display: "flex",
                 alignItems: "center",
-                justifyContent: "center"
+                justifyContent: "center",
               }}
             >
               <span style={{ color: "#fff", fontSize: "1.5rem", marginTop: "-0.25rem" }}>★</span>
@@ -298,12 +306,15 @@ function Sidebar({
         </div>
 
         {/* Menu Section */}
-        <div style={{
-          overflowY: "auto",
-          flex: 1,
-          opacity: showSidebar ? 1 : 0,
-          transition: "opacity 0.3s ease-in-out 0.1s",
-        }}>
+        <div
+          style={{
+            overflowY: "auto",
+            flex: 1,
+            opacity: showSidebar ? 1 : 0,
+            transition: "opacity 0.3s ease-in-out 0.1s",
+            borderTop: "1px solid rgba(255, 255, 255, 0.07)",
+          }}
+        >
           {loaded && renderMenu(menus)}
         </div>
       </aside>

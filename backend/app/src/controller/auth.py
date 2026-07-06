@@ -1,4 +1,4 @@
-from fastapi import HTTPException, Depends, Header
+from fastapi import HTTPException, Depends, Header, Response
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError
 from src.services.auth import AuthService
@@ -43,9 +43,14 @@ class AuthController:
             print("Verify token error:", str(e))
             raise HTTPException(status_code=401, detail="Invalid token")
 
-    def get_current_user(self, token: str = Depends(oauth2_scheme)):
+    def get_current_user(self, response: Response, token: str = Depends(oauth2_scheme)):
         try:
             payload = self.auth_service.decode_token(token)
+
+            # ⭐ ออก token ใหม่ทุกครั้งที่เรียกสำเร็จ = นับเวลาใหม่ 1 ชม.
+            new_token = self.auth_service.generate_token(payload)
+            response.headers["X-New-Token"] = new_token
+
             return payload
         except JWTError:
             raise HTTPException(status_code=401, detail="Invalid or expired token")

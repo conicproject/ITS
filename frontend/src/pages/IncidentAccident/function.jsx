@@ -2,15 +2,51 @@ import GenericFunction from "../../components/ui/GenericFunction";
 
 function IncidentAccidentFunction() {
   const items = [
-    { name: "อุบัติเหตุการเกี่ยวข้อง \nบนท้องถนน", icon: "/assets/function_icon/incident_function/incident_1.png", path: "/incident-accident/function/relate-accident" },
-    { name: "สิ่งกีดขวางบนถนน", icon: "/assets/function_icon/incident_function/incident_2.png", path: "/incident-accident/function/road-obstruction" },
-    { name: "เหตุการณ์อันตรายพิเศษ", icon: "/assets/function_icon/incident_function/incident_3.png", path: "/incident-accident/function/hazardous-incident" },
-    { name: "ความผิดปกติของถนน \nและระบบกำกับจราจร", icon: "/assets/function_icon/incident_function/incident_4.png", path: "/incident-accident/function/irregularitie" },
-    { name: "เหตุการณ์พิเศษ \nจากกิจกรรมมนุษย์", icon: "/assets/function_icon/incident_function/incident_5.png", path: "/incident-accident/function/special-event" },
+    {
+      name: "อุบัติเหตุการเกี่ยวข้อง\nบนท้องถนน",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          width="34"
+          height="34"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 3l9 16H3z" />
+          <path d="M12 10v4M12 16.5v.2" />
+        </svg>
+      ),
+      path: "/incident-accident/function/relate-accident",
+    },
+    {
+      name: "สิ่งกีดขวางบนถนน",
+      icon: (
+        <svg
+          viewBox="0 0 24 24"
+          width="34"
+          height="34"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.7"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M12 3l9 16H3z" />
+          <path d="M12 10v4M12 16.5v.2" />
+        </svg>
+      ),
+      path: "/incident-accident/function/road-obstruction",
+    },
   ];
 
   return (
-    <GenericFunction title="Incident & Accident Function" items={items} />
+    <GenericFunction
+      title="Incident & Accident Function"
+      items={items}
+    />
   );
 }
 

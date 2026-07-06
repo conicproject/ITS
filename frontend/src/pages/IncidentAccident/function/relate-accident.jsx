@@ -87,7 +87,7 @@ function RelateAccident() {
   ];
 
   return (
-    <div className="fix-function-page-y-auto bg-gray-50 p-6">
+    <div className="fix-function-page-y-auto p-6">
       <IncidentHeader
         title="อุบัติเหตุที่เกี่ยวข้องบนท้องถนน"
         subtitle="Road-Related Accident Management"

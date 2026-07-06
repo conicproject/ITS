@@ -56,7 +56,7 @@ function DefaultLayout({ children }) {
         display: "flex",
         height: "100vh",
         overflow: "hidden",
-        backgroundColor: "#f9fafb",
+        backgroundColor: "#070d1c",
       }}
     >
       <Sidebar

@@ -47,25 +47,25 @@ import ViolationSearch from "./pages/Enforcement/function/violation-search";
 import OverviewFunction from "./pages/Overview/function";
 import InstallationPoint from "./pages/Overview/function/installation-point"
 import LicensePlateSearch from "./pages/Overview/function/license-plate-search";
-import DocumentFunction from "./pages/Document/function";
-import BlacklistFunction from "./pages/Document/function/blacklist/blacklist";
-import GreenlistFunction from "./pages/Document/function/greenlist/greenlist";
-import TaxFunction from "./pages/Document/function/tax/tax";
-import AmbulanceFunction from "./pages/Document/function/ambulance/ambulance";
-import VipFunction from "./pages/Document/function/vip/vip";
-import DetectBlacklist from "./pages/Document/function/blacklist/function/detect-blacklist";
-import ManageBlacklist from "./pages/Document/function/blacklist/function/manage-blacklist";
-import DetectGreenlist from "./pages/Document/function/greenlist/function/detect-greenlist";
-import ManageGreenlist from "./pages/Document/function/greenlist/function/manage-greenlist";
-import DetectTax from "./pages/Document/function/tax/function/detect-tax";
-import ManageTax from "./pages/Document/function/tax/function/manage-tax";
-import DetectAmbulance from "./pages/Document/function/ambulance/function/detect-ambulance";
-import ManageAmbulance from "./pages/Document/function/ambulance/function/manage-ambulance";
-import DetectVip from "./pages/Document/function/vip/function/detect-vip";
-import ManageVip from "./pages/Document/function/vip/function/manage-vip";
+import AuthorizationFunction from "./pages/Authorization/function";
+import BlacklistFunction from "./pages/Authorization/function/blacklist/blacklist";
+import GreenlistFunction from "./pages/Authorization/function/greenlist/greenlist";
+import TaxFunction from "./pages/Authorization/function/tax/tax";
+import AmbulanceFunction from "./pages/Authorization/function/ambulance/ambulance";
+import VipFunction from "./pages/Authorization/function/vip/vip";
+import DetectBlacklist from "./pages/Authorization/function/blacklist/function/detect-blacklist";
+import ManageBlacklist from "./pages/Authorization/function/blacklist/function/manage-blacklist";
+import DetectGreenlist from "./pages/Authorization/function/greenlist/function/detect-greenlist";
+import ManageGreenlist from "./pages/Authorization/function/greenlist/function/manage-greenlist";
+import DetectTax from "./pages/Authorization/function/tax/function/detect-tax";
+import ManageTax from "./pages/Authorization/function/tax/function/manage-tax";
+import DetectAmbulance from "./pages/Authorization/function/ambulance/function/detect-ambulance";
+import ManageAmbulance from "./pages/Authorization/function/ambulance/function/manage-ambulance";
+import DetectVip from "./pages/Authorization/function/vip/function/detect-vip";
+import ManageVip from "./pages/Authorization/function/vip/function/manage-vip";
 
 
-const routes = [
+const routes = [   
   {
     path: "/",
     name: "Login",
@@ -567,18 +567,18 @@ const routes = [
     ),
   },
   {
-    path: "/document/function",
-    name: "DocumentFunction",
+    path: "/authorization/function",
+    name: "AuthorizationFunction",
     element: (
       <ProtectedRoute>
         <DefaultLayout>
-          <DocumentFunction />
+          <AuthorizationFunction />
         </DefaultLayout>
       </ProtectedRoute>
     ),
   },
   {
-    path: "/document/function/blacklist-function",
+    path: "/authorization/function/blacklist-function",
     name: "Blacklistfunction",
     element: (
       <ProtectedRoute>
@@ -589,7 +589,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/detect-blacklist",
+    path: "/authorization/function/detect-blacklist",
     name: "DetectBlacklist",
     element: (
       <ProtectedRoute>
@@ -600,7 +600,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/manage-blacklist",
+    path: "/authorization/function/manage-blacklist",
     name: "ManageBlacklist",
     element: (
       <ProtectedRoute>
@@ -611,7 +611,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/greenlist-function",
+    path: "/authorization/function/greenlist-function",
     name: "Greenlistfunction",
     element: (
       <ProtectedRoute>
@@ -622,7 +622,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/detect-greenlist",
+    path: "/authorization/function/detect-greenlist",
     name: "DetectGreenlist",
     element: (
       <ProtectedRoute>
@@ -633,7 +633,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/manage-greenlist",
+    path: "/authorization/function/manage-greenlist",
     name: "ManageGreenlist",
     element: (
       <ProtectedRoute>
@@ -644,7 +644,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/tax-function",
+    path: "/authorization/function/tax-function",
     name: "Taxfunction",
     element: (
       <ProtectedRoute>
@@ -655,7 +655,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/detect-tax",
+    path: "/authorization/function/detect-tax",
     name: "DetectTax",
     element: (
       <ProtectedRoute>
@@ -666,7 +666,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/manage-tax",
+    path: "/authorization/function/manage-tax",
     name: "ManageTax",
     element: (
       <ProtectedRoute>
@@ -677,7 +677,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/ambulance-function",
+    path: "/authorization/function/ambulance-function",
     name: "Ambulancefunction",
     element: (
       <ProtectedRoute>
@@ -688,7 +688,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/detect-ambulance",
+    path: "/authorization/function/detect-ambulance",
     name: "DetectAmbulance",
     element: (
       <ProtectedRoute>
@@ -699,7 +699,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/manage-ambulance",
+    path: "/authorization/function/manage-ambulance",
     name: "ManageAmbulance",
     element: (
       <ProtectedRoute>
@@ -710,7 +710,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/vip-function",
+    path: "/authorization/function/vip-function",
     name: "Vipfunction",
     element: (
       <ProtectedRoute>
@@ -721,7 +721,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/detect-vip",
+    path: "/authorization/function/detect-vip",
     name: "DetectVip",
     element: (
       <ProtectedRoute>
@@ -732,7 +732,7 @@ const routes = [
     ),
   },
   {
-    path: "/document/function/manage-vip",
+    path: "/authorization/function/manage-vip",
     name: "ManageVip",
     element: (
       <ProtectedRoute>

@@ -39,7 +39,7 @@ function VehicleReport() {
   };
 
   return (
-    <div className="fix-function-page-y-auto bg-gradient-to-br from-gray-50 py-12 px-4">
+    <div className="fix-function-page-y-auto bg-gradient-to-br py-12 px-4">
       <div className="max-w-3xl mx-auto">
         {/* Header */}
         <div className="text-center mb-8">

@@ -1,19 +1,40 @@
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet"
 import L from "leaflet"
 import "leaflet/dist/leaflet.css"
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import apiClient from "../../service/client"
 
-// ================== Fix Leaflet marker ==================
+// ================== Fix Leaflet marker (not used anymore, custom icons below) ==================
 delete L.Icon.Default.prototype._getIconUrl
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-})
+
+// ================== Custom status icons ==================
+const createStatusIcon = (status) => {
+  const isOnline = status === "online" || status === undefined
+  const color = isOnline ? "#22b8e0" : "#8a8f98"
+
+  return L.divIcon({
+    className: "custom-checkpoint-marker",
+    html: `
+      <div style="
+        width: 32px;
+        height: 32px;
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      ">
+        <svg width="32" height="32" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <path d="M16 2C9.4 2 4 7.4 4 14c0 9 12 16 12 16s12-7 12-16c0-6.6-5.4-12-12-12z"
+                fill="${color}" stroke="#0d1117" stroke-width="1.5"/>
+          <circle cx="16" cy="14" r="5.5" fill="#0d1117"/>
+        </svg>
+      </div>
+    `,
+    iconSize: [32, 32],
+    iconAnchor: [16, 30],
+    popupAnchor: [0, -28],
+  })
+}
 
 // ================== Map Initializer ==================
 function MapInitializer({ center }) {
@@ -23,7 +44,7 @@ function MapInitializer({ center }) {
     if (!center) return
     const timer = setTimeout(() => {
       map.invalidateSize()
-      map.setView(center, 16)
+      map.setView(center, 13)
     }, 100)
 
     return () => clearTimeout(timer)
@@ -33,12 +54,7 @@ function MapInitializer({ center }) {
 }
 
 // ================== Camera Popup ==================
-function CameraPopup({
-  cam,
-  selectedCam,
-  cameraList,
-  onCameraChange,
-}) {
+function CameraPopup({ cam, selectedCam, cameraList, onCameraChange }) {
   const videoRef = useRef(null)
 
   useEffect(() => {
@@ -49,10 +65,10 @@ function CameraPopup({
   }, [selectedCam.video])
 
   return (
-    <div className="w-[380px]">
+    <div className="w-[380px] bg-[#11161d] text-gray-100 -m-3 p-3 rounded">
       <h3 className="font-semibold mb-2">{selectedCam.title}</h3>
 
-      <div className="text-sm mb-2">
+      <div className="text-sm mb-2 space-y-0.5">
         <div><b>ที่ตั้ง:</b> {cam.location}</div>
         <div><b>ชื่อกล้อง:</b> {selectedCam.cameraName}</div>
       </div>
@@ -69,14 +85,11 @@ function CameraPopup({
         />
       </div>
 
-      {/* 🔥 Select Camera */}
       <select
-        className="w-full border rounded p-1 mt-2 text-sm"
+        className="w-full border border-gray-700 bg-[#1a212b] text-gray-100 rounded p-1 mt-2 text-sm"
         value={selectedCam.video}
         onChange={(e) => {
-          const selected = cameraList.find(
-            (c) => c.video === e.target.value
-          )
+          const selected = cameraList.find((c) => c.video === e.target.value)
           onCameraChange(selected)
         }}
       >
@@ -96,36 +109,14 @@ function Overview() {
 
   // ================== Camera List ==================
   const cameraList = [
-    {
-      label: "Camera 1",
-      title: "Camera 1",
-      cameraName: "TF7-KY-1-1-C2",
-      video: "/assets/1.mp4",
-    },
-    {
-      label: "Camera 2",
-      title: "Camera 2",
-      cameraName: "TF7-KY-1-1-C3",
-      video: "/assets/2.mp4",
-    },
-    {
-      label: "Camera 3",
-      title: "Camera 3",
-      cameraName: "TF7-KY-1-1-C4",
-      video: "/assets/3.mp4",
-    },
-    {
-      label: "Camera 4",
-      title: "Camera 4",
-      cameraName: "TF7-KY-1-1-C5",
-      video: "/assets/4.mp4",
-    },
+    { label: "Camera 1", title: "Camera 1", cameraName: "TF7-KY-1-1-C2", video: "/assets/1.mp4" },
+    { label: "Camera 2", title: "Camera 2", cameraName: "TF7-KY-1-1-C3", video: "/assets/2.mp4" },
+    { label: "Camera 3", title: "Camera 3", cameraName: "TF7-KY-1-1-C4", video: "/assets/3.mp4" },
+    { label: "Camera 4", title: "Camera 4", cameraName: "TF7-KY-1-1-C5", video: "/assets/4.mp4" },
   ]
 
   const [checkpoints, setCheckpoints] = useState([])
   const [center, setCenter] = useState(defaultCenter)
-
-  // 🔥 state แยก camera ของแต่ละ checkpoint
   const [checkpointCamera, setCheckpointCamera] = useState({})
 
   // ================== Fetch checkpoint ==================
@@ -140,7 +131,7 @@ function Overview() {
         }
 
         if (Array.isArray(data)) {
-          const parsed = data.map((p, i) => ({
+          const parsed = data.map((p) => ({
             ...p,
             latitude: parseFloat(p.latitude),
             longitude: parseFloat(p.longitude),
@@ -148,12 +139,10 @@ function Overview() {
 
           setCheckpoints(parsed)
 
-          // ⭐ center ที่ตัวแรก
           if (parsed.length > 0) {
             setCenter([parsed[0].latitude, parsed[0].longitude])
           }
 
-          // default camera
           const camState = {}
           parsed.forEach((_, i) => {
             camState[i] = cameraList[0]
@@ -168,20 +157,56 @@ function Overview() {
     fetchCheckpoint()
   }, [])
 
+  // ================== Stats ==================
+  const onlineCount = useMemo(
+    () => checkpoints.filter((c) => c.status === "online" || c.status === undefined).length,
+    [checkpoints]
+  )
+  const offlineCount = checkpoints.length - onlineCount
+
   return (
-    <div className="h-screen p-4">
-      <h2 className="text-2xl font-semibold mb-2">Overview</h2>
+    <div className="h-screen w-full bg-[#0a0e14] flex flex-col p-4 gap-4">
+      {/* ================== Header ================== */}
+      <div className="flex items-center justify-between px-5 py-3 bg-[#0d1117] border border-gray-800 rounded-lg shrink-0">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-100">
+            แผนที่จุดติดตั้งกล้องและจุดตรวจ
+          </h2>
+          <p className="text-xs text-gray-400">
+            กรุงเทพมหานคร · แสดงตำแหน่งจุดติดตั้งทั้งหมด
+          </p>
+        </div>
 
-      <div className="h-[calc(100%-3rem)] w-full rounded-lg overflow-hidden shadow">
-        <MapContainer center={center} zoom={19} className="h-full w-full">
+        <div className="flex items-center gap-5 text-sm text-gray-300">
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-[#22b8e0]" />
+            ออนไลน์
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full bg-gray-500" />
+            ปิด/ปรับปรุง
+          </div>
+          <div className="flex items-center gap-1.5 bg-emerald-600/20 text-emerald-400 px-2.5 py-1 rounded-full font-medium">
+            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+            {checkpoints.length} จุดติดตั้ง
+          </div>
+        </div>
+      </div>
+
+      {/* ================== Map ================== */}
+      <div className="flex-1 relative rounded-lg overflow-hidden border border-gray-800">
+        <MapContainer center={center} zoom={13} className="h-full w-full">
           <MapInitializer center={center} />
-          <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer
+            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
+            attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+          />
 
-          {/* 🔥 Checkpoint markers */}
           {checkpoints.map((point, index) => (
             <Marker
               key={index}
               position={[point.latitude, point.longitude]}
+              icon={createStatusIcon(point.status)}
             >
               <Popup maxWidth={420}>
                 <CameraPopup
