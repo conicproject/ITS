@@ -12,6 +12,7 @@ import DataCollectionFunction from "./pages/DataCollection/function";
 import OperationManagementDashboard from "./pages/OperationManagement/dashboard";
 import OperationManagementFunction from "./pages/OperationManagement/function";
 import IncidentAccidentDashboard from "./pages/IncidentAccident/dashboard";
+import AuthorizationDashboard from "./pages/Authorization/dashboard";
 import IncidentAccidentFunction from "./pages/IncidentAccident/function";
 import EnforcementReportFunction from "./pages/Enforcement/function/report-vehicle";
 import DetailReportVehicle from "./pages/Enforcement/function/detail-report-vehicle";
@@ -562,6 +563,17 @@ const routes = [
       <ProtectedRoute>
         <DefaultLayout>
           <Sequence />
+        </DefaultLayout>
+      </ProtectedRoute>
+    ),
+  },
+  {
+    path: "/authorization/dashboard",
+    name: "AuthorizationDashboard",
+    element: (
+      <ProtectedRoute>
+        <DefaultLayout>
+          <AuthorizationDashboard />
         </DefaultLayout>
       </ProtectedRoute>
     ),

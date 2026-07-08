@@ -116,7 +116,7 @@ export default function TrafficSignal() {
   };
 
   return (
-    <div className="h-screen overflow-y-auto bg-gray-50 font-sans pb-10">
+    <div className="h-screen overflow-y-auto font-sans pb-10">
       
         {/* --- HEADER --- */}
         <div className="p-4 md:p-6 pb-0 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -161,20 +161,20 @@ export default function TrafficSignal() {
               
               {/* Location Info */}
               <div className="flex flex-col md:flex-row w-full gap-4 text-gray-800 shrink-0">
-                <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-6 py-4 shadow-sm md:min-w-[140px]">
+                <div className="flex items-center gap-3 rounded-2xl border border-gray-200 px-6 py-4 shadow-sm md:min-w-[140px]">
                   <div className="relative flex items-center justify-center shrink-0">
                     <FaMapMarkerAlt className="text-purple-500 text-2xl drop-shadow-sm" />
                   </div>
                   <span className="text-lg font-medium whitespace-nowrap">สถานที่ :</span>
                 </div>
 
-                <div className="flex flex-1 items-center justify-center md:justify-start rounded-2xl border border-gray-200 bg-white px-6 py-4 shadow-sm">
+                <div className="flex flex-1 items-center justify-center md:justify-start rounded-2xl border border-gray-200 px-6 py-4 shadow-sm">
                   <span className="text-lg font-semibold text-gray-700">{selectedLocation}</span>
                 </div>
               </div>
 
               {/* Center Lane (Camera) */}
-              <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm flex flex-col flex-1 min-h-[300px]">
+              <div className="rounded-2xl overflow-hidden border border-gray-200 shadow-sm flex flex-col flex-1 min-h-[300px]">
                 {/* Video Area */}
                 <div className="bg-black relative group flex-1">
                   <div className="absolute top-0 left-0 w-full p-4 bg-gradient-to-b from-black/80 to-transparent flex justify-between items-start z-10">
@@ -185,7 +185,7 @@ export default function TrafficSignal() {
                       </p>
                     </div>
                     <div className="bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded flex items-center gap-1.5 shadow-sm border border-red-500/50">
-                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div> LIVE
+                      <div className="w-2 h-2 rounded-full animate-pulse"></div> LIVE
                     </div>
                   </div>
 
@@ -213,7 +213,7 @@ export default function TrafficSignal() {
                 </div>
 
                 {/* Bottom Panel */}
-                <div className="px-6 py-4 bg-white border-t border-gray-100 shrink-0">
+                <div className="px-6 py-4 border-t border-gray-100 shrink-0">
                   <div className="flex items-center gap-4">
                     <span className="text-sm font-semibold text-gray-600 w-24">PCU Load</span>
                     <div className="flex-1">
@@ -261,7 +261,7 @@ export default function TrafficSignal() {
 
               {/* Simulated Cars */}
               <div className="absolute top-[20%] left-[47%] w-5 h-8 bg-blue-500 rounded-md shadow-lg transition-all duration-1000 border border-blue-400/50"></div>
-              <div className="absolute bottom-[20%] left-[51%] w-5 h-8 bg-white rounded-md shadow-lg border border-gray-300"></div>
+              <div className="absolute bottom-[20%] left-[51%] w-5 h-8 rounded-md shadow-lg border border-gray-300"></div>
               <div className="absolute left-[20%] top-[46%] w-8 h-5 bg-amber-500 rounded-md shadow-lg border border-amber-400/50"></div>
             </div>
 
@@ -275,7 +275,7 @@ export default function TrafficSignal() {
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {otherLanes.map((lane, idx) => (
-                    <div key={idx} className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
+                    <div key={idx} className="rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all duration-300 cursor-pointer">
                     <div className="bg-black relative h-40 group">
                         <div className="absolute top-2 left-3 z-10">
                             <span className="text-white font-bold text-sm drop-shadow-md block">{lane.name}</span>
@@ -316,7 +316,7 @@ export default function TrafficSignal() {
             </div>
 
             {/* --- SECTION 4: Chart (Replaced with React-Chartjs-2) --- */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-6">
+            <div className="rounded-2xl border border-gray-200 shadow-sm p-6 mt-6">
                 <div className="flex items-center justify-between mb-6">
                     <div className="flex items-center gap-3">
                         <div className="p-2.5 bg-indigo-50 rounded-lg text-indigo-600">

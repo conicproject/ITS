@@ -109,7 +109,7 @@ function Sequence() {
   };
 
   return (
-    <div className="h-screen overflow-y-auto bg-gray-50 font-sans pb-10 space-y-6 p-4 md:p-6 relative">
+    <div className="h-screen overflow-y-auto font-sans pb-10 space-y-6 p-4 md:p-6 relative">
       
       {/* *** 3. ส่วนแสดงผล Popup (Overlay) *** */}
       {showAddBlacklist && (
@@ -180,7 +180,7 @@ function Sequence() {
       </button>
 
       {/* --- PART 1: SEQUENCE TRACKING --- */}
-      <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+      <div className="w-full rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
          {/* ... (ส่วนนี้เหมือนเดิม ไม่มีการเปลี่ยนแปลง) ... */}
         <div className="flex items-center gap-2 mb-3 border-l-4 border-red-500 pl-2">
           <FaMapMarkerAlt className="text-red-500" />
@@ -192,7 +192,7 @@ function Sequence() {
           <div className="w-full lg:w-1/2 flex flex-col gap-3 h-auto lg:h-full">
             {/* Location Info */}
             <div className="flex flex-col md:flex-row w-full gap-4 text-gray-800 shrink-0">
-              <div className="flex items-center gap-3 rounded-2xl border border-gray-200 bg-white px-6 py-4 shadow-sm md:min-w-[140px]">
+              <div className="flex items-center gap-3 rounded-2xl border border-gray-200 px-6 py-4 shadow-sm md:min-w-[140px]">
                 <div className="relative flex items-center justify-center shrink-0">
                   <FaMapMarkerAlt className="text-purple-500 text-2xl drop-shadow-sm" />
                 </div>
@@ -201,7 +201,7 @@ function Sequence() {
                 </span>
               </div>
 
-              <div className="flex flex-1 items-center justify-center md:justify-start rounded-2xl border border-gray-200 bg-white px-6 py-4 shadow-sm">
+              <div className="flex flex-1 items-center justify-center md:justify-start rounded-2xl border border-gray-200 px-6 py-4 shadow-sm">
                 <span className="text-lg font-semibold text-gray-700">
                   {sequenceTrackingData.carInfo.location}
                 </span>
@@ -221,8 +221,8 @@ function Sequence() {
             </div>
 
             {/* Car Detail */}
-            <div className="bg-white border border-gray-200 rounded-lg p-3 flex flex-col sm:flex-row gap-3 items-start sm:items-center shadow-sm">
-              <div className="border-2 border-black rounded p-2 w-full sm:w-35 text-center bg-white shadow-sm shrink-0 flex flex-row sm:flex-col justify-between sm:justify-center items-center">
+            <div className="border border-gray-200 rounded-lg p-3 flex flex-col sm:flex-row gap-3 items-start sm:items-center shadow-sm">
+              <div className="border-2 border-black rounded p-2 w-full sm:w-35 text-center shadow-sm shrink-0 flex flex-row sm:flex-col justify-between sm:justify-center items-center">
                 <div className="text-xl font-bold text-gray-800 leading-none mt-1">
                   {sequenceTrackingData.carInfo.plateNumber}
                 </div>
@@ -331,7 +331,7 @@ function Sequence() {
       </div>
 
       {/* --- PART 2: BLACKLIST (อัปเดตระบบค้นหา) --- */}
-      <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[500px] md:h-[800px] flex flex-col">
+      <div className="w-full rounded-xl shadow-sm border border-gray-200 p-4 h-[500px] md:h-[800px] flex flex-col">
         {/* ... (ส่วนนี้เหมือนเดิม ไม่มีการเปลี่ยนแปลง) ... */}
         <h3 className="font-bold text-gray-800 mb-4 flex justify-between items-center flex-none">
           <span className="flex items-center gap-2">
@@ -351,7 +351,7 @@ function Sequence() {
             <input
               type="text"
               placeholder="ค้นหาป้ายทะเบียน, จังหวัด หรือ กล้อง..."
-              className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-blue-400 transition-colors"
+              className="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-blue-400 transition-colors"
               value={blacklistSearch}
               onChange={(e) => setBlacklistSearch(e.target.value)}
             />
@@ -368,11 +368,11 @@ function Sequence() {
             filteredBlacklist.map((item) => (
               <div
                 key={item.id}
-                className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-red-200 hover:bg-red-50/30 transition-all cursor-pointer bg-white shadow-sm group"
+                className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-red-200 hover:bg-red-50/30 transition-all cursor-pointer shadow-sm group"
               >
                 {/* Car Info Section */}
                 <div className="flex items-center gap-3 mb-2 md:mb-0 w-full md:w-1/3">
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-red-500 transition-colors border border-gray-200 shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:group-hover:text-red-500 transition-colors border border-gray-200 shrink-0">
                     <FaCar />
                   </div>
                   <div>
@@ -428,7 +428,7 @@ function Sequence() {
                     <button className="p-1.5 hover:bg-blue-100 text-blue-600 rounded bg-blue-50 transition-colors">
                       <FaPlay className="text-[10px]" />
                     </button>
-                    <button className="p-1.5 hover:bg-gray-100 text-gray-600 rounded bg-gray-50 transition-colors">
+                    <button className="p-1.5 hover:bg-gray-100 text-gray-600 rounded transition-colors">
                       <FaSearch className="text-[10px]" />
                     </button>
                   </div>

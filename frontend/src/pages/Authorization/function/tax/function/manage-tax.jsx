@@ -76,12 +76,12 @@ function ManageTax() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen p-6">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-2xl font-bold mb-6">Manage Blacklist</h1>
 
         {/* Form */}
-        <div className="bg-white p-6 rounded-xl shadow mb-6">
+        <div className="p-6 rounded-xl shadow mb-6">
           <h2 className="text-lg font-semibold mb-4">เพิ่มรายการ</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -147,7 +147,7 @@ function ManageTax() {
         </div>
 
         {/* Table */}
-        <div className="bg-white p-6 rounded-xl shadow">
+        <div className="p-6 rounded-xl shadow">
           <h2 className="text-lg font-semibold mb-4">รายการทั้งหมด</h2>
 
           {fetching ? (

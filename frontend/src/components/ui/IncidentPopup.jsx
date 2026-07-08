@@ -102,7 +102,7 @@ const IncidentPopup = ({ incident }) => {
                 <div className="text-xs text-gray-800 flex flex-col">
                   <span className="font-medium">{incident.brand !== "-" ? incident.brand : ""} {incident.color !== "-" ? incident.color : ""}</span>
                   {incident.plate !== "-" && (
-                    <span className="font-mono bg-white border border-gray-200 px-1.5 py-0.5 rounded w-fit mt-1 text-gray-600 shadow-sm text-[10px]">
+                    <span className="font-mono border border-gray-200 px-1.5 py-0.5 rounded w-fit mt-1 text-gray-600 shadow-sm text-[10px]">
                       {incident.plate}
                     </span>
                   )}

@@ -108,7 +108,7 @@ function Login() {
 
       <div className="w-full max-w-md p-8 rounded-lg">
         <div className="flex flex-col items-center mb-6">
-          <div className="w-16 h-16 bg-white rounded flex items-center justify-center">
+          <div className="w-16 h-16 rounded flex items-center justify-center">
             <span className="text-green-600 font-bold text-2xl">★</span>
           </div>
           <h1 className="text-white text-3xl font-bold mt-4">LOGO</h1>
@@ -158,7 +158,7 @@ function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-white text-green-700 py-3 rounded font-semibold hover:bg-gray-100 transition duration-300 disabled:opacity-50 cursor-pointer"
+            className="w-full text-green-700 py-3 rounded font-semibold hover:bg-gray-100 transition duration-300 disabled:opacity-50 cursor-pointer"
           >
             {loading ? "กำลังเข้าสู่ระบบ..." : "LOGIN"}
           </button>

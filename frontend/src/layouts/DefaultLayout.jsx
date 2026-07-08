@@ -56,7 +56,12 @@ function DefaultLayout({ children }) {
         display: "flex",
         height: "100vh",
         overflow: "hidden",
-        backgroundColor: "#070d1c",
+        background: `
+          radial-gradient(900px 600px at 12% -5%, rgba(56, 130, 246, 0.2), transparent 60%),
+          radial-gradient(800px 600px at 88% 8%, rgba(124, 92, 255, 0.16), transparent 60%),
+          radial-gradient(900px 700px at 70% 110%, rgba(34, 211, 238, 0.12), transparent 55%),
+          linear-gradient(160deg, rgb(8, 17, 39) 0%, rgb(7, 13, 28) 55%, rgb(6, 10, 22) 100%)
+        `,
       }}
     >
       <Sidebar

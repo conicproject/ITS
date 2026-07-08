@@ -80,7 +80,7 @@ const IncidentTable = ({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
+    <div className="rounded-xl shadow-sm border border-gray-200 flex flex-col h-full">
       
       {/* --- Table Header & Controls --- */}
       <div className="p-5 border-b border-gray-100">
@@ -97,7 +97,7 @@ const IncidentTable = ({
                <input 
                  value={searchTerm}
                  onChange={(e) => setSearchTerm(e.target.value)}
-                 className="pl-9 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm w-full outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400" 
+                 className="pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm w-full outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all placeholder:text-gray-400" 
                  placeholder="ค้นหา รหัส, สถานที่..." 
                />
             </div>
@@ -107,7 +107,7 @@ const IncidentTable = ({
               <select 
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
-                className="pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 cursor-pointer hover:bg-gray-50 text-gray-700 min-w-[140px] appearance-none"
+                className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 cursor-pointer hover:bg-gray-50 text-gray-700 min-w-[140px] appearance-none"
               >
                 <option value="All">ทุกประเภท</option>
                 <option value="อุบัติเหตุ">อุบัติเหตุ</option>
@@ -125,7 +125,7 @@ const IncidentTable = ({
               <select 
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="pl-3 pr-8 py-2 bg-white border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 cursor-pointer hover:bg-gray-50 text-gray-700 min-w-[120px] appearance-none"
+                className="pl-3 pr-8 py-2 border border-gray-200 rounded-lg text-sm outline-none focus:border-blue-500 cursor-pointer hover:bg-gray-50 text-gray-700 min-w-[120px] appearance-none"
               >
                 <option value="All">ทุกสถานะ</option>
                 <option value="New">New (ใหม่)</option>
@@ -234,7 +234,7 @@ const IncidentTable = ({
             <button 
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))} 
               disabled={currentPage === 1}
-              className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 text-gray-500 transition-all shadow-sm"
+              className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 text-gray-500 transition-all shadow-sm"
             >
               <FaChevronLeft className="text-xs" />
             </button>
@@ -249,21 +249,21 @@ const IncidentTable = ({
                   <button 
                     key={i} 
                     onClick={() => setCurrentPage(i + 1)} 
-                    className={`w-8 h-8 flex items-center justify-center border rounded-lg text-xs font-bold transition-all shadow-sm ${currentPage === i + 1 ? 'bg-blue-600 text-white border-blue-600' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+                    className={`w-8 h-8 flex items-center justify-center border rounded-lg text-xs font-bold transition-all shadow-sm ${currentPage === i + 1 ? 'bg-blue-600 text-white border-blue-600' : 'border-gray-200 text-gray-600 hover:bg-gray-50'}`}
                   >
                     {i + 1}
                   </button>
                 );
               })}
             </div>
-             <span className="sm:hidden text-xs font-bold text-gray-700 bg-white px-3 py-1.5 rounded border border-gray-200">
+             <span className="sm:hidden text-xs font-bold text-gray-700 px-3 py-1.5 rounded border border-gray-200">
                 {currentPage} / {totalPages}
              </span>
 
             <button 
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} 
               disabled={currentPage === totalPages}
-              className="w-8 h-8 flex items-center justify-center bg-white border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 text-gray-500 transition-all shadow-sm"
+              className="w-8 h-8 flex items-center justify-center border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 text-gray-500 transition-all shadow-sm"
             >
               <FaChevronRight className="text-xs" />
             </button>

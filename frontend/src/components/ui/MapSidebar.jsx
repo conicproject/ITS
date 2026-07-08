@@ -68,9 +68,9 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
     const mapZoom = (enableSequence && showSequence) ? 13 : 15;
 
     return (
-        <div className="flex flex-col h-auto bg-white md:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-x md:border border-gray-100 overflow-hidden font-sans w-full">
+        <div className="flex flex-col h-auto md:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-x md:border border-gray-100 overflow-hidden font-sans w-full">
             {/* Header */}
-            <div className="px-3 py-2 md:px-6 md:py-4 border-b border-gray-50 flex justify-between items-center bg-white sticky top-0 z-20 shrink-0">
+            <div className="px-3 py-2 md:px-6 md:py-4 border-b border-gray-50 flex justify-between items-center sticky top-0 z-20 shrink-0">
                 <div className="flex items-center gap-2 md:gap-3">
                     <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm shrink-0">
                         <FaCar className="w-4 h-4 md:w-5 md:h-5" />
@@ -87,7 +87,7 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
 
             <div className="flex-1 overflow-y-auto custom-scrollbar p-3 md:p-5 space-y-3 md:space-y-6 bg-gray-50/30">
                 {/* Map Section */}
-                <div className="relative group rounded-xl md:rounded-2xl overflow-hidden shadow-sm border border-gray-200 bg-white shrink-0">
+                <div className="relative group rounded-xl md:rounded-2xl overflow-hidden shadow-sm border border-gray-200 shrink-0">
                     <div className="h-[160px] md:h-[220px] w-full relative z-0">
                         <MapContainer
                             center={mapCenter}
@@ -120,7 +120,7 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
                     </div>
                     {enableSequence && (
                         <div className="absolute bottom-2 right-2 md:bottom-3 md:right-3 z-[400]">
-                            <button onClick={() => setShowSequence(!showSequence)} className={`p-2 rounded-lg shadow-md border ${showSequence ? 'bg-blue-600 text-white border-blue-700' : 'bg-white text-gray-600'}`}>
+                            <button onClick={() => setShowSequence(!showSequence)} className={`p-2 rounded-lg shadow-md border ${showSequence ? 'bg-blue-600 text-white border-blue-700' : 'text-gray-600'}`}>
                                 <FaRoute className="w-3.5 h-3.5" />
                             </button>
                         </div>
@@ -131,24 +131,24 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
                 <div className="space-y-4">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
                         <div className="flex flex-col gap-3 h-full">
-                            <div className="bg-white p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 text-center relative overflow-hidden shrink-0">
+                            <div className="p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 text-center relative overflow-hidden shrink-0">
                                 <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${isGreenList ? 'from-green-500 to-emerald-500' : 'from-red-500 to-orange-500'}`}></div>
                                 <label className="text-[10px] text-gray-400 font-bold uppercase mb-2 block tracking-wider">ทะเบียนที่ตรวจจับได้</label>
-                                <div className="inline-block border-2 border-black rounded-lg px-6 py-2 bg-white shadow-inner max-w-full">
+                                <div className="inline-block border-2 border-black rounded-lg px-6 py-2 shadow-inner max-w-full">
                                     <span className="text-2xl md:text-3xl font-black text-gray-900 block leading-none">{plateNumber}</span>
                                     <span className="text-xs font-bold text-gray-600 block mt-1">{province}</span>
                                 </div>
                             </div>
 
-                            <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm space-y-3 flex-1 flex flex-col justify-center">
+                            <div className="p-4 rounded-xl border border-gray-100 shadow-sm space-y-3 flex-1 flex flex-col justify-center">
                                 <h4 className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">รายละเอียดยานพาหนะ</h4>
                                 <div className="space-y-2.5">
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100"><FaPalette className="text-orange-500 w-3.5 h-3.5" /></div>
+                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-gray-100"><FaPalette className="text-orange-500 w-3.5 h-3.5" /></div>
                                         <div><p className="text-[9px] text-gray-400 font-bold uppercase leading-none">สีรถ (Color)</p><p className="text-xs font-bold text-gray-800">{color}</p></div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center shrink-0 border border-gray-100"><FaCubes className="text-emerald-500 w-3.5 h-3.5" /></div>
+                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-gray-100"><FaCubes className="text-emerald-500 w-3.5 h-3.5" /></div>
                                         <div><p className="text-[9px] text-gray-400 font-bold uppercase leading-none">ประเภทรถ (Type)</p><p className="text-xs font-bold text-gray-800">{vehicleType}</p></div>
                                     </div>
                                 </div>
@@ -178,7 +178,7 @@ export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
                         </div>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 shrink-0 pb-6">
+                    <div className="rounded-xl shadow-sm border border-gray-100 p-4 shrink-0 pb-6">
                         <div className="flex items-center gap-2 mb-4">
                             <FaHistory className="text-gray-400 w-3.5 h-3.5" />
                             <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">ประวัติการตรวจพบ</h3>

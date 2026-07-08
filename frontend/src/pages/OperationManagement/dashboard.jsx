@@ -313,7 +313,7 @@ function OperationManagementDashboard() {
       `}</style>
 
       {/* --- HEADER --- */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 rounded-xl shadow-sm border border-slate-200 mb-8">
         <div className="w-full md:w-auto flex items-start gap-3">
           <span className="text-green-600 bg-green-50 p-2 rounded-lg shrink-0">
              <FaVideo className="w-6 h-6" />
@@ -383,7 +383,7 @@ function OperationManagementDashboard() {
             </div>
           </div>
 
-          <div className="bg-white p-3 rounded-b-lg flex flex-wrap gap-2 items-center">
+          <div className="p-3 rounded-b-lg flex flex-wrap gap-2 items-center">
             {[
               { icon: FaCamera, text: "Camera", sub: "CAM-001" },
               { icon: FaMapMarkerAlt, text: "Location", sub: "Rama IX" },
@@ -394,7 +394,7 @@ function OperationManagementDashboard() {
             ].map((btn, idx) => (
               <button
                 key={idx}
-                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-700 shadow-sm transition-colors bg-white border hover:bg-gray-50 flex-grow md:flex-grow-0 justify-center md:justify-start"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs text-gray-700 shadow-sm transition-colors border hover:bg-gray-50 flex-grow md:flex-grow-0 justify-center md:justify-start"
               >
                 <btn.icon className="text-gray-500" />
                 <span className="font-semibold whitespace-nowrap">{btn.text}</span>
@@ -408,7 +408,7 @@ function OperationManagementDashboard() {
 
         {/* 2. SPLIT SECTION: MAIN MAP & RECENT ALERTS */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-3 bg-white rounded-xl shadow-sm border border-gray-200 p-1 h-[350px] md:h-[500px] relative z-0">
+          <div className="lg:col-span-3 rounded-xl shadow-sm border border-gray-200 p-1 h-[350px] md:h-[500px] relative z-0">
             {typeof window !== "undefined" && (
               <MapContainer
                 center={[13.7563, 100.5018]}
@@ -423,7 +423,7 @@ function OperationManagementDashboard() {
                 <Marker position={[13.74, 100.49]} />
               </MapContainer>
             )}
-            <div className="absolute top-4 right-4 z-[400] bg-white p-2 rounded-lg shadow-md flex flex-col gap-2">
+            <div className="absolute top-4 right-4 z-[400] p-2 rounded-lg shadow-md flex flex-col gap-2">
               <button className="p-1 hover:bg-gray-100 rounded">
                 <FaRoad />
               </button>
@@ -433,7 +433,7 @@ function OperationManagementDashboard() {
             </div>
           </div>
 
-          <div className="lg:col-span-1 bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[400px] md:h-[500px] flex flex-col">
+          <div className="lg:col-span-1 rounded-xl shadow-sm border border-gray-200 p-4 h-[400px] md:h-[500px] flex flex-col">
             <h3 className="font-bold text-gray-800 mb-3 text-sm flex justify-between items-center flex-none">
               Recent Alerts
               <span className="bg-gray-100 text-gray-500 text-[10px] px-2 py-0.5 rounded-full">
@@ -444,7 +444,7 @@ function OperationManagementDashboard() {
               {alerts.map((alert) => (
                 <div
                   key={alert.id}
-                  className="bg-white border-l-4 border-blue-500 shadow-sm p-3 rounded-r-lg hover:bg-gray-50 transition-colors cursor-pointer border border-gray-100"
+                  className="border-l-4 border-blue-500 shadow-sm p-3 rounded-r-lg hover:bg-gray-50 transition-colors cursor-pointer border border-gray-100"
                 >
                   <div className="flex items-start gap-2">
                     <FaCar className="text-blue-500 mt-1 shrink-0" />
@@ -467,7 +467,7 @@ function OperationManagementDashboard() {
         </div>
 
         {/* --- 3. INTERSECTION & PCU (UPDATED LAYOUT) --- */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div className="rounded-xl shadow-sm border border-gray-200 p-6">
             
             <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-2">
@@ -507,18 +507,18 @@ function OperationManagementDashboard() {
                         <div className="w-3 h-3 bg-green-900 rounded-full opacity-30"></div>
                     </div>
                     <div className="absolute top-[20%] left-[48%] w-3 h-5 bg-blue-500 rounded-sm shadow-md"></div>
-                    <div className="absolute bottom-[20%] left-[51%] w-3 h-5 bg-white rounded-sm shadow-md"></div>
+                    <div className="absolute bottom-[20%] left-[51%] w-3 h-5 rounded-sm shadow-md"></div>
                     <div className="absolute left-[20%] top-[51%] w-5 h-3 bg-yellow-500 rounded-sm shadow-md"></div>
                 </div>
 
                 {/* 2. RIGHT: Center Lane (Big Card - Maximized Camera) */}
-                <div className="bg-white rounded-xl overflow-hidden border border-gray-200 shadow-sm flex flex-col h-full">
+                <div className="rounded-xl overflow-hidden border border-gray-200 shadow-sm flex flex-col h-full">
                     {/* Video Area (Increased Height to 350px) */}
                     <div className="bg-black relative group flex-1 min-h-[350px]">
                          <div className="absolute top-0 left-0 w-full p-4 bg-gradient-to-b from-black/70 to-transparent flex justify-between items-start z-10">
                             <span className="text-white font-bold text-lg drop-shadow-md">{centerLane.name}</span>
                             <div className="bg-green-500 text-white text-[10px] px-2 py-0.5 rounded flex items-center gap-1 shadow-sm">
-                                <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"></div> Live
+                                <div className="w-1.5 h-1.5 rounded-full animate-pulse"></div> Live
                             </div>
                          </div>
                          <div className="absolute inset-0 flex items-center justify-center">
@@ -530,7 +530,7 @@ function OperationManagementDashboard() {
                     </div>
 
                     {/* Stats Panel (Compact) */}
-                    <div className="px-4 py-3 bg-white border-t border-gray-100">
+                    <div className="px-4 py-3 border-t border-gray-100">
                         <div className="flex items-center gap-4">
                             {/* Left: Progress Bar */}
                             <div className="w-1/3 shrink-0">
@@ -576,14 +576,14 @@ function OperationManagementDashboard() {
             {/* BOTTOM ROW: Other Lanes (Increased Height, Compact Stats) */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 {otherLanes.map((lane, idx) => (
-                    <div key={idx} className="bg-white rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+                    <div key={idx} className="rounded-lg overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
                         {/* Video Area (Increased Height to h-48) */}
                         <div className="bg-black relative h-48 group">
                              <div className="absolute top-2 left-2 text-white font-bold text-xs drop-shadow-md z-10">
                                 {lane.name}
                              </div>
                              <div className="absolute top-2 right-2 bg-green-500 text-white text-[8px] px-1.5 py-0.5 rounded flex items-center gap-1 z-10">
-                                <div className="w-1 h-1 bg-white rounded-full animate-pulse"></div>
+                                <div className="w-1 h-1 rounded-full animate-pulse"></div>
                             </div>
                              <div className="absolute inset-0 flex items-center justify-center">
                                 <FaVideo className="text-gray-700 text-3xl group-hover:text-gray-500 transition-colors" />
@@ -637,7 +637,7 @@ function OperationManagementDashboard() {
         </div>
 
         {/* 4. TRAFFIC CHART */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 w-full">
+        <div className="rounded-xl shadow-sm border border-gray-200 p-4 md:p-6 w-full">
           <h3 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
             <FaCar className="text-blue-500" /> ปริมาณจราจรรายชั่วโมง (1 วัน)
           </h3>
@@ -647,7 +647,7 @@ function OperationManagementDashboard() {
         </div>
 
         {/* 5. SEQUENCE TRACKING */}
-        <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
+        <div className="w-full rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
           <div className="flex items-center gap-2 mb-3 border-l-4 border-red-500 pl-2">
             <FaMapMarkerAlt className="text-red-500" />
             <h3 className="font-bold text-gray-800">Sequence Tracking</h3>
@@ -725,9 +725,9 @@ function OperationManagementDashboard() {
               </div>
 
               {/* Car Detail Card */}
-              <div className="bg-white border border-gray-200 rounded-lg p-3 flex flex-col sm:flex-row gap-3 items-start sm:items-center shadow-sm">
+              <div className="border border-gray-200 rounded-lg p-3 flex flex-col sm:flex-row gap-3 items-start sm:items-center shadow-sm">
                 {/* License Plate Box */}
-                <div className="border-2 border-black rounded p-2 w-full sm:w-35 text-center bg-white shadow-sm shrink-0 flex flex-row sm:flex-col justify-between sm:justify-center items-center">
+                <div className="border-2 border-black rounded p-2 w-full sm:w-35 text-center shadow-sm shrink-0 flex flex-row sm:flex-col justify-between sm:justify-center items-center">
                   <div className="text-xl font-bold text-gray-800 leading-none mt-1">
                     {sequenceTrackingData.carInfo.plateNumber}
                   </div>
@@ -778,7 +778,7 @@ function OperationManagementDashboard() {
         </div>
 
         {/* 6. BLACKLIST */}
-        <div className="w-full bg-white rounded-xl shadow-sm border border-gray-200 p-4 h-[500px] md:h-[800px] flex flex-col">
+        <div className="w-full rounded-xl shadow-sm border border-gray-200 p-4 h-[500px] md:h-[800px] flex flex-col">
           <h3 className="font-bold text-gray-800 mb-4 flex justify-between items-center flex-none">
             <span className="flex items-center gap-2">
               รายการบัญชีดำ
@@ -795,7 +795,7 @@ function OperationManagementDashboard() {
               <input
                 type="text"
                 placeholder="ค้นหาป้ายทะเบียน..."
-                className="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-blue-400"
+                className="w-full border border-gray-200 rounded-lg pl-9 pr-3 py-2 text-xs focus:outline-none focus:border-blue-400"
               />
               <FaSearch className="absolute left-3 top-2.5 text-gray-400 text-xs" />
             </div>
@@ -807,11 +807,11 @@ function OperationManagementDashboard() {
             {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((i) => (
               <div
                 key={i}
-                className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-red-200 hover:bg-red-50/30 transition-all cursor-pointer bg-white shadow-sm group"
+                className="flex flex-col md:flex-row items-start md:items-center justify-between p-3 rounded-lg border border-gray-100 hover:border-red-200 hover:bg-red-50/30 transition-all cursor-pointer shadow-sm group"
               >
                 {/* Car Info Section */}
                 <div className="flex items-center gap-3 mb-2 md:mb-0 w-full md:w-1/3">
-                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:bg-white group-hover:text-red-500 transition-colors border border-gray-200 shrink-0">
+                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-400 group-hover:group-hover:text-red-500 transition-colors border border-gray-200 shrink-0">
                     <FaCar />
                   </div>
                   <div>
@@ -864,7 +864,7 @@ function OperationManagementDashboard() {
                     <button className="p-1.5 hover:bg-blue-100 text-blue-600 rounded bg-blue-50 transition-colors">
                       <FaPlay className="text-[10px]" />
                     </button>
-                    <button className="p-1.5 hover:bg-gray-100 text-gray-600 rounded bg-gray-50 transition-colors">
+                    <button className="p-1.5 hover:bg-gray-100 text-gray-600 rounded transition-colors">
                       <FaSearch className="text-[10px]" />
                     </button>
                   </div>

@@ -91,7 +91,8 @@ function Navbar({ onHamburgerClick }) {
           color: #fff;
           position: relative;
           background: rgba(9, 16, 34, 0.55);
-          border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+          backdrop-filter: blur(var(--blur, 18px));
+          border-bottom: 1px solid rgba(3, 2, 2, 0.07);
         }
 
         .navbar-hamburger {

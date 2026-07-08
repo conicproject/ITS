@@ -94,19 +94,19 @@ const DetectTax = () => {
   };
 
   return (
-    <div className="w-full h-screen bg-gray-50 relative font-sans overflow-y-auto overflow-x-hidden pb-10">
+    <div className="w-full h-screen relative font-sans overflow-y-auto overflow-x-hidden pb-10">
       {selectedViolation && (
         <div className="fixed inset-0 z-[100] lg:hidden flex flex-col items-end justify-end sm:items-center sm:justify-center">
           <div
             className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             onClick={() => setSelectedViolation(null)}
           />
-          <div className="relative w-full h-[90vh] sm:h-[85vh] sm:w-[90%] sm:max-w-md bg-white rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+          <div className="relative w-full h-[90vh] sm:h-[85vh] sm:w-[90%] sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col overflow-hidden">
             <div className="flex justify-between items-center px-4 py-3 border-b shrink-0 bg-white">
               <h3 className="font-bold text-gray-800 text-lg">รายละเอียด</h3>
               <button
                 onClick={() => setSelectedViolation(null)}
-                className="p-2 bg-gray-50 rounded-full border border-gray-100 text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
+                className="p-2 rounded-full border border-gray-100 text-gray-500 hover:text-red-500 hover:bg-red-50 transition-colors"
               >
                 <FaTimes />
               </button>
@@ -131,7 +131,7 @@ const DetectTax = () => {
 
           <button
             onClick={() => setShowFilter(!showFilter)}
-            className="lg:hidden flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-600"
+            className="lg:hidden flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl shadow-sm text-sm font-bold text-gray-600"
           >
             <FaFilter className={showFilter ? "text-blue-600" : "text-gray-400"} />
             <span>{showFilter ? "ซ่อน" : "ตัวกรอง"}</span>

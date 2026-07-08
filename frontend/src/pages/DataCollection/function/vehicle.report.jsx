@@ -58,7 +58,7 @@ function VehicleReport() {
             onClick={() => setActiveTab('basic')}
             className={`flex-1 py-3 px-6 rounded-full font-medium transition-all ${
               activeTab === 'basic'
-                ? 'bg-white text-gray-900 shadow-sm'
+                ? 'text-gray-900 shadow-sm'
                 : 'text-gray-600'
             }`}
           >
@@ -68,7 +68,7 @@ function VehicleReport() {
             onClick={() => setActiveTab('advanced')}
             className={`flex-1 py-3 px-6 rounded-full font-medium transition-all ${
               activeTab === 'advanced'
-                ? 'bg-white text-gray-900 shadow-sm'
+                ? 'text-gray-900 shadow-sm'
                 : 'text-gray-600'
             }`}
           >
@@ -78,7 +78,7 @@ function VehicleReport() {
 
         {/* Basic Tab Content */}
         {activeTab === 'basic' && (
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+          <div className="rounded-2xl shadow-lg p-8 border border-gray-100">
             <h2 className="text-xl font-bold text-gray-900 mb-1">ตัวเลือกพื้นฐาน</h2>
             <p className="text-gray-500 text-sm mb-8">เลือกประเภทรายงานและช่วงเวลาที่ต้องการ</p>
 
@@ -91,7 +91,7 @@ function VehicleReport() {
                 <select
                   value={reportType}
                   onChange={(e) => setReportType(e.target.value)}
-                  className="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white text-gray-700"
+                  className="w-full px-4 py-3.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none text-gray-700"
                   style={{ color: reportType ? '#111827' : '#9CA3AF' }}
                 >
                   <option value="" disabled>เลือกประเภทรายงาน</option>
@@ -160,7 +160,7 @@ function VehicleReport() {
                     className={`px-5 py-2.5 rounded-lg border-2 font-medium transition-all ${
                       duration === option.value
                         ? 'bg-gray-900 text-white border-gray-900'
-                        : 'bg-white text-gray-700 border-gray-300 hover:border-gray-400'
+                        : 'text-gray-700 border-gray-300 hover:border-gray-400'
                     }`}
                   >
                     {option.label}
@@ -180,7 +180,7 @@ function VehicleReport() {
                   className={`p-4 rounded-xl border-2 font-medium transition-all ${
                     format === 'pdf'
                       ? 'border-gray-900 bg-gray-50'
-                      : 'border-gray-300 bg-white hover:border-gray-400'
+                      : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -197,7 +197,7 @@ function VehicleReport() {
                   className={`p-4 rounded-xl border-2 font-medium transition-all ${
                     format === 'excel'
                       ? 'border-gray-900 bg-gray-50'
-                      : 'border-gray-300 bg-white hover:border-gray-400'
+                      : 'border-gray-300 hover:border-gray-400'
                   }`}
                 >
                   <div className="flex items-center justify-center gap-2">
@@ -235,7 +235,7 @@ function VehicleReport() {
 
         {/* Advanced Tab Content */}
         {activeTab === 'advanced' && (
-          <div className="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+          <div className="rounded-2xl shadow-lg p-8 border border-gray-100">
             <div className="flex items-center gap-2 mb-1">
               <svg className="w-6 h-6 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
@@ -255,7 +255,7 @@ function VehicleReport() {
                 <div
                   onClick={() => setIncludeCharts(!includeCharts)}
                   className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
-                    includeCharts ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white hover:border-gray-300'
+                    includeCharts ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -279,7 +279,7 @@ function VehicleReport() {
                 <div
                   onClick={() => setIncludeStructure(!includeStructure)}
                   className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
-                    includeStructure ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white hover:border-gray-300'
+                    includeStructure ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className="flex items-start gap-3">
@@ -303,7 +303,7 @@ function VehicleReport() {
                 <div
                   onClick={() => setIncludeComparison(!includeComparison)}
                   className={`p-5 rounded-xl border-2 cursor-pointer transition-all ${
-                    includeComparison ? 'border-gray-900 bg-gray-50' : 'border-gray-200 bg-white hover:border-gray-300'
+                    includeComparison ? 'border-gray-900 bg-gray-50' : 'border-gray-200 hover:border-gray-300'
                   }`}
                 >
                   <div className="flex items-start gap-3">

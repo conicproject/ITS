@@ -175,7 +175,7 @@ function EnforcementReportFunction() {
     }
 
     return (
-      <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 p-4 w-[320px] animate-fade-in z-[100]">
+      <div className="absolute top-full left-0 mt-2 rounded-xl shadow-xl border border-gray-100 p-4 w-[320px] animate-fade-in z-[100]">
         <div className="flex justify-between items-center mb-4">
           <button onClick={() => setCurrentDayPickerMonth(new Date(currentYear, currentMonth - 1, 1))} className="p-1 hover:bg-gray-100 rounded-full text-gray-500">◀</button>
           <span className="font-bold text-gray-800">{new Date(currentYear, currentMonth).toLocaleDateString("th-TH", { month: "long", year: "numeric" })}</span>
@@ -243,7 +243,7 @@ function EnforcementReportFunction() {
     }
 
     return (
-      <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 p-4 w-[320px] animate-fade-in z-[100]">
+      <div className="absolute top-full left-0 mt-2 rounded-xl shadow-xl border border-gray-100 p-4 w-[320px] animate-fade-in z-[100]">
         <div className="flex justify-between items-center mb-4">
            {/* หมายเหตุ: ปุ่มเลื่อนเดือนนี้ในโค้ดตัวอย่างนี้ยัง fix ไว้ที่เดือนปัจจุบัน/เดือนที่เลือก หากต้องการให้เลื่อนได้อิสระต้องเพิ่ม state viewDate */}
            <button onClick={() => {}} className="p-1 hover:bg-gray-100 rounded-full text-gray-500 cursor-not-allowed opacity-50">◀</button>
@@ -261,7 +261,7 @@ function EnforcementReportFunction() {
     if (!showMonthPicker) return null;
     const monthNames = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
     return (
-      <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 p-4 w-[320px] animate-fade-in z-[100]">
+      <div className="absolute top-full left-0 mt-2 rounded-xl shadow-xl border border-gray-100 p-4 w-[320px] animate-fade-in z-[100]">
         <div className="flex justify-between items-center mb-4">
            <button onClick={() => setCurrentMonthPickerYear(prev => prev - 1)} className="p-1 hover:bg-gray-100 rounded-full text-gray-500">◀</button>
            <span className="font-bold text-gray-800">{currentMonthPickerYear + 543}</span>
@@ -285,7 +285,7 @@ function EnforcementReportFunction() {
   const renderYearPicker = () => {
     if (!showYearPicker) return null;
     return (
-      <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 p-4 w-[320px] max-h-64 overflow-y-auto animate-fade-in z-[100]">
+      <div className="absolute top-full left-0 mt-2 rounded-xl shadow-xl border border-gray-100 p-4 w-[320px] max-h-64 overflow-y-auto animate-fade-in z-[100]">
         <div className="grid grid-cols-3 gap-2">
           {years.map(y => (
              <button key={y} onClick={() => handleSelectYear(y)} disabled={y > currentThaiYear}
@@ -299,7 +299,7 @@ function EnforcementReportFunction() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans flex flex-col items-center py-10 px-4">
+    <div className="min-h-screen font-sans flex flex-col items-center py-10 px-4">
       
       {/* Header Section */}
       <div className="w-full max-w-2xl mb-8 flex flex-col items-center">
@@ -311,7 +311,7 @@ function EnforcementReportFunction() {
       </div>
 
       {/* Main Card (ลบ overflow-hidden เพื่อให้ Popup ไม่โดนตัด) */}
-      <div className="w-full max-w-2xl bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 relative">
+      <div className="w-full max-w-2xl rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 relative">
         
         {/* Card Header Stripe */}
         <div className="h-2 bg-gradient-to-r from-green-400 to-emerald-500 w-full rounded-t-3xl"></div>
@@ -328,7 +328,7 @@ function EnforcementReportFunction() {
                 <select
                   value={selectData}
                   onChange={(e) => setSelectData(Number(e.target.value))}
-                  className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-700 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium cursor-pointer"
+                  className="w-full appearance-none border border-gray-200 text-gray-700 py-3 px-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all font-medium cursor-pointer"
                 >
                   {items_selectData.map((item) => (
                     <option key={item.key} value={item.key}>{item.name}</option>
@@ -356,7 +356,7 @@ function EnforcementReportFunction() {
                   <label className="block text-xs font-semibold text-gray-400 mb-1 ml-1">รายวัน</label>
                   <div 
                     onClick={() => setShowDayPicker(!showDayPicker)}
-                    className={`flex items-center justify-between w-full bg-white border ${date ? 'border-green-500 ring-1 ring-green-200' : 'border-gray-200 hover:border-green-300'} rounded-xl py-3 px-4 cursor-pointer transition-all`}
+                    className={`flex items-center justify-between w-full border ${date ? 'border-green-500 ring-1 ring-green-200' : 'border-gray-200 hover:border-green-300'} rounded-xl py-3 px-4 cursor-pointer transition-all`}
                   >
                     <span className={`text-sm ${date ? 'text-gray-900 font-bold' : 'text-gray-400'}`}>
                       {date ? formatDateThai(date) : "เลือกวันที่..."}
@@ -371,7 +371,7 @@ function EnforcementReportFunction() {
                   <label className="block text-xs font-semibold text-gray-400 mb-1 ml-1">รายสัปดาห์</label>
                   <div 
                     onClick={() => setShowWeekPicker(!showWeekPicker)}
-                    className={`flex items-center justify-between w-full bg-white border ${week ? 'border-blue-500 ring-1 ring-blue-200' : 'border-gray-200 hover:border-blue-300'} rounded-xl py-3 px-4 cursor-pointer transition-all`}
+                    className={`flex items-center justify-between w-full border ${week ? 'border-blue-500 ring-1 ring-blue-200' : 'border-gray-200 hover:border-blue-300'} rounded-xl py-3 px-4 cursor-pointer transition-all`}
                   >
                     <div className="flex flex-col">
                         <span className={`text-sm ${week ? 'text-gray-900 font-bold' : 'text-gray-400'}`}>
@@ -391,7 +391,7 @@ function EnforcementReportFunction() {
                   <label className="block text-xs font-semibold text-gray-400 mb-1 ml-1">รายเดือน</label>
                   <div 
                     onClick={() => setShowMonthPicker(!showMonthPicker)}
-                    className={`flex items-center justify-between w-full bg-white border ${month ? 'border-purple-500 ring-1 ring-purple-200' : 'border-gray-200 hover:border-purple-300'} rounded-xl py-3 px-4 cursor-pointer transition-all`}
+                    className={`flex items-center justify-between w-full border ${month ? 'border-purple-500 ring-1 ring-purple-200' : 'border-gray-200 hover:border-purple-300'} rounded-xl py-3 px-4 cursor-pointer transition-all`}
                   >
                     <span className={`text-sm ${month ? 'text-gray-900 font-bold' : 'text-gray-400'}`}>
                       {month ? formatMonthThai(month) : "เลือกเดือน..."}
@@ -406,7 +406,7 @@ function EnforcementReportFunction() {
                   <label className="block text-xs font-semibold text-gray-400 mb-1 ml-1">รายปี</label>
                   <div 
                     onClick={() => setShowYearPicker(!showYearPicker)}
-                    className={`flex items-center justify-between w-full bg-white border ${selectYear ? 'border-orange-500 ring-1 ring-orange-200' : 'border-gray-200 hover:border-orange-300'} rounded-xl py-3 px-4 cursor-pointer transition-all`}
+                    className={`flex items-center justify-between w-full border ${selectYear ? 'border-orange-500 ring-1 ring-orange-200' : 'border-gray-200 hover:border-orange-300'} rounded-xl py-3 px-4 cursor-pointer transition-all`}
                   >
                     <span className={`text-sm ${selectYear ? 'text-gray-900 font-bold' : 'text-gray-400'}`}>
                       {selectYear ? `พ.ศ. ${selectYear}` : "เลือกปี..."}

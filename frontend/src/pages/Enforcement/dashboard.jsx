@@ -302,10 +302,10 @@ function EnforcementDashboard() {
   ];
 
   return (
-    <div className="w-full h-screen overflow-y-auto bg-slate-50 p-4 md:p-6 flex flex-col gap-6 font-sans">
+    <div className="w-full h-screen overflow-y-auto p-4 md:p-6 flex flex-col gap-6 font-sans">
       
       {/* --- HEADER SECTION (Updated) --- */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 rounded-xl shadow-sm border border-slate-200">
         
         {/* Title Group (Flexed) */}
         <div className="w-full md:w-auto flex items-start gap-3">
@@ -333,7 +333,7 @@ function EnforcementDashboard() {
         {stats.map((item, index) => (
           <div
             key={index}
-            className={`border-l-4 ${item.color} bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 flex flex-col justify-between gap-2`}
+            className={`border-l-4 ${item.color} rounded-lg shadow-sm hover:shadow-md transition-shadow p-3 flex flex-col justify-between gap-2`}
           >
             {/* Top: Icon & Label */}
             <div className="flex items-center gap-3">
@@ -362,7 +362,7 @@ function EnforcementDashboard() {
       {/* --- MAP & RANKING SECTION --- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Map Container */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-1 overflow-hidden flex flex-col">
+        <div className="lg:col-span-2 rounded-xl shadow-sm border border-slate-200 p-1 overflow-hidden flex flex-col">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center">
             <h3 className="font-semibold text-lg text-slate-800 flex items-center gap-2">
               <LocateFixed className="w-5 h-5 text-blue-500" />
@@ -406,7 +406,7 @@ function EnforcementDashboard() {
 
         {/* Ranking Lists */}
         <div className="flex flex-col gap-4">
-          <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex-1">
+          <div className="rounded-xl p-5 shadow-sm border border-slate-200 flex-1">
             <h3 className="font-semibold mb-4 text-slate-800 border-b pb-2">
               <p>
                 🚨 จุดที่มียานพาหนะฝ่าฝืนกฏจราจร{" "}
@@ -444,7 +444,7 @@ function EnforcementDashboard() {
             </ul>
           </div>
 
-          <div className="bg-white rounded-xl p-5 shadow-sm border border-slate-200 flex-1">
+          <div className="rounded-xl p-5 shadow-sm border border-slate-200 flex-1">
             <h3 className="font-semibold mb-4 text-slate-800 border-b pb-2">
               <p>
                 🛣️จุดที่มียานพาหนะฝ่าฝืนกฏจราจร{" "}
@@ -487,7 +487,7 @@ function EnforcementDashboard() {
       {/* --- BOTTOM SECTION (Chart & Feed) --- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Chart */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+        <div className="lg:col-span-2 rounded-xl shadow-sm border border-slate-200 p-5">
           <h3 className="font-semibold text-lg text-slate-800 mb-4 flex justify-between">
             <span>📈 แนวโน้มการกระทำผิด (รายเดือน)</span>
             <select className="text-xs border rounded p-1 text-slate-500 font-normal">
@@ -501,7 +501,7 @@ function EnforcementDashboard() {
         </div>
 
         {/* Recent Violations Feed */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-0 overflow-hidden flex flex-col">
+        <div className="rounded-xl shadow-sm border border-slate-200 p-0 overflow-hidden flex flex-col">
           <div className="p-4 border-b bg-slate-50">
             <h3 className="font-semibold text-slate-800">
               รายการฝ่าฝืนล่าสุด (Real-time)
@@ -515,14 +515,14 @@ function EnforcementDashboard() {
                 className={`p-3 border rounded-lg text-sm transition-all hover:shadow-md ${
                   v.urgent
                     ? "bg-yellow-50 border-yellow-200"
-                    : "bg-white border-slate-100"
+                    : "border-slate-100"
                 }`}
               >
                 <div className="flex justify-between items-start mb-1">
                   <span className={`font-bold ${v.urgent ? "text-red-600" : "text-blue-600"}`}>
                     {v.type}
                   </span>
-                  <span className="text-xs text-slate-400 bg-white px-2 py-0.5 rounded border border-slate-100 shadow-sm">
+                  <span className="text-xs text-slate-400 px-2 py-0.5 rounded border border-slate-100 shadow-sm">
                     {v.plate}
                   </span>
                 </div>

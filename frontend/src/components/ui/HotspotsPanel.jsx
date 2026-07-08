@@ -4,8 +4,8 @@ import { FaFireAlt, FaHistory, FaExclamationTriangle } from "react-icons/fa";
 
 function HotspotsPanel({ hotspots = [], onHotspotClick }) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
-      <div className="p-4 border-b border-gray-100 bg-white z-10 sticky top-0">
+    <div className="rounded-lg shadow-sm border border-gray-200 overflow-hidden flex flex-col h-full">
+      <div className="p-4 border-b border-gray-100 z-10 sticky top-0">
         <h3 className="font-bold text-gray-800 text-sm flex items-center gap-2">
           <FaFireAlt className="text-red-500"/> จุดเกิดเหตุบ่อย (Hotspots)
         </h3>
@@ -14,7 +14,7 @@ function HotspotsPanel({ hotspots = [], onHotspotClick }) {
          {hotspots.map((spot, idx) => (
            <div 
               key={idx} 
-              className="p-3 bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all relative overflow-hidden cursor-pointer group hover:border-blue-300" 
+              className="p-3 border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-all relative overflow-hidden cursor-pointer group hover:border-blue-300" 
               onClick={() => onHotspotClick && onHotspotClick(spot)}
            >
               <div className="absolute top-0 right-0 bg-gray-100 px-2 py-1 rounded-bl-lg text-[10px] text-gray-500 font-bold">#{spot.rank}</div>

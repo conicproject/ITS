@@ -15,7 +15,7 @@ function StatsCard({ stats }) {
         return (
           <div 
             key={index} 
-            className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col justify-between hover:shadow-md transition-all duration-200 hover:-translate-y-1 relative overflow-hidden group"
+            className="rounded-xl shadow-sm border border-gray-200 p-4 flex flex-col justify-between hover:shadow-md transition-all duration-200 hover:-translate-y-1 relative overflow-hidden group"
           >
             {/* Decoration Bar ด้านข้าง */}
             <div className={`absolute left-0 top-0 bottom-0 w-1 ${colorClass.replace('text-', 'bg-')}`}></div>

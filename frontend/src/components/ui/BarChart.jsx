@@ -95,7 +95,7 @@ export const BarChart = ({
   };
 
   return (
-    <div ref={containerRef} className="bg-white rounded-lg shadow-sm p-4">
+    <div ref={containerRef} className="rounded-lg shadow-sm p-4">
       {showTitle && title && <h3 className="font-semibold text-gray-800 mb-4">{title}</h3>}
       <div className="w-full overflow-hidden">
         {containerWidth && (

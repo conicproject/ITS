@@ -11,7 +11,7 @@ function IncidentHeader({
   addText = "แจ้งเหตุอุบัติเหตุ"
 }) {
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-5 mb-6">
+    <div className="rounded-xl shadow-sm border border-gray-200 p-4 md:p-5 mb-6">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         
         {/* Title Section */}
@@ -36,7 +36,7 @@ function IncidentHeader({
           {onExport && (
             <button 
               onClick={onExport}
-              className="flex-1 md:flex-none justify-center flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors bg-white shadow-sm"
+              className="flex-1 md:flex-none justify-center flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors shadow-sm"
             >
               <FaDownload size={14} className="text-gray-500" />
               {exportText}

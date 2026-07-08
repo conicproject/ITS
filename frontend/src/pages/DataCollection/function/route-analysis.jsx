@@ -14,7 +14,7 @@ import { BarChart } from "../../../components/ui/BarChart";
 
 // --- Components ---
 const KPICard = ({ title, value, subtext, icon: Icon, color }) => (
-  <div className="bg-white rounded-xl p-4 shadow-sm border border-gray-100 flex items-start justify-between h-full">
+  <div className="rounded-xl p-4 shadow-sm border border-gray-100 flex items-start justify-between h-full">
     <div>
       <p className="text-gray-500 text-sm mb-1">{title}</p>
       <h3 className="text-2xl font-bold text-gray-800">{value}</h3>
@@ -65,7 +65,7 @@ const RouteCard = ({
   const [origin, destination] = route.split(" → ");
 
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow duration-200 h-full flex flex-col justify-between">
+    <div className="border border-gray-200 rounded-xl p-4 hover:shadow-md transition-shadow duration-200 h-full flex flex-col justify-between">
       <div>
         <div className="flex justify-between items-start mb-3">
           <div className="flex items-center gap-3">
@@ -203,7 +203,7 @@ function RouteAnalysis() {
 
   return (
     // ✅ 1. ปรับ Main Wrapper ให้เหมือน InstallationPoint (bg-gray-50, p-4 md:p-6)
-    <div className="h-screen overflow-y-auto bg-gray-50 p-4 md:p-6 pb-32 font-sans text-gray-800">
+    <div className="h-screen overflow-y-auto p-4 md:p-6 pb-32 font-sans text-gray-800">
       
       {/* ✅ 2. ปรับ Max Width เป็น 1600px เพื่อให้เต็มจอเท่ากัน */}
       <div className="max-w-[1600px] mx-auto space-y-6 pb-10">
@@ -303,7 +303,7 @@ function RouteAnalysis() {
             </div>
 
             {/* Bar Chart */}
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 h-full">
+            <div className="rounded-xl shadow-sm p-6 border border-gray-100 h-full">
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-gray-800">
                   ปริมาณจราจรรายชั่วโมง
@@ -320,7 +320,7 @@ function RouteAnalysis() {
 
           {/* Right Column (1 Part) */}
           <div className="space-y-6 flex flex-col">
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div className="rounded-xl shadow-sm p-6 border border-gray-100">
               <h3 className="text-lg font-bold text-gray-800 mb-6">
                 สัดส่วนความหนาแน่น
               </h3>
@@ -331,7 +331,7 @@ function RouteAnalysis() {
               />
             </div>
 
-            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-100 flex-grow">
+            <div className="rounded-xl shadow-sm p-6 border border-gray-100 flex-grow">
               <h3 className="text-lg font-bold text-gray-800 mb-4">
                 5 อันดับ เส้นทางล่าช้าสุด
               </h3>

@@ -124,7 +124,7 @@ const DataCollectionDashboard = () => {
     <div className="h-screen overflow-y-auto bg-slate-100 p-4 md:p-8 font-sans text-slate-800">
       
       {/* --- HEADER --- */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 rounded-xl shadow-sm border border-slate-200 mb-8">
         
         {/* Title Group */}
         <div className="w-full md:w-auto flex items-start gap-3">
@@ -152,7 +152,7 @@ const DataCollectionDashboard = () => {
           { label: "กล้องที่ใช้งาน", val: "23/24", sub: "95.8% อัตราการทำงาน", color: "green", icon: <CameraIcon className="w-6 h-6" /> },
           { label: "การฝ่าฝืนวันนี้", val: "89", sub: "⚠️ ต้องตรวจสอบ", color: "red", icon: <ShieldIcon className="w-6 h-6" /> },
         ].map((stat, idx) => (
-          <div key={idx} className={`bg-white rounded-2xl shadow-sm p-6 border-b-4 border-${stat.color}-500 hover:shadow-md transition-shadow`}>
+          <div key={idx} className={`rounded-2xl shadow-sm p-6 border-b-4 border-${stat.color}-500 hover:shadow-md transition-shadow`}>
             <div className="flex justify-between items-start">
               <div>
                 <div className={`text-4xl font-bold text-${stat.color}-600 mb-2`}>{stat.val}</div>
@@ -168,7 +168,7 @@ const DataCollectionDashboard = () => {
       {/* MIDDLE ROW (Charts) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Main Chart */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6 flex flex-col h-full">
+        <div className="lg:col-span-2 rounded-2xl shadow-sm p-6 flex flex-col h-full">
           <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 border-l-4 border-slate-800 pl-3">
              📊 ปริมาณจราจรรายชั่วโมง
           </h2>
@@ -186,7 +186,7 @@ const DataCollectionDashboard = () => {
         </div>
 
         {/* Donut Chart */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 flex flex-col h-full">
+        <div className="rounded-2xl shadow-sm p-6 flex flex-col h-full">
           <h2 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2 border-l-4 border-slate-800 pl-3">
             📈 สัดส่วนตามพื้นที่
           </h2>
@@ -211,7 +211,7 @@ const DataCollectionDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Violations List */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm p-6 h-full">
+        <div className="lg:col-span-2 rounded-2xl shadow-sm p-6 h-full">
           <div className="flex items-center justify-between mb-6 border-l-4 border-slate-800 pl-3">
             <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
               <AlertTriangleIcon className="w-5 h-5" /> การฝ่าฝืนล่าสุด
@@ -238,7 +238,7 @@ const DataCollectionDashboard = () => {
                     </div>
                   </div>
                 </div>
-                <div className="mt-2 md:mt-0 text-xs font-mono text-slate-400 bg-white px-2 py-1 rounded border border-slate-100">
+                <div className="mt-2 md:mt-0 text-xs font-mono text-slate-400 px-2 py-1 rounded border border-slate-100">
                   {alert.time}
                 </div>
               </div>
@@ -247,7 +247,7 @@ const DataCollectionDashboard = () => {
         </div>
 
         {/* Camera Status (Stacked Box) */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 h-full flex flex-col">
+        <div className="rounded-2xl shadow-sm p-6 h-full flex flex-col">
           <h2 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 border-l-4 border-slate-800 pl-3">
              📸 สถานะระบบ
           </h2>

@@ -59,7 +59,7 @@ export const ViolationCard = ({ violation, type, onClick }) => {
   return (
     <div
       onClick={() => onClick?.(violation)}
-      className={`group relative bg-white rounded-xl border border-gray-200 overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 ${sev.hover}`}
+      className={`group relative rounded-xl border border-gray-200 overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all duration-200 ease-out hover:-translate-y-0.5 ${sev.hover}`}
     >
       <div className={`absolute inset-y-0 left-0 w-1 ${sev.bar} rounded-l-xl transition-all duration-200 group-hover:w-[5px]`} />
 

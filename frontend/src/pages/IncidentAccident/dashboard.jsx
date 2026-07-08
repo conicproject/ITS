@@ -469,7 +469,7 @@ function HistoryModal({ hotspot, onClose }) {
   if (!hotspot) return null;
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-lg rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+      <div className="w-full max-w-lg rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
         <div className="bg-gray-50 px-4 py-3 border-b flex justify-between items-center sticky top-0">
           <div>
             <h3 className="text-lg font-bold text-gray-800">
@@ -648,7 +648,7 @@ function IncidentAccidentDashboard() {
         <span className={`text-2xl font-bold ${colorClass}`}>{count}</span>
       </div>
       <div
-        className={`w-12 h-12 rounded-full flex items-center justify-center text-xl bg-white ${colorClass} shadow-sm`}
+        className={`w-12 h-12 rounded-full flex items-center justify-center text-xl ${colorClass} shadow-sm`}
       >
         <Icon />
       </div>
@@ -663,7 +663,7 @@ function IncidentAccidentDashboard() {
       />
 
       {/* --- Header --- */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
         <div className="flex items-center gap-3">
           <span className="text-red-600 bg-red-50 p-2 rounded-lg">
             <FaCarCrash className="w-6 h-6" />
@@ -736,7 +736,7 @@ function IncidentAccidentDashboard() {
 
       {/* --- Section 3: Map & Hotspots --- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden h-[500px] relative z-0">
+        <div className="lg:col-span-2 rounded-xl shadow-sm border border-gray-200 overflow-hidden h-[500px] relative z-0">
           <IncidentMap
             incidents={incidents}
             mapCenter={[13.78, 100.56]}
@@ -754,7 +754,7 @@ function IncidentAccidentDashboard() {
       {/* --- Section 4: Graphs & Table --- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Graph */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm p-6 border border-gray-200 h-[350px]">
+        <div className="lg:col-span-2 rounded-xl shadow-sm p-6 border border-gray-200 h-[350px]">
           <div className="flex items-center gap-2 mb-4">
             <FaChartBar className="text-blue-500" />
             <h3 className="font-semibold text-gray-800">
@@ -767,7 +767,7 @@ function IncidentAccidentDashboard() {
         </div>
 
         {/* Traffic List */}
-        <div className="lg:col-span-1 bg-white rounded-xl shadow-sm p-6 border border-gray-200 h-[350px] overflow-y-auto">
+        <div className="lg:col-span-1 rounded-xl shadow-sm p-6 border border-gray-200 h-[350px] overflow-y-auto">
           <h3 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <FaRoad className="text-gray-400" /> สภาพจราจร (เส้นทางหลัก)
           </h3>

@@ -88,7 +88,7 @@ function DetailReportVehicle() {
     <div className="h-screen p-8">
       <h2 className="text-2xl font-bold mb-4">Detail Report Vehicle</h2>
 
-      <div className="bg-white shadow rounded p-4 space-y-2">
+      <div className="shadow rounded p-4 space-y-2">
         <p>
           <strong>ชนิดข้อมูล:</strong>{" "}
           {typeData === "0" ? "ข้อมูลจราจร" : "ข้อมูลยานพาหนะที่ฝ่าฝืนสัญญาณไฟ"}

@@ -50,10 +50,10 @@ const AddBlacklistModal = ({ onClose }) => {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-in fade-in duration-300">
       
       {/* 2. Modal Container: White Theme */}
-      <div className="bg-white w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-slate-800 font-sans">
+      <div className="w-full max-w-5xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] text-slate-800 font-sans">
         
         {/* Header */}
-        <div className="bg-white border-b border-slate-200 py-4 px-6 flex justify-between items-center shrink-0 shadow-sm relative z-10">
+        <div className="border-b border-slate-200 py-4 px-6 flex justify-between items-center shrink-0 shadow-sm relative z-10">
             <div className="flex items-center gap-3">
                 <div className="p-2 bg-red-50 rounded-lg border border-red-100">
                     <AlertTriangle className="text-red-600" size={20} />
@@ -79,7 +79,7 @@ const AddBlacklistModal = ({ onClose }) => {
             <div className="lg:col-span-7 space-y-6">
               
               {/* Card 1: ข้อมูลรถ */}
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+              <div className="p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
                  <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 mb-2 pb-2 border-b border-slate-100">
                     <Car size={18} className="text-blue-600"/> ข้อมูลยานพาหนะ
                  </h3>
@@ -94,7 +94,7 @@ const AddBlacklistModal = ({ onClose }) => {
                             onChange={handleInputChange}
                             type="text"
                             placeholder="เช่น 1กข 1234"
-                            className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
+                            className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all"
                         />
                     </div>
 
@@ -105,7 +105,7 @@ const AddBlacklistModal = ({ onClose }) => {
                             name="province"
                             value={formData.province}
                             onChange={handleInputChange}
-                            className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2.5 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 cursor-pointer appearance-none"
+                            className="w-full border border-slate-300 rounded-lg px-3 py-2.5 text-slate-900 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 cursor-pointer appearance-none"
                         >
                             <option value="">เลือกจังหวัด...</option>
                             <option value="Bangkok">กรุงเทพมหานคร</option>
@@ -124,7 +124,7 @@ const AddBlacklistModal = ({ onClose }) => {
                                 onChange={handleInputChange}
                                 type="text" 
                                 placeholder="Honda..." 
-                                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none" 
+                                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none" 
                             />
                         </div>
                         <div>
@@ -135,7 +135,7 @@ const AddBlacklistModal = ({ onClose }) => {
                                 onChange={handleInputChange}
                                 type="text" 
                                 placeholder="Civic..." 
-                                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none" 
+                                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none" 
                             />
                         </div>
                         <div>
@@ -144,7 +144,7 @@ const AddBlacklistModal = ({ onClose }) => {
                                 name="color"
                                 value={formData.color}
                                 onChange={handleInputChange}
-                                className="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
+                                className="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm text-slate-900 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none"
                             >
                                 <option value="">เลือก...</option>
                                 <option value="Black">ดำ</option>
@@ -158,7 +158,7 @@ const AddBlacklistModal = ({ onClose }) => {
               </div>
 
               {/* Card 2: Reason */}
-              <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
+              <div className="p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
                 <h3 className="text-sm font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 mb-2 pb-2 border-b border-slate-100">
                     <FileText size={18} className="text-amber-500"/> รายละเอียด
                  </h3>
@@ -168,7 +168,7 @@ const AddBlacklistModal = ({ onClose }) => {
                         name="reason"
                         value={formData.reason}
                         onChange={handleInputChange}
-                        className="w-full bg-white border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none h-24 resize-none placeholder:text-slate-400"
+                        className="w-full border border-slate-300 rounded-lg px-4 py-3 text-sm text-slate-900 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 outline-none h-24 resize-none placeholder:text-slate-400"
                         placeholder="ระบุพฤติการณ์ หรือสาเหตุที่ต้องเฝ้าระวัง..."
                     ></textarea>
                  </div>
@@ -179,7 +179,7 @@ const AddBlacklistModal = ({ onClose }) => {
             <div className="lg:col-span-5 space-y-6">
               
               {/* Map Section */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[280px]">
+              <div className="rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[280px]">
                  <div className="bg-slate-50 px-4 py-2 border-b border-slate-200 flex justify-between items-center">
                     <span className="text-xs font-bold text-slate-600 flex items-center gap-1">
                         <Monitor size={14} className="text-slate-500"/> จุดที่ตรวจพบ (Last Location)
@@ -215,7 +215,7 @@ const AddBlacklistModal = ({ onClose }) => {
               </div>
 
               {/* Upload Section */}
-              <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-1">
+              <div className="rounded-xl border border-slate-200 shadow-sm p-1">
                 <div 
                     onClick={() => fileInputRef.current.click()}
                     className="border-2 border-dashed border-slate-300 rounded-lg h-44 flex flex-col items-center justify-center cursor-pointer hover:bg-slate-50 hover:border-blue-400 transition-all group relative overflow-hidden bg-slate-50/50"
@@ -239,7 +239,7 @@ const AddBlacklistModal = ({ onClose }) => {
                         </div>
                     ) : (
                         <>
-                            <div className="bg-white p-3 rounded-full shadow-sm mb-3 group-hover:shadow-md group-hover:scale-110 transition-all">
+                            <div className="p-3 rounded-full shadow-sm mb-3 group-hover:shadow-md group-hover:scale-110 transition-all">
                                 <UploadCloud className="text-slate-400 group-hover:text-blue-600" size={28} />
                             </div>
                             <p className="text-sm font-medium text-slate-700 group-hover:text-blue-700">อัปโหลดหลักฐาน</p>
@@ -260,7 +260,7 @@ const AddBlacklistModal = ({ onClose }) => {
                  <button 
                     type="button"
                     onClick={onClose}
-                    className="w-full bg-white border border-slate-300 text-slate-600 hover:bg-slate-50 hover:text-slate-800 font-semibold py-2.5 px-4 rounded-lg transition-all"
+                    className="w-full border border-slate-300 text-slate-600 hover:bg-slate-50 hover:text-slate-800 font-semibold py-2.5 px-4 rounded-lg transition-all"
                  >
                     ยกเลิก
                  </button>

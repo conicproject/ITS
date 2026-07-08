@@ -4,7 +4,7 @@ import { ViolationCard } from './ViolationCard';
 
 // ─── Skeleton Loader ──────────────────────────────────────────────────────────
 const SkeletonCard = () => (
-  <div className="relative bg-white rounded-xl border border-gray-200 p-4 overflow-hidden animate-pulse">
+  <div className="relative rounded-xl border border-gray-200 p-4 overflow-hidden animate-pulse">
     <div className="absolute inset-y-0 left-0 w-1 bg-green-200 rounded-l-xl" />
     <div className="pl-3 flex items-center gap-3 mb-3">
       <div className="h-8 w-36 bg-gray-200 rounded-lg" />
@@ -44,7 +44,7 @@ export const ViolationList = ({
 
   return (
     // เอา h-full ออกจาก div หลัก
-    <div className="flex flex-col bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <div className="flex flex-col rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-green-50/60 to-white">
         <div className="flex items-center gap-3 min-w-0">
           <div className="w-9 h-9 rounded-xl bg-green-700 flex items-center justify-center shadow-sm flex-shrink-0">

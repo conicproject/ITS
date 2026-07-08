@@ -274,6 +274,7 @@ function Sidebar({
           overflow: "hidden",
           borderRight: "1px solid rgba(255, 255, 255, 0.07)",
           background: "linear-gradient(rgba(10, 17, 35, 0.85), rgba(8, 13, 28, 0.92))",
+          backdropFilter: "blur(150px)",
         }}
       >
         {/* Logo Section */}

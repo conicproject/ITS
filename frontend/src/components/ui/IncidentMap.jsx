@@ -186,10 +186,10 @@ function IncidentMap({
   }, [combinedData, activeFilters]);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 h-full w-full min-h-[500px] overflow-hidden relative z-0">
+    <div className="rounded-xl shadow-sm border border-gray-200 h-full w-full min-h-[500px] overflow-hidden relative z-0">
       
       {/* --- Filter Box --- */}
-      <div className="absolute top-4 right-4 z-[1000] bg-white p-3 rounded-lg shadow-md border border-gray-200 w-56 max-h-[80%] overflow-y-auto">
+      <div className="absolute top-4 right-4 z-[1000] p-3 rounded-lg shadow-md border border-gray-200 w-56 max-h-[80%] overflow-y-auto">
         <h4 className="text-sm font-semibold mb-2 text-gray-700 border-b pb-1">กรองข้อมูลเหตุการณ์</h4>
         <div className="flex flex-col gap-1">
           {FILTER_HIERARCHY.map((group) => (

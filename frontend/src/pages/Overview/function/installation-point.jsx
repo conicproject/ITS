@@ -158,7 +158,7 @@ const InstallationPoint = () => {
   ];
 
   return (
-    <div className="h-screen overflow-y-auto bg-gray-50 p-4 md:p-6 font-sans text-gray-800">
+    <div className="h-screen overflow-y-auto p-4 md:p-6 font-sans text-gray-800">
       <div className="max-w-[1600px] mx-auto space-y-6 pb-10">
         
         {/* Header */}
@@ -210,19 +210,19 @@ const InstallationPoint = () => {
           
           {/* COLUMN 1: Visuals */}
           <div className="col-span-12 lg:col-span-3 flex flex-col gap-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden group">
+            <div className="  rounded-2xl shadow-sm border border-gray-100 overflow-hidden group">
               <div className="relative h-[240px] md:h-[280px]">
                 <img src="https://images.unsplash.com/photo-1566371486490-560ded23b5e4?w=600&auto=format&fit=crop&q=60" alt="CCTV" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
                 <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-2 py-1 rounded text-[10px] font-bold text-white flex items-center gap-1">
                   🔴 LIVE
                 </div>
-                <div className="absolute bottom-3 left-3 bg-white/90 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
+                <div className="absolute bottom-3 left-3  /90 px-3 py-1 rounded-full text-xs font-semibold shadow-sm">
                   กล้อง: TF-YW-02-05
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-[240px] md:h-[300px] relative z-0">
+            <div className="  rounded-2xl shadow-sm border border-gray-100 overflow-hidden h-[240px] md:h-[300px] relative z-0">
                <MapContainer 
                  center={[13.7563, 100.5018]} 
                  zoom={13} 
@@ -239,7 +239,7 @@ const InstallationPoint = () => {
 
           {/* COLUMN 2: Traffic Stats */}
           <div className="col-span-12 lg:col-span-5 md:col-span-6 flex flex-col gap-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between h-auto md:h-[200px]">
+            <div className="  rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between h-auto md:h-[200px]">
               <div className="flex flex-col md:flex-row justify-between items-start gap-4 md:gap-0">
                 <div>
                   <h3 className="text-gray-500 text-sm font-medium">ปริมาณการจราจรทั้งหมด</h3>
@@ -264,7 +264,7 @@ const InstallationPoint = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 h-auto min-h-[380px] relative flex flex-col items-center justify-center">
+            <div className="  rounded-2xl shadow-sm border border-gray-100 p-6 h-auto min-h-[380px] relative flex flex-col items-center justify-center">
                <h4 className="absolute top-4 left-6 text-sm font-semibold text-gray-700">สัดส่วนยานพาหนะ</h4>
                <div className="w-full flex justify-center mt-6 md:mt-0">
                  <ReactApexCharts options={donutOptions} series={donutSeries} type="donut" width="100%" height={320} />
@@ -274,7 +274,7 @@ const InstallationPoint = () => {
 
           {/* COLUMN 3: Violations & List */}
           <div className="col-span-12 lg:col-span-4 md:col-span-6 flex flex-col gap-6">
-             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between h-auto md:h-[200px]">
+             <div className="  rounded-2xl shadow-sm border border-gray-100 p-6 flex flex-col justify-between h-auto md:h-[200px]">
               <div className="flex flex-col md:flex-row justify-between items-start gap-4 md:gap-0">
                 <div>
                   <h3 className="text-gray-500 text-sm font-medium">ยานพาหนะฝ่าฝืนทั้งหมด</h3>
@@ -299,7 +299,7 @@ const InstallationPoint = () => {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 h-[380px] overflow-hidden flex flex-col">
+            <div className="  rounded-2xl shadow-sm border border-gray-100 p-5 h-[380px] overflow-hidden flex flex-col">
                <h4 className="text-sm font-semibold text-gray-700 mb-3">จำแนกตามประเภท</h4>
                <div className="overflow-y-auto pr-2 flex-1">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-3">
@@ -322,7 +322,7 @@ const InstallationPoint = () => {
 
         {/* Bottom Chart Section */}
         {/* FIX: ปรับ padding-6 เป็น p-4 md:p-6 เพื่อให้พื้นที่แสดงผลบนมือถือมากขึ้น */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6">
+        <div className="  rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3 sm:gap-0">
              <h3 className="text-lg font-bold text-gray-800">สถิติการฝ่าฝืนย้อนหลัง</h3>
              <select className="bg-gray-50 border border-gray-200 text-sm rounded-lg px-3 py-1 focus:outline-none w-full sm:w-auto">

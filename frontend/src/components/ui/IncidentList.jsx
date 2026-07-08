@@ -9,7 +9,7 @@ export const IncidentList = ({
   setSelectedStatus,
 }) => {
   return (
-    <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+    <div className="mt-6 rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       
       {/* Controls */}
       <div className="p-4 border-b border-gray-200 flex items-center justify-between">
@@ -43,7 +43,7 @@ export const IncidentList = ({
       {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50 border-b">
+          <thead className="border-b">
             <tr>
               <th className="px-4 py-3 text-xs text-left">รหัส</th>
               <th className="px-4 py-3 text-xs text-left">ประเภท</th>
