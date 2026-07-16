@@ -3,7 +3,7 @@ import GenericFunction from "../../components/ui/GenericFunction";
 function DataCollectionFunction() {
   const items = [
     {
-      name: "ระบบตรวจจับความหนาแน่น \nของการจราจร",
+      name: "ปริมาณจราจร",
       icon: (
         <svg
           viewBox="0 0 24 24"

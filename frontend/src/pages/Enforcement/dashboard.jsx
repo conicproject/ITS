@@ -254,42 +254,42 @@ function EnforcementDashboard() {
       label: "Speeding Violation",
       subLabel: "ความเร็วเกินกำหนด",
       value: "33,900",
-      color: "bg-red-50 border-red-500",
+      color: "border-red-500",
     },
     {
       icon: <IconT className="w-12 h-12" />,
       label: "Truck Time Restriction",
       subLabel: "รถบรรทุกในเวลาห้ามเดินรถ",
       value: "11,300",
-      color: "bg-orange-50 border-orange-500",
+      color: "border-orange-500",
     },
     {
       icon: <IconR className="w-12 h-12" />,
       label: "Red Light Violation",
       subLabel: "ฝ่าสัญญาณไฟ",
       value: "16,950",
-      color: "bg-red-100 border-red-600",
+      color: "border-red-600",
     },
     {
       icon: <IconP className="w-12 h-12" />,
       label: "Parking Violation",
       subLabel: "จอดรถในที่ห้ามจอด",
       value: "22,600",
-      color: "bg-orange-100 border-orange-600",
+      color: "border-orange-600",
     },
     {
       icon: <IconW className="w-12 h-12" />,
       label: "Driving on Sidewalk",
       subLabel: "วิ่งบนทางเท้า",
       value: "9,040",
-      color: "bg-rose-50 border-rose-500",
+      color: "border-rose-500",
     },
     {
       icon: <IconL className="w-12 h-12" />,
       label: "Lane Changing",
       subLabel: "เปลี่ยนช่องในเขตเส้นทึบ",
       value: "13,560",
-      color: "bg-amber-50 border-amber-500",
+      color: "border-amber-500",
     },
   ];
 
@@ -305,7 +305,7 @@ function EnforcementDashboard() {
     <div className="w-full h-screen overflow-y-auto p-4 md:p-6 flex flex-col gap-6 font-sans">
       
       {/* --- HEADER SECTION (Updated) --- */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 rounded-xl shadow-sm border border-slate-200">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 rounded-xl shadow-sm border">
         
         {/* Title Group (Flexed) */}
         <div className="w-full md:w-auto flex items-start gap-3">
@@ -362,7 +362,7 @@ function EnforcementDashboard() {
       {/* --- MAP & RANKING SECTION --- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Map Container */}
-        <div className="lg:col-span-2 rounded-xl shadow-sm border border-slate-200 p-1 overflow-hidden flex flex-col">
+        <div className="lg:col-span-2 rounded-xl shadow-sm border p-1 overflow-hidden flex flex-col">
           <div className="p-4 border-b border-slate-100 flex justify-between items-center">
             <h3 className="font-semibold text-lg text-slate-800 flex items-center gap-2">
               <LocateFixed className="w-5 h-5 text-blue-500" />
@@ -406,7 +406,7 @@ function EnforcementDashboard() {
 
         {/* Ranking Lists */}
         <div className="flex flex-col gap-4">
-          <div className="rounded-xl p-5 shadow-sm border border-slate-200 flex-1">
+          <div className="rounded-xl p-5 shadow-sm border flex-1">
             <h3 className="font-semibold mb-4 text-slate-800 border-b pb-2">
               <p>
                 🚨 จุดที่มียานพาหนะฝ่าฝืนกฏจราจร{" "}
@@ -444,7 +444,7 @@ function EnforcementDashboard() {
             </ul>
           </div>
 
-          <div className="rounded-xl p-5 shadow-sm border border-slate-200 flex-1">
+          <div className="rounded-xl p-5 shadow-sm border flex-1">
             <h3 className="font-semibold mb-4 text-slate-800 border-b pb-2">
               <p>
                 🛣️จุดที่มียานพาหนะฝ่าฝืนกฏจราจร{" "}
@@ -487,7 +487,7 @@ function EnforcementDashboard() {
       {/* --- BOTTOM SECTION (Chart & Feed) --- */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
         {/* Chart */}
-        <div className="lg:col-span-2 rounded-xl shadow-sm border border-slate-200 p-5">
+        <div className="lg:col-span-2 rounded-xl shadow-sm border p-5">
           <h3 className="font-semibold text-lg text-slate-800 mb-4 flex justify-between">
             <span>📈 แนวโน้มการกระทำผิด (รายเดือน)</span>
             <select className="text-xs border rounded p-1 text-slate-500 font-normal">
@@ -501,8 +501,8 @@ function EnforcementDashboard() {
         </div>
 
         {/* Recent Violations Feed */}
-        <div className="rounded-xl shadow-sm border border-slate-200 p-0 overflow-hidden flex flex-col">
-          <div className="p-4 border-b bg-slate-50">
+        <div className="rounded-xl shadow-sm border p-0 overflow-hidden flex flex-col">
+          <div className="p-4 border-b">
             <h3 className="font-semibold text-slate-800">
               รายการฝ่าฝืนล่าสุด (Real-time)
             </h3>
@@ -537,7 +537,7 @@ function EnforcementDashboard() {
               </div>
             ))}
           </div>
-          <div className="p-3 bg-slate-50 border-t text-center">
+          <div className="p-3 border-t text-center">
             <button className="text-blue-600 text-xs font-semibold hover:underline">
               ดูรายการทั้งหมด →
             </button>

@@ -3,7 +3,7 @@ import GenericFunction from "../../components/ui/GenericFunction";
 function EnforcementFunction() {
   const items = [
     {
-      name: "ฝ่าฝืนสัญญาณไฟแดง",
+      name: "violation search",
       icon: (
         <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
           <rect x="8" y="2.5" width="8" height="19" rx="3" />
@@ -12,7 +12,7 @@ function EnforcementFunction() {
           <circle cx="12" cy="17" r="1.5" />
         </svg>
       ),
-      path: "/enforcement/function/detect-red-light",
+      path: "/enforcement/function/violation-search",
     },
     {
       name: "เปลี่ยนช่องทางเส้นทึบ",
@@ -25,17 +25,6 @@ function EnforcementFunction() {
       path: "/enforcement/function/detect-lane",
     },
     {
-      name: "ยานพาหนะบนทางเท้า",
-      icon: (
-        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="10" cy="4" r="2" />
-          <path d="M10 6v6M10 8.2l-2.4-1M10 8.2l2.4-1M10 12l-2 4.5M10 12l2 4.5" />
-          <path d="M3 20.5h18" />
-        </svg>
-      ),
-      path: "/enforcement/function/detect-sidewalk",
-    },
-    {
       name: "ตรวจจับความเร็ว",
       icon: (
         <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
@@ -45,18 +34,6 @@ function EnforcementFunction() {
         </svg>
       ),
       path: "/enforcement/function/detect-speeding",
-    },
-    {
-      name: "รถบรรทุกนอกเวลา",
-      icon: (
-        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-          <rect x="2" y="7" width="12" height="9" rx="1" />
-          <path d="M14 10h4l3 3v3h-7z" />
-          <circle cx="6" cy="17.5" r="1.7" />
-          <circle cx="17.5" cy="17.5" r="1.7" />
-        </svg>
-      ),
-      path: "/enforcement/function/detect-truck-barrier",
     },
     {
       name: "ไม่สวมหมวกนิรภัย",
@@ -99,6 +76,44 @@ function EnforcementFunction() {
         </svg>
       ),
       path: "/enforcement/function/report-vehicle",
+    },
+    {
+      name: "ฝ่าฝืนสัญญาณไฟแดง",
+      disabled: true,
+      icon: (
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="8" y="2.5" width="8" height="19" rx="3" />
+          <circle cx="12" cy="7" r="1.5" />
+          <circle cx="12" cy="12" r="1.5" />
+          <circle cx="12" cy="17" r="1.5" />
+        </svg>
+      ),
+      path: "/enforcement/function/detect-red-light",
+    },
+    {
+      name: "ยานพาหนะบนทางเท้า",
+      disabled: true,
+      icon: (
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="10" cy="4" r="2" />
+          <path d="M10 6v6M10 8.2l-2.4-1M10 8.2l2.4-1M10 12l-2 4.5M10 12l2 4.5" />
+          <path d="M3 20.5h18" />
+        </svg>
+      ),
+      path: "/enforcement/function/detect-sidewalk",
+    },
+    {
+      name: "รถบรรทุกนอกเวลา",
+      disabled: true,
+      icon: (
+        <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="7" width="12" height="9" rx="1" />
+          <path d="M14 10h4l3 3v3h-7z" />
+          <circle cx="6" cy="17.5" r="1.7" />
+          <circle cx="17.5" cy="17.5" r="1.7" />
+        </svg>
+      ),
+      path: "/enforcement/function/detect-truck-barrier",
     },
   ];
 

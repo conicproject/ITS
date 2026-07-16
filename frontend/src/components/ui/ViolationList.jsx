@@ -1,8 +1,8 @@
 // frontend/src/components/ui/ViolationList.jsx
 import React from 'react';
 import { ViolationCard } from './ViolationCard';
+import { ViolationTable } from './ViolationTable';
 
-// ─── Skeleton Loader ──────────────────────────────────────────────────────────
 const SkeletonCard = () => (
   <div className="relative rounded-xl border border-gray-200 p-4 overflow-hidden animate-pulse">
     <div className="absolute inset-y-0 left-0 w-1 bg-green-200 rounded-l-xl" />
@@ -21,14 +21,12 @@ const SkeletonCard = () => (
   </div>
 );
 
-// ─── Severity dot indicator ───────────────────────────────────────────────────
 const severityDot = {
   สูง:      { color: 'bg-red-500',   label: 'สูง' },
   ปานกลาง: { color: 'bg-amber-400', label: 'ปานกลาง' },
   ต่ำ:      { color: 'bg-blue-400',  label: 'ต่ำ' },
 };
 
-// ─── ViolationList ────────────────────────────────────────────────────────────
 export const ViolationList = ({
   title,
   violations = [],
@@ -36,14 +34,48 @@ export const ViolationList = ({
   timeRange,
   loading = false,
   onRowClick,
+  selectedId,
+  viewMode = "card",   // "card" | "table"
+  dark = false,        // ธีมมืดสำหรับหน้าที่เป็นตาราง
 }) => {
   const severityCounts = Object.keys(severityDot).reduce((acc, key) => {
     acc[key] = violations.filter(v => v.status === key).length;
     return acc;
   }, {});
 
+  /* ============================== TABLE / DARK VARIANT ============================== */
+  if (viewMode === "table") {
+    return (
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <h2 className={`font-bold text-base ${dark ? "text-white" : "text-gray-800"}`}>
+            {title || 'รายการฝ่าฝืน'} {!loading && `(${violations.length.toLocaleString()} รายการ)`}
+          </h2>
+          {timeRange && (
+            <span className={`text-xs ${dark ? "text-[rgba(220,234,255,.4)]" : "text-gray-400"}`}>
+              {timeRange}
+            </span>
+          )}
+        </div>
+
+        {loading ? (
+          <div className="flex justify-center items-center h-40 text-[rgba(220,234,255,.4)]">
+            กำลังโหลด...
+          </div>
+        ) : (
+          <ViolationTable
+            type={type}
+            violations={violations}
+            selectedId={selectedId}
+            onRowClick={onRowClick}
+          />
+        )}
+      </div>
+    );
+  }
+
+  /* ============================== ORIGINAL CARD VARIANT (unchanged) ============================== */
   return (
-    // เอา h-full ออกจาก div หลัก
     <div className="flex flex-col rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
       <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 bg-gradient-to-r from-green-50/60 to-white">
         <div className="flex items-center gap-3 min-w-0">
@@ -53,7 +85,7 @@ export const ViolationList = ({
             </svg>
           </div>
           <div className="min-w-0">
-            <h2 className="font-bold text-gray-900 text-base leading-tight truncate">
+            <h2 className="font-bold text-base leading-tight truncate">
               {title || 'รายการฝ่าฝืน'}
             </h2>
             {timeRange && (
@@ -71,7 +103,6 @@ export const ViolationList = ({
         )}
       </div>
 
-      {/* เอา overflow-y-auto ออก */}
       <div className="flex-1">
         {loading ? (
           <div className="p-4 space-y-3">

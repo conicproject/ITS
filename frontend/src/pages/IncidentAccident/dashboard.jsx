@@ -656,14 +656,14 @@ function IncidentAccidentDashboard() {
   );
 
   return (
-    <div className="h-screen overflow-y-auto w-full bg-slate-50 p-4 md:p-6 font-sans text-gray-800 pb-20">
+    <div className="h-screen overflow-y-auto w-full p-4 md:p-6 font-sans text-gray-800 pb-20">
       <HistoryModal
         hotspot={selectedHotspot}
         onClose={() => setSelectedHotspot(null)}
       />
 
       {/* --- Header --- */}
-      <div className="flex flex-col md:flex-row justify-between items-center gap-4 p-4 rounded-xl shadow-sm border border-slate-200 mb-6">
+      <div className="flex flex-col md:flex-row justify-between items-center gap-4 p-4 rounded-xl shadow-sm border mb-6">
         <div className="flex items-center gap-3">
           <span className="text-red-600 bg-red-50 p-2 rounded-lg">
             <FaCarCrash className="w-6 h-6" />

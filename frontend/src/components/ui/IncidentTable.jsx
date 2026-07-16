@@ -167,7 +167,7 @@ const IncidentTable = ({
                           {renderIcon(item)}
                        </div>
                        <div className="flex flex-col">
-                         <span className="text-gray-900 font-medium">{item.category || item.type}</span>
+                         <span className="font-medium">{item.category || item.type}</span>
                          <span className="text-[10px] text-gray-500 uppercase">{item.subtype || item.type}</span>
                        </div>
                     </div>

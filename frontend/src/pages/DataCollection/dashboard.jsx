@@ -121,10 +121,10 @@ const DataCollectionDashboard = () => {
   }, [pieChartData]);
 
   return (
-    <div className="h-screen overflow-y-auto bg-slate-100 p-4 md:p-8 font-sans text-slate-800">
+    <div className="h-screen overflow-y- p-4 md:p-8 font-sans text-slate-800">
       
       {/* --- HEADER --- */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 rounded-xl shadow-sm border border-slate-200 mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 rounded-xl shadow-sm border mb-8">
         
         {/* Title Group */}
         <div className="w-full md:w-auto flex items-start gap-3">

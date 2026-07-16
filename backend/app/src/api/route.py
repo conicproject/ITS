@@ -11,6 +11,7 @@ from src.controller.open_api import OpenAPIController
 from src.controller.checkpoint import CheckpointController
 from src.controller.blacklist import BlacklistController
 from src.controller.vehicle_alarm import VehicleAlarmController
+from src.controller.vehicle_type import VehicleTypeController
 
 router = APIRouter()
 user_controller = UserController()
@@ -24,6 +25,7 @@ open_api_controller = OpenAPIController()
 checkpoint_controller = CheckpointController()
 blacklist_controller = BlacklistController()
 vehicle_alarm_controller = VehicleAlarmController()
+vehicle_type_controller = VehicleTypeController()
 
 # Auth endpoints
 router.add_api_route("/get_auth", open_api_controller.get_auth, methods=["GET"], tags=["Data"])   
@@ -49,6 +51,7 @@ router.add_api_route("/traffic-detail/{record_type}",  vehicle_controller.get_tr
 # router.add_api_route("/get_data_yesterday", open_api_controller.get_data_yesterday, methods=["GET"], tags=["Data"])   
 router.add_api_route("/record_5m", data_vehicle_controller.record_5m, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
 router.add_api_route("/data_search_vehicle", data_vehicle_controller.data_search_vehicle, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+router.add_api_route("/vehicle_type", vehicle_type_controller.get_vehicle_type, methods=["GET"], tags=["Data"])
 
 # api checkpoint
 router.add_api_route("/checkpoint", checkpoint_controller.get_checkpoint, methods=["GET"], tags=["Data"])
@@ -62,4 +65,4 @@ router.add_api_route("/delete_blacklist/{blacklist_id}", blacklist_controller.de
 router.add_api_route("/check_blacklist_5m", blacklist_controller.check_blacklist_5m, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
 
 # api get vehicle_alarm
-router.add_api_route("/get_vehicle_alarm",vehicle_alarm_controller.get_vehicle_alarm, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+router.add_api_route("/get_vehicle_alarm", vehicle_alarm_controller.get_vehicle_alarm, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])

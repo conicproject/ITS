@@ -19,9 +19,20 @@ class VehicleAlarmRepository:
             conditions.append("va.violative_action = %(alarm_type)s")
             params["alarm_type"] = filters["alarm_type"]
 
+        # crossing_id ตอนนี้เป็น list (multi-select จุดติดตั้ง) → ใช้ ANY(array)
         if filters.get("crossing_id"):
-            conditions.append("va.crossing_id = %(crossing_id)s")
+            conditions.append("va.crossing_id = ANY(%(crossing_id)s)")
             params["crossing_id"] = filters["crossing_id"]
+
+        # ประเภทยานพาหนะ — เดิมไม่มีเงื่อนไขนี้เลย ทำให้ filter ไม่ทำงาน
+        if filters.get("vehicle_type"):
+            conditions.append("va.vehicle_type = ANY(%(vehicle_type)s)")
+            params["vehicle_type"] = filters["vehicle_type"]
+
+        # สียานพาหนะ — เดิมไม่มีเงื่อนไขนี้เลย ทำให้ filter ไม่ทำงาน
+        if filters.get("vehicle_color"):
+            conditions.append("va.vehicle_color = ANY(%(vehicle_color)s)")
+            params["vehicle_color"] = filters["vehicle_color"]
 
         if filters.get("start_date"):
             conditions.append("va.pass_time >= %(start_date)s")

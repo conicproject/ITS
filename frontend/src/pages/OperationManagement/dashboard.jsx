@@ -313,7 +313,7 @@ function OperationManagementDashboard() {
       `}</style>
 
       {/* --- HEADER --- */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 rounded-xl shadow-sm border border-slate-200 mb-8">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 rounded-xl shadow-sm border mb-8">
         <div className="w-full md:w-auto flex items-start gap-3">
           <span className="text-green-600 bg-green-50 p-2 rounded-lg shrink-0">
              <FaVideo className="w-6 h-6" />

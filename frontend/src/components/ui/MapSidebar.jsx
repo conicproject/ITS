@@ -1,25 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker, Tooltip as LeafletTooltip, useMap } from 'react-leaflet';
-import { FaMapMarkerAlt, FaImage, FaHistory, FaExclamationTriangle, FaCar, FaCamera, FaRoute, FaCheckCircle, FaPalette, FaCarSide, FaTag, FaCubes } from 'react-icons/fa';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
-
-// --- Fix Leaflet Icon ---
-delete L.Icon.Default.prototype._getIconUrl;
-L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
-    iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
-    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
-});
-
-// Component ย้ายพิกัดสมูทๆ ป้องกันแผนที่ขาว/กระพริบ
-const MapUpdater = ({ center, zoom }) => {
-    const map = useMap();
-    useEffect(() => {
-        map.setView(center, zoom, { animate: true, duration: 0.5 });
-    }, [center, zoom, map]);
-    return null;
-};
+import React from 'react';
+import { FaMapMarkerAlt, FaImage, FaExclamationTriangle, FaCar, FaCamera, FaCheckCircle, FaPalette, FaClock } from 'react-icons/fa';
 
 const DEFAULT_DATA = {
     plateNumber: "-",
@@ -34,186 +14,152 @@ const DEFAULT_DATA = {
     latestCamera: "-",
     latestTime: "-",
     latestLocation: "-",
-    position: [13.7763, 100.5718]
+    snapshotImage: null,
+    roadImage: null,
+    plateImage: null,
 };
 
-export const MapSidebar = ({ data = DEFAULT_DATA, enableSequence = false }) => {
-    const {
-        plateNumber, province, brand, model, color, vehicleType,
-        violationCount, status, reason, latestCamera, latestTime, latestLocation, position
-    } = { ...DEFAULT_DATA, ...data };
+// Dark theme palette
+const THEME = {
+    panelBg: '#0d1424',       // outer container background
+    headerBg: '#0d1424',      // sticky header background
+    cardBg: 'rgba(255,255,255,0.03)',     // inner cards (info grid, meta list)
+    cardBorder: 'rgba(148,163,184,0.15)', // slate-400 @ 15%
+    imageBoxBg: '#0a0f1c',
+    plateBoxBg: 'rgba(15,23,42,0.6)',
+};
 
-    const [showSequence, setShowSequence] = useState(false);
+export const MapSidebar = ({ data = DEFAULT_DATA, title = "ข้อมูลยานพาหนะ" }) => {
+    const {
+        plateNumber, province, color, vehicleType,
+        violationCount, status, reason, latestCamera, latestTime, latestLocation,
+        snapshotImage, roadImage,
+    } = { ...DEFAULT_DATA, ...data };
 
     const isGreenList = status.includes('Green List') && !status.includes('No');
 
     const alertTheme = isGreenList ? {
-        bg: 'bg-green-50 border-green-100',
-        textHead: 'text-green-700',
-        textBody: 'text-green-600',
-        icon: <FaCheckCircle className="text-green-500 w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5" />,
+        bg: 'bg-green-950/40 border-green-900/50',
+        textHead: 'text-green-400',
+        textBody: 'text-green-400/70',
+        iconBg: 'bg-green-500/10',
+        icon: <FaCheckCircle className="text-green-400 w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5" />,
     } : {
-        bg: 'bg-red-50 border-red-100',
-        textHead: 'text-red-600',
-        textBody: 'text-red-400',
-        icon: <FaExclamationTriangle className="text-red-500 w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5" />,
+        bg: 'bg-red-950/40 border-red-900/50',
+        textHead: 'text-red-400',
+        textBody: 'text-red-400/70',
+        iconBg: 'bg-red-500/10',
+        icon: <FaExclamationTriangle className="text-red-400 w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5" />,
     };
 
-    const sequencePath = [
-        [13.8282, 100.5699], [13.8150, 100.5720], [13.8033, 100.5746],
-        [13.7900, 100.5735], [13.7763, 100.5718]
-    ];
-
-    const mapCenter = (enableSequence && showSequence) ? [13.8020, 100.5720] : position;
-    const mapZoom = (enableSequence && showSequence) ? 13 : 15;
-
     return (
-        <div className="flex flex-col h-auto md:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border-x md:border border-gray-100 overflow-hidden font-sans w-full">
-            {/* Header */}
-            <div className="px-3 py-2 md:px-6 md:py-4 border-b border-gray-50 flex justify-between items-center sticky top-0 z-20 shrink-0">
+        <div
+            className="flex flex-col h-auto md:rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.3)] border-x md:border overflow-hidden font-sans w-full"
+            style={{ backgroundColor: THEME.panelBg, borderColor: THEME.cardBorder }}
+        >
+            <div
+                className="px-3 py-2 md:px-6 md:py-4 border-b flex justify-between items-center sticky top-0 z-20 shrink-0"
+                style={{ backgroundColor: THEME.headerBg, borderColor: THEME.cardBorder }}
+            >
                 <div className="flex items-center gap-2 md:gap-3">
-                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 shadow-sm shrink-0">
+                    <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-400 shrink-0">
                         <FaCar className="w-4 h-4 md:w-5 md:h-5" />
                     </div>
-                    <div className="min-w-0">
-                        <h2 className="text-sm md:text-base font-bold text-gray-800 leading-tight truncate">ข้อมูลยานพาหนะ</h2>
-                        <div className="flex items-center gap-1.5 mt-0.5">
-                            <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div>
-                            <span className="text-[10px] text-gray-500 font-medium tracking-wide">Live Tracking</span>
-                        </div>
-                    </div>
+                    <h2 className="text-sm md:text-base font-bold text-gray-100 leading-tight truncate">{title}</h2>
                 </div>
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-3 md:p-5 space-y-3 md:space-y-6 bg-gray-50/30">
-                {/* Map Section */}
-                <div className="relative group rounded-xl md:rounded-2xl overflow-hidden shadow-sm border border-gray-200 shrink-0">
-                    <div className="h-[160px] md:h-[220px] w-full relative z-0">
-                        <MapContainer
-                            center={mapCenter}
-                            zoom={mapZoom}
-                            style={{ height: '100%', width: '100%' }}
-                            scrollWheelZoom={false}
-                            zoomControl={false}
-                            dragging={true}
-                        >
-                            <TileLayer attribution='&copy; OpenStreetMap' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                            <MapUpdater center={mapCenter} zoom={mapZoom} />
-                            <Marker position={position}><Popup>{latestLocation}</Popup></Marker>
-                            {enableSequence && showSequence && (
-                                <>
-                                    <Polyline positions={sequencePath} pathOptions={{ color: '#2563eb', weight: 5, opacity: 0.8, lineCap: 'round', lineJoin: 'round' }} />
-                                    {sequencePath.slice(0, sequencePath.length - 1).map((pos, index) => (
-                                        <CircleMarker key={index} center={pos} radius={6} pathOptions={{ color: '#2563eb', fillColor: 'white', fillOpacity: 1, weight: 2 }}>
-                                            <LeafletTooltip direction="top" permanent className="sequence-tooltip font-bold text-blue-600 text-[10px] !bg-white/90 !border-blue-100 !shadow-sm !px-1.5 !py-0.5 !rounded-md">
-                                                {index === 0 ? 'Start' : index + 1}
-                                            </LeafletTooltip>
-                                        </CircleMarker>
-                                    ))}
-                                </>
-                            )}
-                        </MapContainer>
+            <div
+                className="flex-1 overflow-y-auto custom-scrollbar p-3 md:p-5 space-y-3 md:space-y-5"
+                style={{ backgroundColor: THEME.panelBg }}
+            >
+                {/* Snapshot placeholder */}
+                <div className="rounded-xl overflow-hidden shadow-sm border" style={{ borderColor: THEME.cardBorder }}>
+                    <div className="px-3 py-2 text-xs font-bold text-gray-400 flex items-center gap-1.5" style={{ backgroundColor: THEME.cardBg }}>
+                        <FaCamera className="text-gray-500" size={11} /> ภาพ Snapshot · กล้องตรวจจับ
                     </div>
-                    <div className="absolute top-2 left-2 md:top-3 md:left-3 z-[400] bg-white/95 backdrop-blur-md pl-2 pr-2 py-1 md:pr-3 md:py-1.5 rounded-lg shadow-lg border border-gray-100 flex items-center gap-2 max-w-[85%]">
-                        <div className="bg-red-50 p-1 rounded-lg text-red-500 shrink-0"><FaMapMarkerAlt className="w-3 h-3" /></div>
-                        <div className="min-w-0"><div className="text-[10px] md:text-xs font-bold text-gray-800 leading-none truncate">{latestLocation}</div></div>
+                    <div className="h-[180px] md:h-[220px] flex items-center justify-center" style={{ backgroundColor: THEME.imageBoxBg }}>
+                        {snapshotImage ? (
+                            <img src={snapshotImage} alt="snapshot" className="w-full h-full object-cover" />
+                        ) : (
+                            <div className="text-center">
+                                <FaImage className="text-white/15 w-10 h-10 mx-auto mb-2" />
+                                <div className="text-[10px] text-white/25 font-mono">ไม่พบภาพถ่ายที่ตรวจจับ</div>
+                            </div>
+                        )}
                     </div>
-                    {enableSequence && (
-                        <div className="absolute bottom-2 right-2 md:bottom-3 md:right-3 z-[400]">
-                            <button onClick={() => setShowSequence(!showSequence)} className={`p-2 rounded-lg shadow-md border ${showSequence ? 'bg-blue-600 text-white border-blue-700' : 'text-gray-600'}`}>
-                                <FaRoute className="w-3.5 h-3.5" />
-                            </button>
-                        </div>
-                    )}
                 </div>
 
-                {/* Content Info */}
-                <div className="space-y-4">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
-                        <div className="flex flex-col gap-3 h-full">
-                            <div className="p-3 md:p-4 rounded-xl shadow-sm border border-gray-100 text-center relative overflow-hidden shrink-0">
-                                <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${isGreenList ? 'from-green-500 to-emerald-500' : 'from-red-500 to-orange-500'}`}></div>
-                                <label className="text-[10px] text-gray-400 font-bold uppercase mb-2 block tracking-wider">ทะเบียนที่ตรวจจับได้</label>
-                                <div className="inline-block border-2 border-black rounded-lg px-6 py-2 shadow-inner max-w-full">
-                                    <span className="text-2xl md:text-3xl font-black text-gray-900 block leading-none">{plateNumber}</span>
-                                    <span className="text-xs font-bold text-gray-600 block mt-1">{province}</span>
-                                </div>
-                            </div>
-
-                            <div className="p-4 rounded-xl border border-gray-100 shadow-sm space-y-3 flex-1 flex flex-col justify-center">
-                                <h4 className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mb-2">รายละเอียดยานพาหนะ</h4>
-                                <div className="space-y-2.5">
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-gray-100"><FaPalette className="text-orange-500 w-3.5 h-3.5" /></div>
-                                        <div><p className="text-[9px] text-gray-400 font-bold uppercase leading-none">สีรถ (Color)</p><p className="text-xs font-bold text-gray-800">{color}</p></div>
-                                    </div>
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border border-gray-100"><FaCubes className="text-emerald-500 w-3.5 h-3.5" /></div>
-                                        <div><p className="text-[9px] text-gray-400 font-bold uppercase leading-none">ประเภทรถ (Type)</p><p className="text-xs font-bold text-gray-800">{vehicleType}</p></div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="bg-gray-900 rounded-xl overflow-hidden shadow-md relative h-auto lg:h-full flex flex-col border border-gray-700 min-h-[200px]">
-                            <div className="flex-1 flex items-center justify-center bg-black/80">
-                                <div className="text-center">
-                                    <FaImage className="text-white/20 w-10 h-10 mx-auto mb-2" />
-                                    <div className="text-[10px] text-white/30 font-mono">Image Car Detection</div>
-                                </div>
-                            </div>
+                {/* Road image + plate crop */}
+                <div className="grid grid-cols-2 gap-3">
+                    <div
+                        className="rounded-xl overflow-hidden border h-[100px] flex items-center justify-center"
+                        style={{ backgroundColor: THEME.imageBoxBg, borderColor: THEME.cardBorder }}
+                    >
+                        {roadImage ? (
+                            <img src={roadImage} alt="road" className="w-full h-full object-cover" />
+                        ) : (
+                            <FaMapMarkerAlt className="text-white/15 w-6 h-6" />
+                        )}
+                    </div>
+                    <div
+                        className="rounded-xl border flex flex-col items-center justify-center p-2"
+                        style={{ backgroundColor: THEME.plateBoxBg, borderColor: THEME.cardBorder }}
+                    >
+                        <span className="text-[9px] text-gray-400 font-bold uppercase mb-1">ภาพป้ายทะเบียน (Crop)</span>
+                        <div className="border-2 border-amber-500/50 rounded-lg px-4 py-1.5 text-center" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                            <span className="text-lg font-black block leading-none text-amber-400">{plateNumber}</span>
+                            <span className="text-[10px] font-bold text-amber-200/70">{province}</span>
                         </div>
                     </div>
+                </div>
 
-                    <div className={`${alertTheme.bg} rounded-xl p-4 border flex items-center gap-3 w-full shadow-sm`}>
-                        <div className="p-2 bg-white/50 rounded-full shrink-0">
-                            {alertTheme.icon}
-                        </div>
-                        <div className="min-w-0 flex-1">
-                            <div className={`text-sm font-bold ${alertTheme.textHead} mb-0.5`}>สถานะ: {status}</div>
-                            <p className={`text-xs ${alertTheme.textBody} leading-relaxed`}>
-                                {reason}
-                                {!isGreenList && <span className="font-bold underline ml-1">{violationCount > 0 ? `(ประวัติ ${violationCount} ครั้ง)` : ''}</span>}
-                            </p>
-                        </div>
+                {/* Info grid */}
+                <div
+                    className="rounded-xl border shadow-sm p-4 grid grid-cols-2 gap-3"
+                    style={{ backgroundColor: THEME.cardBg, borderColor: THEME.cardBorder }}
+                >
+                    <div><p className="text-[9px] text-gray-400 font-bold uppercase">ทะเบียน</p><p className="text-sm font-bold text-gray-100">{plateNumber}</p></div>
+                    <div><p className="text-[9px] text-gray-400 font-bold uppercase">จังหวัด</p><p className="text-sm font-bold text-gray-100">{province}</p></div>
+                    <div><p className="text-[9px] text-gray-400 font-bold uppercase">ประเภทรถ</p><p className="text-sm font-bold text-gray-100">{vehicleType}</p></div>
+                    <div>
+                        <p className="text-[9px] text-gray-400 font-bold uppercase">สี</p>
+                        <p className="text-sm font-bold text-gray-100 flex items-center gap-1.5">
+                            <FaPalette className="text-orange-400" size={11} /> {color}
+                        </p>
                     </div>
+                </div>
 
-                    <div className="rounded-xl shadow-sm border border-gray-100 p-4 shrink-0 pb-6">
-                        <div className="flex items-center gap-2 mb-4">
-                            <FaHistory className="text-gray-400 w-3.5 h-3.5" />
-                            <h3 className="text-xs font-bold text-gray-700 uppercase tracking-wider">ประวัติการตรวจพบ</h3>
-                        </div>
-                        <div className="relative border-l-2 border-dashed border-gray-200 ml-1.5 space-y-6 pl-5 py-1">
-                            {enableSequence && showSequence && (
-                                <div className="space-y-6">
-                                    <div className="relative opacity-40">
-                                        <div className="absolute -left-[27px] top-1 w-2.5 h-2.5 bg-gray-300 rounded-full border-2 border-white"></div>
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase">แยกรัชโยธิน</span>
-                                            <div className="text-xs font-bold text-gray-800">14:05 น.</div>
-                                        </div>
-                                    </div>
-                                    <div className="relative opacity-60">
-                                        <div className="absolute -left-[27px] top-1 w-2.5 h-2.5 bg-gray-400 rounded-full border-2 border-white"></div>
-                                        <div className="flex flex-col gap-0.5">
-                                            <span className="text-[9px] font-bold text-gray-400 uppercase">แยกรัชดา-ลาดพร้าว</span>
-                                            <div className="text-xs font-bold text-gray-800">14:15 น.</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                            <div className="relative">
-                                <div className={`absolute -left-[27px] top-1 w-2.5 h-2.5 rounded-full border-2 border-white ring-1 ${isGreenList ? 'bg-green-500 ring-green-100' : 'bg-red-500 ring-red-100'}`}></div>
-                                <div className="flex flex-col gap-0.5">
-                                    <span className="text-[9px] font-bold text-gray-400 uppercase">ตำแหน่งปัจจุบัน</span>
-                                    <div className="text-sm font-bold text-gray-800">{latestTime}</div>
-                                    <div className="text-xs text-gray-500 flex items-center gap-1.5">
-                                        <FaCamera className="w-3 h-3 text-gray-400" />
-                                        <span className="truncate">{latestCamera}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                {/* Alert */}
+                <div className={`${alertTheme.bg} rounded-xl p-4 border flex items-center gap-3 shadow-sm`}>
+                    <div className={`p-2 rounded-full shrink-0 ${alertTheme.iconBg}`}>{alertTheme.icon}</div>
+                    <div className="min-w-0 flex-1">
+                        <div className={`text-sm font-bold ${alertTheme.textHead} mb-0.5`}>ประเภทการกระทำผิด: {reason}</div>
+                        {!isGreenList && violationCount > 0 && (
+                            <p className={`text-xs ${alertTheme.textBody}`}>ประวัติ {violationCount} ครั้ง</p>
+                        )}
+                    </div>
+                </div>
+
+                {/* Meta list */}
+                <div
+                    className="rounded-xl border shadow-sm p-4 space-y-3"
+                    style={{ backgroundColor: THEME.cardBg, borderColor: THEME.cardBorder }}
+                >
+                    <div className="flex items-center gap-2.5">
+                        <FaCamera className="text-gray-500 w-3.5 h-3.5 shrink-0" />
+                        <span className="text-xs text-gray-400">กล้องที่ตรวจจับ:</span>
+                        <span className="text-xs font-bold text-gray-100">{latestCamera}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                        <FaClock className="text-gray-500 w-3.5 h-3.5 shrink-0" />
+                        <span className="text-xs text-gray-400">เวลาที่ตรวจจับ:</span>
+                        <span className="text-xs font-bold text-gray-100">{latestTime}</span>
+                    </div>
+                    <div className="flex items-center gap-2.5">
+                        <FaMapMarkerAlt className="text-gray-500 w-3.5 h-3.5 shrink-0" />
+                        <span className="text-xs text-gray-400">จุดตรวจจับ:</span>
+                        <span className="text-xs font-bold text-gray-100">{latestLocation}</span>
                     </div>
                 </div>
             </div>
