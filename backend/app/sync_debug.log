@@ -4708,3 +4708,9 @@
 2026-07-15 10:18:45,362 | INFO | 🚀 Initializing DataVehicleRepository...
 2026-07-15 10:18:45,570 | INFO | ⏭️ extract_data not ready yet, using default last_time
 2026-07-15 10:18:45,574 | INFO | 🕓 Initial last_time = 2026-07-15 10:13:45.573410
+2026-07-24 09:25:43,915 | INFO | 🚀 Initializing DataVehicleRepository...
+2026-07-24 09:25:44,005 | INFO | ⏭️ extract_data not ready yet, using default last_time
+2026-07-24 09:25:44,005 | INFO | 🕓 Initial last_time = 2026-07-24 09:20:44.005637
+2026-07-27 09:49:12,744 | INFO | 🚀 Initializing DataVehicleRepository...
+2026-07-27 09:49:12,838 | INFO | ⏭️ extract_data not ready yet, using default last_time
+2026-07-27 09:49:12,839 | INFO | 🕓 Initial last_time = 2026-07-27 09:44:12.839270
