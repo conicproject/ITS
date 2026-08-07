@@ -12,6 +12,7 @@ from src.controller.checkpoint import CheckpointController
 from src.controller.blacklist import BlacklistController
 from src.controller.vehicle_alarm import VehicleAlarmController
 from src.controller.vehicle_type import VehicleTypeController
+from src.controller.vehicle_by_hour import VehicleByHourController
 
 router = APIRouter()
 user_controller = UserController()
@@ -26,6 +27,7 @@ checkpoint_controller = CheckpointController()
 blacklist_controller = BlacklistController()
 vehicle_alarm_controller = VehicleAlarmController()
 vehicle_type_controller = VehicleTypeController()
+vehicle_by_hour_controller = VehicleByHourController()
 
 # Auth endpoints
 router.add_api_route("/get_auth", open_api_controller.get_auth, methods=["GET"], tags=["Data"])   
@@ -66,3 +68,7 @@ router.add_api_route("/check_blacklist_5m", blacklist_controller.check_blacklist
 
 # api get vehicle_alarm
 router.add_api_route("/get_vehicle_alarm", vehicle_alarm_controller.get_vehicle_alarm, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+
+#get data vehicle by 1hr
+router.add_api_route("/get_vehicle_by_hour", vehicle_by_hour_controller.get_vehicle_by_hour, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+router.add_api_route("/get_vehicle_type_all", vehicle_by_hour_controller.get_vehicle_type_all, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])

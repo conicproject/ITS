@@ -7,7 +7,7 @@ services:
     environment:
       - PYTHONPATH=/app
     ports:
-      - "5401:5401"
+      - "5411:5411"
     env_file:
       - ./env/.env
     volumes:
@@ -15,7 +15,7 @@ services:
     networks:
       - app-network
     restart: unless-stopped
-    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5401", "--reload"]
+    command: ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "5411", "--reload"]
 
   frontend:
     build:
@@ -23,7 +23,7 @@ services:
       dockerfile: Dockerfile
     container_name: react_frontend
     ports:
-      - "5400:5400"
+      - "5410:5410"
     env_file:
       - ./env/.env
     depends_on:

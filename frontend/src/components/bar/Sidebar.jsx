@@ -2,7 +2,25 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Link, useLocation } from "react-router-dom";
 import apiClient from "../../service/client";
-import { BiSolidCube, BiChevronDown } from "react-icons/bi";
+import {
+  BiChevronDown,
+  BiGridAlt,
+  BiServer,
+  BiShieldAlt2,
+  BiCar,
+  BiError,
+  BiSolidCube,
+} from "react-icons/bi";
+
+const ICON_MAP_BY_ID = {
+  1: BiGridAlt,
+  2: BiServer,
+  3: BiShieldAlt2,
+  4: BiCar,
+  5: BiError,
+};
+
+const getMenuIcon = (node) => ICON_MAP_BY_ID[node.id] || BiSolidCube;
 
 function Sidebar({
   sidebarOpen,
@@ -154,41 +172,52 @@ function Sidebar({
         whiteSpace: "nowrap",
       };
 
-      // Leaf node with path
+      // Leaf node with path -> rendered as a small dot + label
       if (node.path && !hasChildren) {
         return (
           <Link
             to={node.path}
             style={{
               ...baseStyle,
-              color: isActive ? "rgb(56, 189, 248)" : "#374151",
-              backgroundColor: isActive ? "rgba(56, 189, 248, 0.1)" : "transparent",
+              color: isActive ? "rgb(56, 189, 248)" : "#9CA3AF",
+              backgroundColor: isActive ? "rgba(56, 189, 248, 0.12)" : "transparent",
               textDecoration: "none",
               fontWeight: isActive ? "600" : "500",
             }}
             onMouseEnter={(e) =>
-              !isActive && (e.currentTarget.style.backgroundColor = "rgba(56, 189, 248, 0.1)")
+              !isActive && (e.currentTarget.style.backgroundColor = "rgba(56, 189, 248, 0.08)")
             }
             onMouseLeave={(e) =>
               !isActive && (e.currentTarget.style.backgroundColor = "transparent")
             }
             onClick={() => isMobile && setSidebarOpen(false)}
           >
-            <BiSolidCube />
+            <span
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: "50%",
+                backgroundColor: isActive ? "rgb(56, 189, 248)" : "#6B7280",
+                flexShrink: 0,
+              }}
+            />
             <span>{node.label}</span>
           </Link>
         );
       }
 
-      // Parent node with children
+      // Parent node with children -> icon + left accent bar
       if (hasChildren) {
+        const Icon = getMenuIcon(node);
         return (
           <div>
             <div
               style={{
                 ...baseStyle,
+                position: "relative",
                 justifyContent: "space-between",
-                color: hasActiveDescendant ? "#fff" : "#374151",
+                paddingLeft: "18px",
+                color: hasActiveDescendant ? "#fff" : "#E5E7EB",
                 fontWeight: hasActiveDescendant ? "600" : "500",
                 cursor: "pointer",
                 backgroundColor: hasActiveDescendant ? "rgba(255, 255, 255, 0.09)" : "transparent",
@@ -205,8 +234,21 @@ function Sidebar({
                 }
               }}
             >
+              {/* Left accent bar */}
+              <span
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: "50%",
+                  transform: "translateY(-50%)",
+                  width: "4px",
+                  height: "60%",
+                  borderRadius: "4px",
+                  backgroundColor: "rgb(56, 189, 248)",
+                }}
+              />
               <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                <BiSolidCube />
+                <Icon style={{ fontSize: "1.15rem", color: "rgb(125, 211, 252)" }} />
                 <span>{node.label}</span>
               </div>
               <BiChevronDown
@@ -217,7 +259,6 @@ function Sidebar({
                   color: "#9CA3AF",
                 }}
               />
-
             </div>
             {isExpanded && (
               <div style={{ marginTop: "4px" }}>
@@ -280,28 +321,57 @@ function Sidebar({
         {/* Logo Section */}
         <div
           style={{
-            margin: "1rem 0",
+            margin: "1.25rem 0",
             textAlign: "center",
             opacity: showSidebar ? 1 : 0,
             transition: "opacity 0.3s ease-in-out",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 8 }}>
+          <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 10 }}>
+            {/* Icon */}
             <div
               style={{
-                background: "#02754B",
-                width: "44px",
-                height: "44px",
-                borderRadius: "8px",
+                background: "linear-gradient(135deg, #7C93F5 0%, #4F6DE0 50%, #3B5BDB 100%)",
+                width: "40px",
+                height: "40px",
+                borderRadius: "10px",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                flexShrink: 0,
+                boxShadow: "0 4px 10px rgba(59, 91, 219, 0.35)",
               }}
             >
-              <span style={{ color: "#fff", fontSize: "1.5rem", marginTop: "-0.25rem" }}>★</span>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 18L9 8L13 15L16 10L20 18"
+                  stroke="#fff"
+                  strokeWidth="2.4"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+              </svg>
             </div>
-            <div style={{ fontSize: "1.5rem", color: "#02754B", fontWeight: "bold" }}>
-              LOGO
+
+            {/* Text */}
+            <div style={{ textAlign: "left" }}>
+              <div style={{ fontSize: "1.15rem", fontWeight: "800", lineHeight: 1.1 }}>
+                <span style={{ color: "#fff" }}>ITS</span>{" "}
+                <span style={{ color: "rgb(56, 189, 248)" }}>Command</span>
+              </div>
+              <div
+                style={{
+                  fontSize: "0.65rem",
+                  letterSpacing: "0.15em",
+                  color: "#9CA3AF",
+                  fontWeight: "600",
+                  marginTop: "2px",
+                  display: "flex",
+                  gap: "2px",
+                }}
+              >
+                <span>SMART TRAFFIC</span>
+              </div>
             </div>
           </div>
         </div>

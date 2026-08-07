@@ -62,6 +62,8 @@ function Navbar({ onHamburgerClick }) {
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
+    localStorage.removeItem('userMenus');
+    localStorage.removeItem('vehicleByHourCache');
     navigate("/");
   };
 
@@ -167,7 +169,7 @@ function Navbar({ onHamburgerClick }) {
 
           <div className="navbar-user" onClick={handleLogout}>
             <img
-              src="/assets/avatar.jpg"
+              src="/assets/avatar.png"
               alt="User Avatar"
               className="navbar-avatar"
             />

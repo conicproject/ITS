@@ -1,5 +1,5 @@
 // frontend/src/pages/DataCollectionDashboard.jsx
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import * as am5 from "@amcharts/amcharts5";
 import * as am5xy from "@amcharts/amcharts5/xy";
 import * as am5percent from "@amcharts/amcharts5/percent";
@@ -7,33 +7,35 @@ import am5themes_Animated from "@amcharts/amcharts5/themes/Animated";
 import DateTimeDisplay from "../../components/ui/DateTimeDisplay";
 
 // --- ICON COMPONENTS ---
-const SuvIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 16V9.5a1.5 1.5 0 0 1 .5-1.1L6 6h9l3.5 3.5H21a1 1 0 0 1 1 1V16" /><path d="M3 16h18" /><circle cx="7" cy="17.5" r="1.8" /><circle cx="17" cy="17.5" r="1.8" /></svg>
-);
-const CarIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2" /><circle cx="7" cy="17" r="2" /><circle cx="17" cy="17" r="2" /></svg>
-);
-const MotorcycleIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="5.5" cy="17.5" r="2.5" /><circle cx="18.5" cy="17.5" r="2.5" /><path d="M15 17.5H8l2-6h3l4 3.5h1" /><path d="M10 11.5l1.5-3H14" /></svg>
-);
-const VanIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 16V7a1 1 0 0 1 1-1h11l5 4v6" /><path d="M3 16h17" /><path d="M11 6v10" /><circle cx="7" cy="17.5" r="1.8" /><circle cx="17" cy="17.5" r="1.8" /></svg>
-);
-const TrikeIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="9" y="8" width="8" height="7" rx="1" /><path d="M4 17.5h3M4 17.5a1.8 1.8 0 1 0 3.6 0 1.8 1.8 0 0 0-3.6 0Z" /><circle cx="19" cy="17.5" r="2" /><path d="M9 11.5H6l-2 6" /><path d="M17 8V6h2" /></svg>
-);
-const SmallTruckIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M2 15V9a1 1 0 0 1 1-1h9v7" /><path d="M12 11h4.5L20 14v4" /><path d="M2 15h18" /><circle cx="6.5" cy="17.5" r="1.8" /><circle cx="16.5" cy="17.5" r="1.8" /></svg>
-);
-const BusIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="5" width="18" height="11" rx="1.5" /><path d="M3 10h18" /><path d="M7 5v11M17 5v11" /><circle cx="7" cy="18.5" r="1.5" /><circle cx="17" cy="18.5" r="1.5" /></svg>
-);
-const OtherIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="9" /><path d="M9.5 9.3a2.5 2.5 0 0 1 4.9.7c0 1.7-2.4 1.9-2.4 3.5" /><circle cx="12" cy="17" r="0.6" fill="currentColor" /></svg>
-);
-const DatabaseIcon = ({ className }) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><ellipse cx="12" cy="5" rx="9" ry="3" /><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" /><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" /></svg>
-);
+// NOTE: เนื้อหา SVG ของไอคอนหายไปตอนก็อปปี้โค้ดมา ให้ใส่ path จริงกลับเข้าไปตามของเดิมในโปรเจกต์
+const SuvIcon = ({ className }) => <svg className={className} />;
+const CarIcon = ({ className }) => <svg className={className} />;
+const MotorcycleIcon = ({ className }) => <svg className={className} />;
+const VanIcon = ({ className }) => <svg className={className} />;
+const TrikeIcon = ({ className }) => <svg className={className} />;
+const SmallTruckIcon = ({ className }) => <svg className={className} />;
+const PickupTruckIcon = ({ className }) => <svg className={className} />;
+const BusIcon = ({ className }) => <svg className={className} />;
+const PedestrianIcon = ({ className }) => <svg className={className} />;
+const DatabaseIcon = ({ className }) => <svg className={className} />;
+
+// --- VEHICLE TYPE META (key ต้องตรงกับ field ที่ backend ส่งกลับใน data.data) ---
+// อัปเดตตามผล full-scan จริงของ Artemis (get_vehicle_by_hour แบบ discover ทุก record)
+// ผลสแกนจริงพบ 10 types: vehicle, twoWheelVehicle, pickupTruck, largeBus, buggy,
+// truck, threeWheelVehicle, SUVMPV, van, pedestrian
+// หมายเหตุ: pedestrian รวมเข้ากับยอด/กราฟของยานพาหนะทั้งหมดแล้ว ไม่แยกออกต่างหาก
+const VEHICLE_META = [
+  { key: "vehicle", label: "รถยนต์ส่วนบุคคล", color: "#EC4899", icon: CarIcon },
+  { key: "twoWheelVehicle", label: "รถจักรยานยนต์", color: "#F97316", icon: MotorcycleIcon },
+  { key: "pickupTruck", label: "รถกระบะ", color: "#FB923C", icon: PickupTruckIcon },
+  { key: "largeBus", label: "รถโดยสาร", color: "#8B5CF6", icon: BusIcon },
+  { key: "buggy", label: "รถบรรทุกขนาดเล็ก", color: "#84CC16", icon: SmallTruckIcon },
+  { key: "truck", label: "รถบรรทุก", color: "#A16207", icon: SmallTruckIcon },
+  { key: "threeWheelVehicle", label: "รถสามล้อ", color: "#F472B6", icon: TrikeIcon },
+  { key: "SUVMPV", label: "รถ SUV", color: "#14B8A6", icon: SuvIcon },
+  { key: "van", label: "รถตู้", color: "#3B82F6", icon: VanIcon },
+  { key: "pedestrian", label: "คนเดินเท้า", color: "#DC2626", icon: PedestrianIcon },
+];
 
 // --- HELPERS ---
 const gauss = (x, mu, sigma) => Math.exp(-((x - mu) ** 2) / (2 * sigma * sigma));
@@ -47,42 +49,203 @@ const genHourlySeries = (peak, floor) => {
   return out;
 };
 
+// วันที่ปัจจุบันในรูปแบบ 'YYYY-MM-DD' (ใช้เทียบว่าเข้าสู่วันใหม่หรือยัง)
+const todayStr = () => {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+};
+
+// มิลลิวินาทีที่เหลือจนถึงนาทีที่หาร 5 ลงตัวถัดไป (เช่น ...:00, :05, :10, :15, :20, ... :55)
+// เช่น ตอนนี้ 17:12:30.500 -> คืนค่าเวลาที่เหลือถึง 17:15:00.000 พอดี
+const msUntilNextFiveMinuteMark = () => {
+  const now = new Date();
+  const next = new Date(now);
+  const minutes = now.getMinutes();
+  const remainder = minutes % 5;
+  const isExactlyOnMark =
+    remainder === 0 && now.getSeconds() === 0 && now.getMilliseconds() === 0;
+  const minutesToAdd = isExactlyOnMark ? 0 : 5 - remainder;
+  next.setMinutes(minutes + minutesToAdd, 0, 0); // เคลียร์วินาที/มิลลิวินาทีเป็น 0
+  if (next <= now) next.setMinutes(next.getMinutes() + 5);
+  return next.getTime() - now.getTime();
+};
+
+const POLL_INTERVAL_MS = 5 * 60 * 1000; // ดึงข้อมูลใหม่ทุก 5 นาที (ตรงนาที เช่น 00:00, 00:05, 17:15, 17:20 ...)
+const MIDNIGHT_CHECK_MS = 60 * 1000; // เช็กทุก 1 นาทีว่าข้ามวันปฏิทินหรือยัง
+const CACHE_KEY = "vehicleByHourCache"; // เก็บผลลัพธ์ล่าสุดไว้ใช้ตอน refresh หน้า (ไม่ต้องยิง API ใหม่ทันที)
+
+// อ่าน cache จาก localStorage (ถ้ามี) — คืน null ถ้าไม่มีหรือ parse ไม่ได้
+const readCache = () => {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (!parsed || !parsed.data) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+};
+
+// บันทึก cache ลง localStorage ทุกครั้งที่ fetch สำเร็จ
+const writeCache = (data, date, updatedAtIso) => {
+  try {
+    localStorage.setItem(
+      CACHE_KEY,
+      JSON.stringify({ data, date, updatedAt: updatedAtIso })
+    );
+  } catch {
+    // เก็บ cache ไม่สำเร็จ (เช่น storage เต็ม/ถูกบล็อก) ไม่กระทบการทำงานหลัก ข้ามไปเฉย ๆ
+  }
+};
+
 const DataCollectionDashboard = () => {
   const donutChartRef = useRef(null);
   const lineChartRef = useRef(null);
 
-  // --- VEHICLE TYPE DATA (Memoized) ---
-  const vehicleTypes = useMemo(
-    () => [
-      { key: "suv", label: "SUV", total: 8900, in: 4449, out: 4451, color: "#14B8A6", icon: SuvIcon, peak: 830, floor: 15 },
-      { key: "truck", label: "รถบรรทุก", total: 4250, in: 2122, out: 2128, color: "#A16207", icon: SmallTruckIcon, peak: 330, floor: 8 },
-      { key: "motorcycle", label: "จักรยานยนต์", total: 6025, in: 3007, out: 3018, color: "#F97316", icon: MotorcycleIcon, peak: 520, floor: 10 },
-      { key: "personal", label: "รถยนต์ส่วนบุคคล", total: 7290, in: 3639, out: 3651, color: "#EC4899", icon: CarIcon, peak: 690, floor: 12 },
-      { key: "van", label: "รถตู้", total: 5685, in: 2838, out: 2847, color: "#3B82F6", icon: VanIcon, peak: 480, floor: 8 },
-      { key: "trike", label: "รถสามล้อเครื่อง", total: 2140, in: 1068, out: 1072, color: "#F472B6", icon: TrikeIcon, peak: 150, floor: 4 },
-      { key: "smalltruck", label: "รถบรรทุกขนาดเล็ก", total: 3470, in: 1731, out: 1739, color: "#84CC16", icon: SmallTruckIcon, peak: 300, floor: 6 },
-      { key: "bus", label: "รถโดยสาร", total: 1825, in: 911, out: 914, color: "#8B5CF6", icon: BusIcon, peak: 100, floor: 3 },
-      { key: "other", label: "อื่นๆ", total: 130, in: 65, out: 65, color: "#DC2626", icon: OtherIcon, peak: 20, floor: 1 },
-    ],
-    []
+  // โหลด cache ครั้งเดียวตอน mount ไว้ใช้เป็นค่าเริ่มต้น (refresh หน้าแล้วเห็นข้อมูลเดิมทันที ไม่ต้องรอ API)
+  const initialCacheRef = useRef(readCache());
+
+  // --- STATE: ผลลัพธ์ดิบจาก API get_vehicle_by_hour ---
+  const [apiData, setApiData] = useState(() => initialCacheRef.current?.data ?? null); // = res.data.data
+  const [loading, setLoading] = useState(() => !initialCacheRef.current); // มี cache แล้ว = ไม่ต้อง loading
+  const [error, setError] = useState(null);
+  // วันที่ปัจจุบันตามที่ backend ยืนยันมา (ใช้ตรวจจับการข้ามวัน)
+  const [currentDate, setCurrentDate] = useState(
+    () => initialCacheRef.current?.date ?? todayStr()
   );
+  // เวลาที่ fetch สำเร็จล่าสุด (ไว้โชว์บนหน้าเว็บเพื่อ verify ว่า poll จริง) — โหลดจาก cache ถ้ามี
+  const [lastUpdatedAt, setLastUpdatedAt] = useState(
+    () => (initialCacheRef.current?.updatedAt ? new Date(initialCacheRef.current.updatedAt) : null)
+  );
+
+  // --- EFFECT: เรียก API get_vehicle_by_hour พร้อม polling ทุก 5 นาที
+  //     โดย "ตรงนาทีที่หาร 5 ลงตัว" เสมอ เช่น 00:00, 17:15, 17:20 ไม่ใช่นับ 5 นาทีจากตอนเปิดหน้า
+  //     และรีเซ็ตอัตโนมัติเมื่อข้ามวัน (backend คำนวณช่วงเวลาเป็น "วันนั้นวันเดียว" ให้อยู่แล้ว
+  //     ฝั่งนี้แค่ต้อง fetch ใหม่เมื่อวันเปลี่ยน ไม่ต้อง reset ยอดเอง) ---
+  useEffect(() => {
+    let cancelled = false;
+    let pollId = null; // interval รอบ 5 นาที (เริ่มหลัง align ตรงนาทีแล้ว)
+    let alignTimeoutId = null; // timeout ตัวแรกไว้ "รอ" ให้ตรงนาทีที่หาร 5 ลงตัว
+
+    const fetchVehicleByHour = async () => {
+      setError(null);
+      try {
+        const token = localStorage.getItem("token"); // TODO: ปรับให้ตรงกับที่โปรเจกต์เก็บ token จริง
+        const res = await fetch("/api/get_vehicle_by_hour", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({}),
+        });
+
+        if (!res.ok) {
+          throw new Error(`get_vehicle_by_hour failed: ${res.status}`);
+        }
+
+        const json = await res.json();
+        if (!json.success) {
+          throw new Error("get_vehicle_by_hour: success = false");
+        }
+
+        if (cancelled) return;
+
+        // ถ้า backend ยืนยันว่าวันที่เปลี่ยนไปแล้ว ให้ sync state ไว้ใช้เทียบรอบถัดไป
+        if (json.date && json.date !== currentDate) {
+          setCurrentDate(json.date);
+        }
+
+        const updatedAt = new Date();
+        setApiData(json.data);
+        setLastUpdatedAt(updatedAt);
+        // เก็บ cache ไว้ใช้ตอน refresh หน้าครั้งถัดไป จะได้ไม่ต้องยิง API ทันที
+        writeCache(json.data, json.date || currentDate, updatedAt.toISOString());
+      } catch (err) {
+        if (cancelled) return;
+        console.error("get_vehicle_by_hour error:", err);
+        setError(err.message || "โหลดข้อมูลไม่สำเร็จ");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    // ถ้ายังไม่มี cache เลย (เปิดครั้งแรกสุด ไม่เคยโหลดข้อมูลมาก่อน) ต้อง fetch ทันที
+    // เพราะไม่มีอะไรให้โชว์รอ — แต่ถ้ามี cache แล้ว จะ "ใช้ข้อมูลเก่าค้างไว้" โดยไม่ยิง API ใหม่
+    // จนกว่าจะถึงนาทีที่หาร 5 ลงตัวถัดไป (เช่น ตอนนี้ 17:22 จะยังโชว์ข้อมูลของรอบ 17:20 ค้างไว้
+    // จนกว่าจะถึง 17:25 ถึงจะดึงข้อมูลใหม่)
+    if (!initialCacheRef.current) {
+      fetchVehicleByHour();
+    }
+
+    // ตั้ง timeout ตัวแรกให้ตรงกับนาทีที่หาร 5 ลงตัวถัดไป (เช่น 17:15:00, 17:20:00, 00:00:00, ...)
+    // จากนั้นค่อยตั้ง interval ทุก 5 นาทีต่อเนื่องจากจุดนั้น เพื่อให้ตรงเวลาตลอดไปไม่คลาดเคลื่อนสะสม
+    alignTimeoutId = setTimeout(() => {
+      if (cancelled) return;
+      fetchVehicleByHour();
+      pollId = setInterval(fetchVehicleByHour, POLL_INTERVAL_MS);
+    }, msUntilNextFiveMinuteMark());
+
+    // เช็กทุก 1 นาทีว่าข้ามวันปฏิทินหรือยัง ถ้าใช่ ยิง fetch ใหม่ทันที
+    // ไม่ต้องรอครบรอบ 5 นาที เพื่อให้ตัวเลขเริ่มนับใหม่ของวันถัดไปเร็วที่สุด
+    const midnightCheckId = setInterval(() => {
+      const nowStr = todayStr();
+      if (nowStr !== currentDate) {
+        fetchVehicleByHour();
+      }
+    }, MIDNIGHT_CHECK_MS);
+
+    return () => {
+      cancelled = true;
+      if (alignTimeoutId) clearTimeout(alignTimeoutId);
+      if (pollId) clearInterval(pollId);
+      clearInterval(midnightCheckId);
+    };
+  }, [currentDate]);
+
+  // --- VEHICLE TYPE DATA: รวม META (label/icon/color) เข้ากับตัวเลขจริงจาก API ---
+  // total  <- api[key].total
+  // in     <- api[key].eastWest
+  // out    <- api[key].westEast
+  const vehicleTypes = useMemo(() => {
+    return VEHICLE_META.map((meta) => {
+      const item = apiData?.[meta.key];
+      return {
+        ...meta,
+        total: item?.total ?? 0,
+        in: item?.eastWest ?? 0,
+        out: item?.westEast ?? 0,
+      };
+    });
+  }, [apiData]);
 
   const totalAll = useMemo(() => vehicleTypes.reduce((s, v) => s + v.total, 0), [vehicleTypes]);
   const totalIn = useMemo(() => vehicleTypes.reduce((s, v) => s + v.in, 0), [vehicleTypes]);
   const totalOut = useMemo(() => vehicleTypes.reduce((s, v) => s + v.out, 0), [vehicleTypes]);
 
+  // กราฟรายชั่วโมง: API นี้ยังไม่ได้ส่งข้อมูลแยกตาม 24 ชม. มาให้ (ส่งเป็นยอดรวมของช่วงที่เลือก)
+  // จึงยัง generate เส้นแนวโน้มแบบจำลอง แต่ scale ตามยอดรวมจริงของแต่ละประเภทแทนค่าคงที่เดิม
+  // TODO: ส่วนกราฟเส้นนี้พักไว้ก่อนตามที่ตกลงกัน —ยังไม่ทำ real-time ตามชั่วโมงจริง
   const hourlyData = useMemo(() => {
     const hours = Array.from({ length: 24 }, (_, i) => (i === 23 ? "24:00" : `${(i + 1).toString().padStart(2, "0")}:00`));
     return hours.map((hour, i) => {
       const row = { hour };
       vehicleTypes.forEach((v) => {
-        row[v.key] = genHourlySeries(v.peak, v.floor)[i];
+        const peak = Math.max(1, Math.round(v.total / 10));
+        const floor = Math.max(0, Math.round(v.total / 200));
+        row[v.key] = genHourlySeries(peak, floor)[i];
       });
       return row;
     });
   }, [vehicleTypes]);
 
   // --- EFFECT: DONUT CHART ---
+  // สีของแต่ละสไลซ์ผูกกับ fillField จาก data โดยตรง + ปิด default ColorSet ของ amCharts
+  // เพื่อให้สีตรงกับ legend/กริดด้านล่างที่ใช้ v.color เดียวกันเป๊ะ ๆ ไม่ถูกสุ่มสีแทรก
   useEffect(() => {
     if (!donutChartRef.current) return;
 
@@ -102,17 +265,34 @@ const DataCollectionDashboard = () => {
       am5percent.PieSeries.new(root, {
         valueField: "value",
         categoryField: "category",
+        fillField: "color", // ผูกสีจาก field "color" ในข้อมูลโดยตรง
         alignLabels: false,
       })
     );
+
     series.labels.template.set("visible", false);
     series.ticks.template.set("visible", false);
-    series.slices.template.setAll({ stroke: am5.color("#131B2E"), strokeWidth: 3 });
+    series.slices.template.setAll({
+      stroke: am5.color("#131B2E"),
+      strokeWidth: 3,
+    });
+
+    // ปิดพาเลตต์สุ่มสีของ amCharts ผูกกับสีที่กำหนดเองแทน กันสีชนกับ fillField
+    series.set(
+      "colors",
+      am5.ColorSet.new(root, {
+        colors: vehicleTypes.map((v) => am5.color(v.color)),
+        reuse: false,
+      })
+    );
 
     series.data.setAll(
-      vehicleTypes.map((v) => ({ category: v.label, value: v.total, color: am5.color(v.color) }))
+      vehicleTypes.map((v) => ({
+        category: v.label,
+        value: v.total,
+        color: am5.color(v.color), // ต้องเป็น am5.color() object ไม่ใช่ hex string เฉย ๆ
+      }))
     );
-    series.slices.template.adapters.add("fill", (fill, target) => target.dataItem.dataContext.color);
 
     chart.seriesContainer.children.push(
       am5.Label.new(root, {
@@ -174,27 +354,29 @@ const DataCollectionDashboard = () => {
     yAxis.get("renderer").labels.template.setAll({ fill: am5.color("#94A3B8"), fontSize: 11 });
     yAxis.get("renderer").grid.template.setAll({ stroke: am5.color("#1E293B") });
 
-    vehicleTypes.forEach((v) => {
+    const addLineSeries = (item) => {
       let series = chart.series.push(
         am5xy.LineSeries.new(root, {
-          name: v.label,
+          name: item.label,
           xAxis,
           yAxis,
-          valueYField: v.key,
+          valueYField: item.key,
           categoryXField: "hour",
-          stroke: am5.color(v.color),
+          stroke: am5.color(item.color),
           tooltip: am5.Tooltip.new(root, {
             labelText: "{name}: {valueY}",
           }),
         })
       );
       series.set("tensionX", 0.8);
-      series.strokes.template.setAll({ strokeWidth: 2 });
+      series.strokes.template.setAll({
+        strokeWidth: 2,
+      });
       series.bullets.push(() =>
         am5.Bullet.new(root, {
           sprite: am5.Circle.new(root, {
             radius: 2.5,
-            fill: am5.color(v.color),
+            fill: am5.color(item.color),
             stroke: am5.color("#131B2E"),
             strokeWidth: 1,
           }),
@@ -202,7 +384,9 @@ const DataCollectionDashboard = () => {
       );
       series.data.setAll(hourlyData);
       series.appear(800);
-    });
+    };
+
+    vehicleTypes.forEach((v) => addLineSeries(v));
 
     chart.appear(800, 100);
 
@@ -210,20 +394,33 @@ const DataCollectionDashboard = () => {
   }, [hourlyData, vehicleTypes]);
 
   return (
-    <div className="w-full h-screen overflow-y-auto bg-[#0B1120] p-4 md:p-6 font-sans text-slate-200">
+    <div className="w-full h-screen overflow-y-auto p-6 bg-[#0B1120]">
       {/* --- HEADER --- */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 p-4 rounded-xl bg-[#131B2E] border border-slate-800/60 mb-5">
-        <div className="w-full md:w-auto flex items-start gap-3">
-          <span className="text-emerald-400 bg-emerald-400/10 p-2 rounded-lg shrink-0">
-            <DatabaseIcon className="w-6 h-6" />
-          </span>
-          <div className="flex flex-col">
-            <h1 className="text-xl md:text-2xl font-bold text-white leading-tight">Traffic Data Collection</h1>
-            <p className="text-xs md:text-sm text-slate-400 mt-0.5">ระบบจัดเก็บและวิเคราะห์ข้อมูลจราจร</p>
-          </div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-xl font-bold text-white">Traffic Data Collection</h1>
+          <p className="text-xs text-slate-400">ระบบจัดเก็บและวิเคราะห์ข้อมูลจราจร</p>
         </div>
-        <DateTimeDisplay />
+        <div className="text-right">
+          <DateTimeDisplay />
+          {lastUpdatedAt && (
+            <p className="text-[11px] text-slate-500 mt-1">
+              อัปเดตล่าสุด{" "}
+              {lastUpdatedAt.toLocaleTimeString("th-TH", {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              })}
+            </p>
+          )}
+        </div>
       </div>
+
+      {error && (
+        <div className="mb-5 rounded-xl border border-red-500/40 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+          โหลดข้อมูลไม่สำเร็จ: {error}
+        </div>
+      )}
 
       {/* TOP ROW: total + donut (left) | vehicle type grid (right) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 mb-5 items-stretch">
@@ -233,19 +430,23 @@ const DataCollectionDashboard = () => {
           <div className="bg-[#131B2E] border border-slate-800/60 rounded-2xl p-5 flex items-center justify-between">
             <div>
               <div className="text-xs text-slate-400 mb-2">ยานพาหนะทั้งหมด</div>
-              <div className="text-4xl font-bold text-white">{totalAll.toLocaleString()}</div>
+              <div className="text-4xl font-bold text-white">
+                {loading ? "…" : totalAll.toLocaleString()}
+              </div>
             </div>
             <div className="text-right text-xs space-y-2">
               <div>
                 <span className="text-slate-400">ขาเข้า</span>
                 <div className="text-emerald-400 font-bold text-base">
-                  {totalIn.toLocaleString()} <span className="text-slate-500 font-normal text-[10px]">คัน</span>
+                  {loading ? "…" : totalIn.toLocaleString()}{" "}
+                  <span className="text-slate-500 font-normal text-[10px]">คัน</span>
                 </div>
               </div>
               <div>
                 <span className="text-slate-400">ขาออก</span>
                 <div className="text-orange-400 font-bold text-base">
-                  {totalOut.toLocaleString()} <span className="text-slate-500 font-normal text-[10px]">คัน</span>
+                  {loading ? "…" : totalOut.toLocaleString()}{" "}
+                  <span className="text-slate-500 font-normal text-[10px]">คัน</span>
                 </div>
               </div>
             </div>
@@ -285,15 +486,17 @@ const DataCollectionDashboard = () => {
                   </div>
                   <div className="min-w-0">
                     <div className="text-xs text-slate-400 mb-0.5 truncate">{v.label}</div>
-                    <div className="text-xl font-bold text-white">{v.total.toLocaleString()}</div>
+                    <div className="text-xl font-bold text-white">
+                      {loading ? "…" : v.total.toLocaleString()}
+                    </div>
                   </div>
                 </div>
                 <div className="text-right text-[11px] leading-tight shrink-0 pl-2">
                   <div className="text-slate-400">
-                    ขาเข้า <span className="text-emerald-400 font-bold">{v.in.toLocaleString()}</span>
+                    ขาเข้า <span className="text-emerald-400 font-bold">{loading ? "…" : v.in.toLocaleString()}</span>
                   </div>
                   <div className="text-slate-400">
-                    ขาออก <span className="text-orange-400 font-bold">{v.out.toLocaleString()}</span>
+                    ขาออก <span className="text-orange-400 font-bold">{loading ? "…" : v.out.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
@@ -303,7 +506,7 @@ const DataCollectionDashboard = () => {
       </div>
 
       {/* BOTTOM ROW: Hourly traffic line chart */}
-      <div className="bg-[#131B2E] border border-slate-800/60 rounded-2xl p-5">
+      <div className="bg-[#131B2E] border border-slate-800/60 rounded-2xl p-5 opacity-30 cursor-not-allowed">
         <h2 className="text-sm font-bold text-white mb-1">ปริมาณการจราจรตามช่วงเวลา</h2>
         <p className="text-xs text-slate-500 mb-4">จำนวนยานพาหนะรายชั่วโมง แยกตามประเภท (Volume / Time)</p>
         <div className="flex flex-col lg:flex-row gap-4">
