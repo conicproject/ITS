@@ -245,7 +245,7 @@ function Login() {
           </button>
         </form>
 
-        <p className="mt-4 text-right text-sm">
+        {/* <p className="mt-4 text-right text-sm">
           <a
             href="/forgot-password"
             className="underline"
@@ -253,7 +253,7 @@ function Login() {
           >
             Forgot password?
           </a>
-        </p>
+        </p> */}
       </div>
     </div>
   );

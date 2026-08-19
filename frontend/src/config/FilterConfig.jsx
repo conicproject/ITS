@@ -1,3 +1,5 @@
+// frontend/src/config/FilterConfig.jsx
+
 export const vehicleColorOptions = [
   { value: "yellow", label: "เหลือง", dot: "#fbbf24" },
   { value: "gray",   label: "เทา",    dot: "#9ca3af" },
@@ -19,7 +21,18 @@ export const FilterConfig = {
   sidewalk:     { showPlate: true, showLocation: true,  showVehicleType: true,  showDateRange: true, showViolationType: false, placeholder: "ค้นหาการขับขี่บนทางเท้า"   },
   barrier:      { showPlate: true, showLocation: true,  showVehicleType: true,  showDateRange: true, showViolationType: false, placeholder: "ค้นหาการฝ่าแนวกั้น"        },
   lane:         { showPlate: true, showLocation: true,  showVehicleType: true,  showDateRange: true, showViolationType: false, placeholder: "ค้นหาการขับรถทับเส้น"      },
-  license:      { showPlate: true, showLocation: true,  showVehicleType: true,  showDateRange: true, showViolationType: false, placeholder: "ค้นหาเลขทะเบียน"           },
+
+  license: {
+    showPlate: true,
+    showLocation: true,
+    showVehicleType: true,
+    showColor: true,
+    showDateRange: true,
+    showViolationType: false,
+    placeholder: "ค้นหาเลขทะเบียน",
+    colorOptions: vehicleColorOptions,
+  },
+
   violation:    { showPlate: true, showLocation: false, showVehicleType: false, showDateRange: true, showViolationType: true,  placeholder: "ค้นหาประเภทความผิด"        },
 
   // ── เพิ่ม showVehicleType + showColor ตามรูป ──

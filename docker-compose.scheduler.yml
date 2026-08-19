@@ -40,7 +40,28 @@ services:
         "scheduler/worker_blacklist_scheduler.py"
       ]
 
+  vehicle_scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: vehicle_scheduler
+    environment:
+      - PYTHONPATH=/app
+    env_file:
+      - ./env/.env
+    volumes:
+      - ./backend/app:/app
+    networks:
+      - app-network
+    restart: unless-stopped
+    command:
+      [
+        "python",
+        "scheduler/worker_vehicle_scheduler.py"
+      ]
+ 
 networks:
   app-network:
     external: true
     name: its_app-network
+ 

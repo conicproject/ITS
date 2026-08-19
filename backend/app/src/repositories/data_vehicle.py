@@ -136,7 +136,6 @@ class DataVehicleRepository:
 
             logger.info(f"🔍 Fetching Oracle data since {self.last_time}")
 
-            # 🔹 แก้ไข: ใช้ FETCH FIRST แทน LIMIT (Oracle syntax)
             sql = """
                 SELECT pr.PROJECT_NAME, ch.CHECKPOINT_ID, ch.CHECKPOINT_NICKNAME, la.ROAD_DIRECTION,
                        dt.DISTRICT_NAME, vt.TYPE_NAMETH, vp.PLATE_NO, p.PROVINCE_NAMETH,
@@ -206,56 +205,36 @@ class DataVehicleRepository:
                 )
                 SELECT
                     cp.checkpoint_id,
-
-                    -- direction volume
                     jsonb_object_agg(
                         dirs.direction_index,
                         COALESCE(agg.volume, 0)
                     ) AS direction,
-
                     vt.type_id,
-
-                    -- ✅ FIX: ใช้ total_agg แทน SUM(agg.volume)
                     COALESCE(total_agg.total_volume, 0) AS volume,
-
-                    -- lane volume
                     jsonb_object_agg(
                         ln.lane_code,
                         COALESCE(lane_agg.volume, 0)
                     ) AS lane_volume,
-
-                    -- lane speed
                     jsonb_object_agg(
                         ln.lane_code,
                         COALESCE(lane_agg.avg_speed, 0)
                     ) AS lane_speed,
-
-                    -- avg speed (weighted)
                     COALESCE(
                         SUM(lane_agg.volume * lane_agg.avg_speed)
                         / NULLIF(SUM(lane_agg.volume), 0),
                     0)::int AS avg_speed,
-
                     234,
                     %(created)s,
                     NOW()
-
                 FROM checkpoint cp
-
-                -- lock direction
                 CROSS JOIN (
                     SELECT unnest(ARRAY['eastWest','westEast']) AS direction_index
                 ) dirs
-
-                -- lock vehicle type
                 CROSS JOIN (
                     SELECT type_id FROM vehicle_type
                 ) vt
-
                 LEFT JOIN lane ln
                     ON ln.checkpoint_id::int = cp.checkpoint_id
-
-                -- aggregate direction
                 LEFT JOIN (
                     SELECT
                         vp.crossing_id,
@@ -275,8 +254,6 @@ class DataVehicleRepository:
                     ON agg.crossing_id = cp.checkpoint_id
                     AND agg.direction_index = dirs.direction_index
                     AND agg.type_id = vt.type_id
-
-                -- ✅ FIX: aggregate total volume แยกต่างหาก
                 LEFT JOIN (
                     SELECT
                         vp.crossing_id,
@@ -293,8 +270,6 @@ class DataVehicleRepository:
                 ) total_agg
                     ON total_agg.crossing_id = cp.checkpoint_id
                     AND total_agg.type_id = vt.type_id
-
-                -- aggregate lane
                 LEFT JOIN (
                     SELECT
                         vp.crossing_id,
@@ -315,12 +290,10 @@ class DataVehicleRepository:
                     ON lane_agg.crossing_id = cp.checkpoint_id
                     AND lane_agg.lane_no::varchar = ln.lane_code
                     AND lane_agg.type_id = vt.type_id
-
                 GROUP BY
                     cp.checkpoint_id,
                     vt.type_id,
-                    total_agg.total_volume  -- ✅ เพิ่ม total_volume เข้า GROUP BY
-
+                    total_agg.total_volume
                 ON CONFLICT (checkpoint_id, car_type_id, created_date)
                 DO UPDATE SET
                     volume = EXCLUDED.volume,
@@ -350,43 +323,77 @@ class DataVehicleRepository:
             if conn:
                 conn.close()
 
-    def data_search_vehicle(self, date, province=None, lpr=None, camera=None, vehicle_type=None):
+    # ---------------- Search (server-side pagination, single-query) ----------------
+    def _build_search_conditions(self, date, province, lpr, camera, vehicle_type, vehicle_color):
+        """สร้าง WHERE clause + params ร่วมกันสำหรับใช้ทั้งใน search และ count
+        (แยกออกมาเป็นเมธอดเดียว เพื่อไม่ให้เงื่อนไข search กับ count เพี้ยนไปจากกัน)
         """
-        ค้นหาข้อมูลจาก VEHICLE_PASS + VEHICLE_URL
-        """
+        conditions = ["vp.pass_time >= %s", "vp.pass_time < %s"]
+        params = [date, date + timedelta(days=1)]
 
+        if province:
+            conditions.append("vp.plate_province = %s")
+            params.append(province)
+
+        if lpr:
+            conditions.append("vp.plate_no ILIKE %s")
+            params.append(f"%{lpr}%")
+
+        if camera:
+            conditions.append("vp.crossing_id = %s")
+            params.append(int(camera))
+
+        if vehicle_type:
+            conditions.append("vp.vehicle_type = %s")
+            params.append(vehicle_type)
+
+        # ✅ เพิ่ม filter สี ที่ frontend ส่งมาแต่ backend เดิมไม่รองรับ
+        if vehicle_color:
+            conditions.append("vp.vehicle_color = %s")
+            params.append(vehicle_color)
+
+        return " AND ".join(conditions), params
+
+    def data_search_vehicle(
+        self,
+        date,
+        province=None,
+        lpr=None,
+        camera=None,
+        vehicle_type=None,
+        vehicle_color=None,
+        limit=10,
+        offset=0,
+    ):
+        """
+        ค้นหาข้อมูลจาก VEHICLE_PASS + VEHICLE_URL แบบแบ่งหน้า (server-side pagination)
+
+        ⚡ ประสิทธิภาพ: ใช้ COUNT(*) OVER() ใน query เดียวกัน แทนการยิง 2 query แยก
+        (data + count) ทำให้ Postgres filter ข้อมูลตาม WHERE แค่รอบเดียว
+        ไม่ต้อง scan ตารางซ้ำสองรอบ ถึงแม้ตารางจะมี ~200k+ แถว
+
+        คืนค่าเป็น tuple: (rows: list[dict], total_count: int)
+
+        หมายเหตุ: ต้องมี index รองรับ WHERE ด้วย เช่น
+            CREATE INDEX idx_vehicle_pass_time ON vehicle_pass (pass_time);
+            CREATE INDEX idx_vehicle_pass_plate ON vehicle_pass (plate_no);
+            CREATE INDEX idx_vehicle_pass_crossing ON vehicle_pass (crossing_id);
+        ไม่งั้น ORDER BY + WHERE บนตาราง 200k แถวจะยัง full scan อยู่ดี
+        """
         conn = None
         cursor = None
+
+        # กันไม่ให้ frontend ส่ง limit สูงเกินไปมาโดยไม่ตั้งใจ (เช่นเผลอส่ง 100000 แบบเดิม)
+        limit = min(int(limit or 10), 100)
+        offset = max(int(offset or 0), 0)
 
         try:
             conn = self.postgres_conn.get_connection()
             cursor = conn.cursor()
 
-            # ✅ เช็คเวลาเฉพาะ vehicle_pass
-            conditions = ["vp.pass_time >= %s", "vp.pass_time < %s"]
-            params = [date, date + timedelta(days=1)]
-
-            # จังหวัด
-            if province:
-                conditions.append("vp.plate_province = %s")
-                params.append(province)
-
-            # ทะเบียน
-            if lpr:
-                conditions.append("vp.plate_no ILIKE %s")
-                params.append(f"%{lpr}%")
-
-            # กล้อง
-            if camera:
-                conditions.append("vp.crossing_id = %s")
-                params.append(int(camera))
-
-            # ประเภทรถ
-            if vehicle_type:
-                conditions.append("vp.vehicle_type = %s")
-                params.append(vehicle_type)
-
-            where_clause = " AND ".join(conditions)
+            where_clause, params = self._build_search_conditions(
+                date, province, lpr, camera, vehicle_type, vehicle_color
+            )
 
             sql = f"""
                 SELECT
@@ -394,7 +401,8 @@ class DataVehicleRepository:
                     vp.direction_index, vp.vehicle_color, vp.vehicle_type, vp.vehicle_color_depth,
                     vp.vehicle_logo, vp.vehicle_sub_logo, vp.vehicle_model, vp.plate_province,
                     vp.pass_time, vp.vehicle_speed, vt.type_nameth,
-                    vu.plate_pic_url, vu.image_path, vu.target_sub_url
+                    vu.plate_pic_url, vu.image_path, vu.target_sub_url,
+                    COUNT(*) OVER() AS total_count
                 FROM vehicle_pass vp
                 LEFT JOIN vehicle_url vu
                     ON vp.pass_id = vu.pass_id
@@ -402,28 +410,71 @@ class DataVehicleRepository:
                     ON vp.vehicle_type = vt.type_name
                 WHERE {where_clause}
                 ORDER BY vp.pass_time DESC
-                LIMIT 100
+                LIMIT %s OFFSET %s
             """
 
-            logger.debug("🔎 SQL: %s", sql)
-            logger.debug("📦 PARAMS: %s", params)
+            query_params = params + [limit, offset]
 
-            cursor.execute(sql, params)
+            logger.debug("🔎 SQL: %s", sql)
+            logger.debug("📦 PARAMS: %s", query_params)
+
+            cursor.execute(sql, query_params)
             rows = cursor.fetchall()
 
             if not rows:
                 logger.info("⏳ No data found for search criteria")
-                return []
+                return [], 0
 
             columns = [desc[0] for desc in cursor.description]
             result = [dict(zip(columns, row)) for row in rows]
 
-            logger.info("✅ Found %s records", len(result))
-            return result
+            # total_count เหมือนกันทุกแถว (window function) ดึงจากแถวแรกแล้วลบออกจาก dict ข้อมูล
+            total_count = result[0]["total_count"]
+            for r in result:
+                r.pop("total_count", None)
+
+            logger.info("✅ Found %s rows on this page (total match = %s)", len(result), total_count)
+            return result, total_count
 
         except Exception:
             logger.exception("❌ Error searching VEHICLE_PASS + VEHICLE_URL:")
-            return []
+            return [], 0
+
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+
+    def count_search_vehicle(self, date, province=None, lpr=None, camera=None, vehicle_type=None, vehicle_color=None):
+        """
+        [เก็บไว้เผื่อใช้แยกในกรณีอื่น] นับจำนวนรายการทั้งหมดที่ตรงกับเงื่อนไข
+        ⚠️ ปกติไม่ต้องเรียกคู่กับ data_search_vehicle แล้ว เพราะ data_search_vehicle
+        คืน total_count มาให้ในตัวอยู่แล้วผ่าน COUNT(*) OVER()
+        """
+        conn = None
+        cursor = None
+        try:
+            conn = self.postgres_conn.get_connection()
+            cursor = conn.cursor()
+
+            where_clause, params = self._build_search_conditions(
+                date, province, lpr, camera, vehicle_type, vehicle_color
+            )
+
+            sql = f"""
+                SELECT COUNT(*)
+                FROM vehicle_pass vp
+                WHERE {where_clause}
+            """
+
+            cursor.execute(sql, params)
+            total = cursor.fetchone()[0]
+            return total
+
+        except Exception:
+            logger.exception("❌ Error counting VEHICLE_PASS:")
+            return 0
 
         finally:
             if cursor:
@@ -445,7 +496,6 @@ if __name__ == "__main__":
     repo = DataVehicleRepository()
     try:
         while True:
-            
             repo.sync_to_postgres()
             print("✅ Synced data from Oracle to Postgres.")
             time.sleep(30)  # ดึงทุก 30 วินาที

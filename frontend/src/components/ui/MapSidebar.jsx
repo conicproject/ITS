@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaMapMarkerAlt, FaImage, FaExclamationTriangle, FaCar, FaCamera, FaCheckCircle, FaPalette, FaClock } from 'react-icons/fa';
 
 const DEFAULT_DATA = {
@@ -29,6 +29,32 @@ const THEME = {
     plateBoxBg: 'rgba(15,23,42,0.6)',
 };
 
+// รูปภาพที่มีปัญหา (path ผิด, โหลดไม่ขึ้น, CORS ฯลฯ) จะ fallback มาเป็น placeholder
+// แทนการปล่อยให้เห็นไอคอน "รูปแตก" ของเบราว์เซอร์
+const ImageWithFallback = ({ src, alt, className, fallbackIcon, fallbackText }) => {
+    const [failed, setFailed] = useState(false);
+
+    if (!src || failed) {
+        return (
+            <div className="text-center">
+                {fallbackIcon}
+                {fallbackText && (
+                    <div className="text-[10px] text-white/25 font-mono mt-2">{fallbackText}</div>
+                )}
+            </div>
+        );
+    }
+
+    return (
+        <img
+            src={src}
+            alt={alt}
+            className={className}
+            onError={() => setFailed(true)}
+        />
+    );
+};
+
 export const MapSidebar = ({ data = DEFAULT_DATA, title = "ข้อมูลยานพาหนะ" }) => {
     const {
         plateNumber, province, color, vehicleType,
@@ -36,9 +62,18 @@ export const MapSidebar = ({ data = DEFAULT_DATA, title = "ข้อมูลย
         snapshotImage, roadImage,
     } = { ...DEFAULT_DATA, ...data };
 
+    // ไม่มีความผิดจริง (reason ว่าง / "-" / null) -> ใช้กรอบสีปกติ ไม่ใช่สีแดง
+    const hasReason = !!reason && reason !== '-' && reason !== 'null';
+
     const isGreenList = status.includes('Green List') && !status.includes('No');
 
-    const alertTheme = isGreenList ? {
+    const alertTheme = !hasReason ? {
+        bg: 'bg-white/[.03] border-white/10',
+        textHead: 'text-gray-300',
+        textBody: 'text-gray-400',
+        iconBg: 'bg-white/5',
+        icon: <FaCheckCircle className="text-gray-400 w-4 h-4 md:w-5 md:h-5 flex-shrink-0 mt-0.5" />,
+    } : isGreenList ? {
         bg: 'bg-green-950/40 border-green-900/50',
         textHead: 'text-green-400',
         textBody: 'text-green-400/70',
@@ -79,14 +114,13 @@ export const MapSidebar = ({ data = DEFAULT_DATA, title = "ข้อมูลย
                         <FaCamera className="text-gray-500" size={11} /> ภาพ Snapshot · กล้องตรวจจับ
                     </div>
                     <div className="h-[180px] md:h-[220px] flex items-center justify-center" style={{ backgroundColor: THEME.imageBoxBg }}>
-                        {snapshotImage ? (
-                            <img src={snapshotImage} alt="snapshot" className="w-full h-full object-cover" />
-                        ) : (
-                            <div className="text-center">
-                                <FaImage className="text-white/15 w-10 h-10 mx-auto mb-2" />
-                                <div className="text-[10px] text-white/25 font-mono">ไม่พบภาพถ่ายที่ตรวจจับ</div>
-                            </div>
-                        )}
+                        <ImageWithFallback
+                            src={snapshotImage}
+                            alt="snapshot"
+                            className="w-full h-full object-cover"
+                            fallbackIcon={<FaImage className="text-white/15 w-10 h-10 mx-auto mb-2" />}
+                            fallbackText="ไม่พบภาพถ่ายที่ตรวจจับ"
+                        />
                     </div>
                 </div>
 
@@ -96,11 +130,12 @@ export const MapSidebar = ({ data = DEFAULT_DATA, title = "ข้อมูลย
                         className="rounded-xl overflow-hidden border h-[100px] flex items-center justify-center"
                         style={{ backgroundColor: THEME.imageBoxBg, borderColor: THEME.cardBorder }}
                     >
-                        {roadImage ? (
-                            <img src={roadImage} alt="road" className="w-full h-full object-cover" />
-                        ) : (
-                            <FaMapMarkerAlt className="text-white/15 w-6 h-6" />
-                        )}
+                        <ImageWithFallback
+                            src={roadImage}
+                            alt="road"
+                            className="w-full h-full object-cover"
+                            fallbackIcon={<FaMapMarkerAlt className="text-white/15 w-6 h-6" />}
+                        />
                     </div>
                     <div
                         className="rounded-xl border flex flex-col items-center justify-center p-2"
@@ -134,9 +169,15 @@ export const MapSidebar = ({ data = DEFAULT_DATA, title = "ข้อมูลย
                 <div className={`${alertTheme.bg} rounded-xl p-4 border flex items-center gap-3 shadow-sm`}>
                     <div className={`p-2 rounded-full shrink-0 ${alertTheme.iconBg}`}>{alertTheme.icon}</div>
                     <div className="min-w-0 flex-1">
-                        <div className={`text-sm font-bold ${alertTheme.textHead} mb-0.5`}>ประเภทการกระทำผิด: {reason}</div>
-                        {!isGreenList && violationCount > 0 && (
-                            <p className={`text-xs ${alertTheme.textBody}`}>ประวัติ {violationCount} ครั้ง</p>
+                        {hasReason ? (
+                            <>
+                                <div className={`text-sm font-bold ${alertTheme.textHead} mb-0.5`}>ประเภทการกระทำผิด: {reason}</div>
+                                {!isGreenList && violationCount > 0 && (
+                                    <p className={`text-xs ${alertTheme.textBody}`}>ประวัติ {violationCount} ครั้ง</p>
+                                )}
+                            </>
+                        ) : (
+                            <div className={`text-sm font-bold ${alertTheme.textHead} mb-0.5`}>ไม่พบประวัติการกระทำผิด</div>
                         )}
                     </div>
                 </div>
