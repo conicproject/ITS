@@ -37,7 +37,7 @@ function LicensePlateSearch() {
         installPoint:
             row.crossing_name_th ?? row.crossing_name ?? (row.crossing_id ? String(row.crossing_id) : "-"),
         crossing_id: row.crossing_id,
-        type: row.vehicle_type_th ?? row.vehicle_type ?? "-",
+        type: row.type_nameth ?? row.vehicle_type ?? "-",
         date: row.pass_time
             ? new Date(row.pass_time).toLocaleString("th-TH", {
                   year: "numeric",
@@ -52,7 +52,7 @@ function LicensePlateSearch() {
         location: row.direction_index || "-",
         speed: row.vehicle_speed ? `${row.vehicle_speed} km/h` : "-",
         province: row.plate_province || "-",
-        color: row.vehicle_color || "-",
+        color: row.color_nameth ?? row.vehicle_color ?? "-",
         lane: row.lane_no || "-",
         plateImage: proxied(row.plate_pic_url),
         snapshotImage: proxied(row.image_path),
@@ -121,17 +121,19 @@ function LicensePlateSearch() {
     }, [selectedViolation]);
 
     const handleSearch = (params) => {
-        const payload = {
-            date: params?.date || "today",
-        };
-
+        const payload = {};
+    
+        // ✅ แก้บัค: เดิมอ่าน params.date ซึ่งไม่มี → ค้นหาได้แค่วันนี้เสมอ
+        payload.date = params?.startDate ? params.startDate.slice(0, 10) : "today";
+        if (params?.endDate) payload.end_date = params.endDate.slice(0, 10);
+    
         if (params?.plate) payload.plate_no = params.plate;
         if (params?.location?.length) payload.camera = params.location;
         if (params?.vehicleType?.length) payload.vehicle_type = params.vehicleType;
         if (params?.color?.length) payload.vehicle_color = params.color;
-
+    
         setLastPayload(payload);
-        fetchViolations(payload, 1); // ค้นหาใหม่ทุกครั้ง → กลับไปหน้าแรกเสมอ
+        fetchViolations(payload, 1);
     };
 
     const getMapData = (violation) => {
@@ -303,7 +305,7 @@ function LicensePlateSearch() {
                                                         <td className="px-4 py-3 text-white/70">{v.type}</td>
                                                         <td className="px-4 py-3 text-white/70">{v.color}</td>
                                                         <td className="px-4 py-3 text-white/70">
-                                                            {v.location === "eastWest" ? "ตะวันออก → ตะวันตก" : v.location === "westEast" ? "ตะวันตก → ตะวันออก" : "-"}
+                                                            {v.location === "eastWest" ? "ขาเข้า" : v.location === "westEast" ? "ขาออก" : "-"}
                                                         </td>
                                                         <td className="px-4 py-3 text-white/70">{v.speed}</td>
                                                         <td className="px-4 py-3 text-white/70 whitespace-nowrap">{v.date}</td>

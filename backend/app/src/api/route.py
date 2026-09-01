@@ -60,6 +60,7 @@ router.add_api_route("/checkpoint", checkpoint_controller.get_checkpoint, method
 
 # api blacklist
 router.add_api_route("/get_blacklist", blacklist_controller.get_blacklist, methods=["GET"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
+router.add_api_route("/data_search_blacklist", blacklist_controller.search_blacklist, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
 router.add_api_route("/insert_blacklist", blacklist_controller.insert_blacklist, methods=["POST"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
 router.add_api_route("/delete_blacklist/{blacklist_id}", blacklist_controller.delete_blacklist, methods=["DELETE"], tags=["Data"], dependencies=[Depends(auth_controller.get_current_user)])
 

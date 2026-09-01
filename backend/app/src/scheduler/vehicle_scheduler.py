@@ -1,6 +1,5 @@
-# backend/app/src/scheduler/vehicle_scheduler.py
-
 from src.services.vehicle import VehicleService
+from src.services.blacklist import BlacklistService
 import logging
 import time
 import threading
@@ -9,15 +8,14 @@ from datetime import datetime, timedelta
 logger = logging.getLogger(__name__)
 
 service = VehicleService()
+blacklist_service = BlacklistService()
 
 _scheduler_started = False
 
 
 def _get_next_5m_slot() -> datetime:
-    """คำนวณ slot ถัดไปที่หาร 5 ลงตัว เช่น 9:43 → 9:45, 9:59 → 10:00"""
     now = datetime.now()
     next_minute = ((now.minute // 5) + 1) * 5
-
     if next_minute >= 60:
         return now.replace(second=0, microsecond=0, minute=0) + timedelta(hours=1)
     return now.replace(second=0, microsecond=0, minute=next_minute)
@@ -41,8 +39,29 @@ def run_service_vehicle_5m(slot_start: datetime, slot_end: datetime):
         logger.info(f"⏰ Running service_vehicle_5m [{slot_start.strftime('%H:%M')} → {slot_end.strftime('%H:%M')}]")
         result = service.service_vehicle_5m({"slot_start": slot_start, "slot_end": slot_end})
         logger.info(f"✅ service_vehicle_5m completed: {result}")
+
+        if result.get("success"):
+            _run_blacklist_check(minutes=10)
+        else:
+            logger.warning("⚠️ Skip blacklist check — vehicle sync failed this round")
+
     except Exception:
         logger.exception("❌ service_vehicle_5m job failed")
+
+
+def _run_blacklist_check(minutes: int = 10):
+    try:
+        logger.info(f"🔍 Checking blacklist (last {minutes} min)")
+        results = blacklist_service.check_blacklist_in_vehicle_pass(minutes=minutes)
+        if results:
+            logger.warning(
+                f"🚨 พบ blacklist ผ่าน {len(results)} คัน: "
+                f"{[r['plate_no'] for r in results]}"
+            )
+        else:
+            logger.info("✅ ไม่พบ blacklist ผ่านในช่วงที่ตรวจ")
+    except Exception:
+        logger.exception("❌ Blacklist check failed")
 
 
 def start_scheduler():

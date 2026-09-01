@@ -1,6 +1,6 @@
 # backend/app/src/services/data_vehicle.py
 from src.repositories.data_vehicle import DataVehicleRepository
-from datetime import datetime  # ✅ เพิ่มบรรทัดนี้
+from datetime import datetime
 import logging
 
 logger = logging.getLogger(__name__)
@@ -16,7 +16,7 @@ class DataVehicleService:
             if not data:
                 logger.info("⏳ No new data from Oracle")
                 return []
-            
+
             logger.info(f"✅ Retrieved {len(data)} records from Oracle")
             return data
         except Exception as e:
@@ -34,6 +34,7 @@ class DataVehicleService:
     def data_search_vehicle(
         self,
         date,
+        date_to=None,
         province=None,
         lpr=None,
         camera=None,
@@ -42,33 +43,21 @@ class DataVehicleService:
         page=1,
         page_size=10,
     ):
-        """
-        รองรับการ search หลายเงื่อนไข พร้อม server-side pagination
-        - date (required)
-        - province (optional)
-        - lpr (optional - ทะเบียนรถ)
-        - camera (optional - CROSSING_ID)
-        - vehicle_type (optional)
-        - vehicle_color (optional)
-        - page / page_size (optional - default หน้า 1, 10 รายการ/หน้า)
-
-        คืนค่าเป็น tuple: (rows: list[dict], total_count: int)
-        เพื่อให้ controller คำนวณ total_pages ได้โดยไม่ต้อง query แยกอีกรอบ
-        """
         try:
             page = max(int(page or 1), 1)
             page_size = min(max(int(page_size or 10), 1), 100)  # กันไม่ให้ขอเยอะเกินไป
             offset = (page - 1) * page_size
 
             logger.info(
-                "🔍 Searching with: date=%s, province=%s, lpr=%s, camera=%s, "
+                "🔍 Searching with: date=%s, date_to=%s, province=%s, lpr=%s, camera=%s, "
                 "vehicle_type=%s, vehicle_color=%s, page=%s, page_size=%s",
-                date, province, lpr, camera, vehicle_type, vehicle_color, page, page_size,
+                date, date_to, province, lpr, camera, vehicle_type, vehicle_color, page, page_size,
             )
 
             # ⚡ repository ยิง query เดียว (COUNT(*) OVER()) ได้ทั้งข้อมูลหน้านี้ + total count
             rows, total_count = self.data_vehicle.data_search_vehicle(
                 date=date,
+                date_to=date_to,
                 province=province,
                 lpr=lpr,
                 camera=camera,

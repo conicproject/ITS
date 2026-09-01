@@ -143,10 +143,10 @@ class DataVehicleRepository:
                        ch.LATITUDE, ch.LONGTITUDE, vp.LANE_NO, rd.ROAD_NAME,
                        vc.COLOR_NAMETH, vp.VEHICLE_SPEED, vp.PASS_TIME
                 FROM XVOT_XVOTDB_USER.VEHICLE_PASS vp
-                JOIN CHECKPOINT ch ON ch.AREA_CODE = vp.AREA_CODE 
+                JOIN CHECKPOINT ch ON ch.AREA_CODE = vp.AREA_CODE
                 JOIN VEHICLE_TYPE vt ON vt.TYPE_NAME = vp.VEHICLE_TYPE
                 JOIN VEHICLE_COLOR vc ON vc.COLOR_NAME = vp.VEHICLE_COLOR
-                JOIN PROJECT pr ON pr.PROJECT_ID = ch.PROJECT_ID 
+                JOIN PROJECT pr ON pr.PROJECT_ID = ch.PROJECT_ID
                 JOIN LANE la ON la.CHECKPOINT_ID = ch.CHECKPOINT_ID AND la.LANE_CODE = vp.LANE_NO
                 JOIN DISTRICT dt ON dt.DISTRICT_ID = ch.DISTRICT_ID
                 JOIN ROAD rd ON rd.ROAD_ID = ch.ROAD_ID
@@ -324,12 +324,9 @@ class DataVehicleRepository:
                 conn.close()
 
     # ---------------- Search (server-side pagination, single-query) ----------------
-    def _build_search_conditions(self, date, province, lpr, camera, vehicle_type, vehicle_color):
-        """สร้าง WHERE clause + params ร่วมกันสำหรับใช้ทั้งใน search และ count
-        (แยกออกมาเป็นเมธอดเดียว เพื่อไม่ให้เงื่อนไข search กับ count เพี้ยนไปจากกัน)
-        """
+    def _build_search_conditions(self, date_from, date_to, province, lpr, camera, vehicle_type, vehicle_color):
         conditions = ["vp.pass_time >= %s", "vp.pass_time < %s"]
-        params = [date, date + timedelta(days=1)]
+        params = [date_from, date_to + timedelta(days=1)]
 
         if province:
             conditions.append("vp.plate_province = %s")
@@ -347,7 +344,7 @@ class DataVehicleRepository:
             conditions.append("vp.vehicle_type = %s")
             params.append(vehicle_type)
 
-        # ✅ เพิ่ม filter สี ที่ frontend ส่งมาแต่ backend เดิมไม่รองรับ
+        # ✅ filter สี ที่ frontend ส่งมา
         if vehicle_color:
             conditions.append("vp.vehicle_color = %s")
             params.append(vehicle_color)
@@ -357,6 +354,7 @@ class DataVehicleRepository:
     def data_search_vehicle(
         self,
         date,
+        date_to=None,
         province=None,
         lpr=None,
         camera=None,
@@ -365,21 +363,6 @@ class DataVehicleRepository:
         limit=10,
         offset=0,
     ):
-        """
-        ค้นหาข้อมูลจาก VEHICLE_PASS + VEHICLE_URL แบบแบ่งหน้า (server-side pagination)
-
-        ⚡ ประสิทธิภาพ: ใช้ COUNT(*) OVER() ใน query เดียวกัน แทนการยิง 2 query แยก
-        (data + count) ทำให้ Postgres filter ข้อมูลตาม WHERE แค่รอบเดียว
-        ไม่ต้อง scan ตารางซ้ำสองรอบ ถึงแม้ตารางจะมี ~200k+ แถว
-
-        คืนค่าเป็น tuple: (rows: list[dict], total_count: int)
-
-        หมายเหตุ: ต้องมี index รองรับ WHERE ด้วย เช่น
-            CREATE INDEX idx_vehicle_pass_time ON vehicle_pass (pass_time);
-            CREATE INDEX idx_vehicle_pass_plate ON vehicle_pass (plate_no);
-            CREATE INDEX idx_vehicle_pass_crossing ON vehicle_pass (crossing_id);
-        ไม่งั้น ORDER BY + WHERE บนตาราง 200k แถวจะยัง full scan อยู่ดี
-        """
         conn = None
         cursor = None
 
@@ -387,12 +370,15 @@ class DataVehicleRepository:
         limit = min(int(limit or 10), 100)
         offset = max(int(offset or 0), 0)
 
+        # ✅ ถ้าไม่ได้ส่ง date_to มา (เรียกแบบเดิม) → ค้นหาแค่วันเดียวตาม date เหมือนพฤติกรรมเดิม
+        date_to = date_to or date
+
         try:
             conn = self.postgres_conn.get_connection()
             cursor = conn.cursor()
 
             where_clause, params = self._build_search_conditions(
-                date, province, lpr, camera, vehicle_type, vehicle_color
+                date, date_to, province, lpr, camera, vehicle_type, vehicle_color
             )
 
             sql = f"""
@@ -400,7 +386,7 @@ class DataVehicleRepository:
                     vp.pass_id, vp.crossing_id, vp.crossing_index_code, vp.lane_no, vp.plate_no,
                     vp.direction_index, vp.vehicle_color, vp.vehicle_type, vp.vehicle_color_depth,
                     vp.vehicle_logo, vp.vehicle_sub_logo, vp.vehicle_model, vp.plate_province,
-                    vp.pass_time, vp.vehicle_speed, vt.type_nameth,
+                    vp.pass_time, vp.vehicle_speed, vt.type_nameth, vc.color_nameth,
                     vu.plate_pic_url, vu.image_path, vu.target_sub_url,
                     COUNT(*) OVER() AS total_count
                 FROM vehicle_pass vp
@@ -408,6 +394,8 @@ class DataVehicleRepository:
                     ON vp.pass_id = vu.pass_id
                 LEFT JOIN vehicle_type vt
                     ON vp.vehicle_type = vt.type_name
+                LEFT JOIN vehicle_color vc
+                    ON vp.vehicle_color = vc.color_name
                 WHERE {where_clause}
                 ORDER BY vp.pass_time DESC
                 LIMIT %s OFFSET %s
@@ -446,20 +434,20 @@ class DataVehicleRepository:
             if conn:
                 conn.close()
 
-    def count_search_vehicle(self, date, province=None, lpr=None, camera=None, vehicle_type=None, vehicle_color=None):
-        """
-        [เก็บไว้เผื่อใช้แยกในกรณีอื่น] นับจำนวนรายการทั้งหมดที่ตรงกับเงื่อนไข
-        ⚠️ ปกติไม่ต้องเรียกคู่กับ data_search_vehicle แล้ว เพราะ data_search_vehicle
-        คืน total_count มาให้ในตัวอยู่แล้วผ่าน COUNT(*) OVER()
-        """
+    def count_search_vehicle(
+        self, date, date_to=None, province=None, lpr=None, camera=None,
+        vehicle_type=None, vehicle_color=None,
+    ):
         conn = None
         cursor = None
+        date_to = date_to or date
+
         try:
             conn = self.postgres_conn.get_connection()
             cursor = conn.cursor()
 
             where_clause, params = self._build_search_conditions(
-                date, province, lpr, camera, vehicle_type, vehicle_color
+                date, date_to, province, lpr, camera, vehicle_type, vehicle_color
             )
 
             sql = f"""

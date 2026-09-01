@@ -1,6 +1,7 @@
 # backend/app/src/repositories/blacklist.py
 from src.connection.postgres import PostgresConnection
 import logging
+from datetime import datetime, timedelta
 logger = logging.getLogger(__name__)
 
 class BlacklistRepository:
@@ -110,7 +111,7 @@ class BlacklistRepository:
             if cur:  cur.close()
             if conn: conn.close()
 
-    def check_blacklist_in_vehicle_pass(self, minutes: int = 5):
+    def check_blacklist_in_vehicle_pass(self, minutes: int = 10):
         query = """
             SELECT
                 vp.pass_id,
@@ -140,29 +141,27 @@ class BlacklistRepository:
             AND vp.pass_time <= NOW()
             ORDER BY vp.pass_time DESC
         """
+        # ✅ ใช้ pass_id เป็น conflict target แทน id ที่ generate เอง
+        # ต้องมี: ALTER TABLE blacklists_passing ADD CONSTRAINT blacklists_passing_pass_id_key UNIQUE (pass_id);
         insert_query = """
             INSERT INTO blacklists_passing (
-                id, blacklist_id, pass_id, plate_url, image_url,
+                blacklist_id, pass_id, plate_url, image_url,
                 plate_no, province, checkpoint, latitude, longtitude,
                 direction, pass_time, type, color, status
             )
             VALUES (
-                %(id)s, %(blacklist_id)s, %(pass_id)s, %(plate_url)s, %(image_url)s,
+                %(blacklist_id)s, %(pass_id)s, %(plate_url)s, %(image_url)s,
                 %(plate_no)s, %(province)s, %(checkpoint)s, %(latitude)s, %(longtitude)s,
                 %(direction)s, %(pass_time)s, %(type)s, %(color)s, 'new'
             )
-            ON CONFLICT (id) DO NOTHING
+            ON CONFLICT (pass_id) DO NOTHING
+            RETURNING id
         """
         conn = None
         cur  = None
         try:
             conn = self.conn.get_connection()
             cur  = conn.cursor()
-
-            # ✅ จุดที่ 2 — ดึง MAX(id) ก่อน
-            cur.execute("SELECT COALESCE(MAX(id), 0) FROM blacklists_passing")
-            max_id = cur.fetchone()[0]
-            logger.info(f"📌 current MAX(id) = {max_id}")
 
             cur.execute(query, {"minutes": minutes})
             rows = cur.fetchall()
@@ -171,12 +170,10 @@ class BlacklistRepository:
 
             logger.info(f"🔍 found {len(results)} matches, attempting insert...")
 
-            # ✅ จุดที่ 2 — เริ่ม idx จาก max_id + 1
-            for idx, r in enumerate(results, start=max_id + 1):
-                logger.info(f"📝 inserting id={idx} pass_id={r['pass_id']} plate={r['plate_no']}")
+            inserted_count = 0
+            for r in results:
                 try:
                     cur.execute(insert_query, {
-                        "id":           idx,
                         "blacklist_id": r["blacklist_id"],
                         "pass_id":      r["pass_id"],
                         "plate_url":    r.get("plate_pic_url"),
@@ -191,13 +188,17 @@ class BlacklistRepository:
                         "type":         r.get("bl_type"),
                         "color":        r.get("bl_color"),
                     })
-                    logger.info(f"✅ insert success pass_id={r['pass_id']}")
+                    if cur.fetchone():
+                        inserted_count += 1
+                        logger.info(f"✅ insert success pass_id={r['pass_id']}")
+                    else:
+                        logger.info(f"⏭️ skip duplicate pass_id={r['pass_id']}")
                 except Exception as insert_err:
                     logger.error(f"❌ insert failed: {insert_err}")
                     raise
 
             conn.commit()
-            logger.info("✅ commit done")
+            logger.info(f"✅ commit done — {inserted_count} new rows inserted")
             return results
 
         except Exception as e:
@@ -254,6 +255,71 @@ class BlacklistRepository:
             if conn:
                 conn.rollback()
             raise e
+        finally:
+            if cur:  cur.close()
+            if conn: conn.close()
+
+
+    def _build_search_conditions(self, date_from, date_to, plate_no):
+        conditions = ["blacklist_id IS NOT NULL", "pass_time >= %s", "pass_time < %s"]
+        params = [date_from, date_to + timedelta(days=1)]
+ 
+        if plate_no:
+            conditions.append("plate_no ILIKE %s")
+            params.append(f"%{plate_no}%")
+ 
+        return " AND ".join(conditions), params
+ 
+    def search_blacklist(self, date, date_to=None, plate_no=None, limit=10, offset=0):
+        conn = None
+        cur  = None
+ 
+        limit = min(int(limit or 10), 100)
+        offset = max(int(offset or 0), 0)
+        date_to = date_to or date
+ 
+        try:
+            conn = self.conn.get_connection()
+            cur  = conn.cursor()
+ 
+            where_clause, params = self._build_search_conditions(date, date_to, plate_no)
+ 
+            sql = f"""
+                SELECT id, blacklist_id, pass_id, plate_url, image_url,
+                       plate_no, province, checkpoint, latitude, longtitude,
+                       direction, pass_time, type, color, rtsp_url, status,
+                       COUNT(*) OVER() AS total_count
+                FROM blacklists_passing
+                WHERE {where_clause}
+                ORDER BY pass_time DESC
+                LIMIT %s OFFSET %s
+            """
+ 
+            query_params = params + [limit, offset]
+            logger.debug("🔎 SQL: %s", sql)
+            logger.debug("📦 PARAMS: %s", query_params)
+ 
+            cur.execute(sql, query_params)
+            rows = cur.fetchall()
+ 
+            if not rows:
+                logger.info("⏳ No data found for blacklist search criteria")
+                return [], 0
+ 
+            cols = [desc[0] for desc in cur.description]
+            result = [dict(zip(cols, row)) for row in rows]
+ 
+            # total_count เหมือนกันทุกแถว (window function) — ดึงจากแถวแรกแล้วเอาออกจาก dict ข้อมูล
+            total_count = result[0]["total_count"]
+            for r in result:
+                r.pop("total_count", None)
+ 
+            logger.info("✅ Found %s rows on this page (total match = %s)", len(result), total_count)
+            return result, total_count
+ 
+        except Exception:
+            logger.exception("❌ Error searching blacklists_passing:")
+            return [], 0
         finally:
             if cur:  cur.close()
             if conn: conn.close()

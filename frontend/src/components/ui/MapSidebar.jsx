@@ -59,7 +59,7 @@ export const MapSidebar = ({ data = DEFAULT_DATA, title = "ข้อมูลย
     const {
         plateNumber, province, color, vehicleType,
         violationCount, status, reason, latestCamera, latestTime, latestLocation,
-        snapshotImage, roadImage,
+        snapshotImage, roadImage, plateImage,
     } = { ...DEFAULT_DATA, ...data };
 
     // ไม่มีความผิดจริง (reason ว่าง / "-" / null) -> ใช้กรอบสีปกติ ไม่ใช่สีแดง
@@ -138,14 +138,28 @@ export const MapSidebar = ({ data = DEFAULT_DATA, title = "ข้อมูลย
                         />
                     </div>
                     <div
-                        className="rounded-xl border flex flex-col items-center justify-center p-2"
+                        className="rounded-xl border overflow-hidden h-[100px] flex flex-col items-center justify-center p-2"
                         style={{ backgroundColor: THEME.plateBoxBg, borderColor: THEME.cardBorder }}
                     >
-                        <span className="text-[9px] text-gray-400 font-bold uppercase mb-1">ภาพป้ายทะเบียน (Crop)</span>
-                        <div className="border-2 border-amber-500/50 rounded-lg px-4 py-1.5 text-center" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
-                            <span className="text-lg font-black block leading-none text-amber-400">{plateNumber}</span>
-                            <span className="text-[10px] font-bold text-amber-200/70">{province}</span>
-                        </div>
+                        <span className="text-[9px] text-gray-400 font-bold uppercase mb-1 shrink-0">ภาพป้ายทะเบียน (Crop)</span>
+                        {plateImage ? (
+                            <ImageWithFallback
+                                src={plateImage}
+                                alt="plate crop"
+                                className="max-w-full max-h-[68px] object-contain rounded-md"
+                                fallbackIcon={
+                                    <div className="border-2 border-amber-500/50 rounded-lg px-4 py-1.5 text-center" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                                        <span className="text-lg font-black block leading-none text-amber-400">{plateNumber}</span>
+                                        <span className="text-[10px] font-bold text-amber-200/70">{province}</span>
+                                    </div>
+                                }
+                            />
+                        ) : (
+                            <div className="border-2 border-amber-500/50 rounded-lg px-4 py-1.5 text-center" style={{ backgroundColor: 'rgba(0,0,0,0.2)' }}>
+                                <span className="text-lg font-black block leading-none text-amber-400">{plateNumber}</span>
+                                <span className="text-[10px] font-bold text-amber-200/70">{province}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 

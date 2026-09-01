@@ -9,6 +9,7 @@ import time
 from datetime import datetime, timezone, timedelta
 
 import requests
+import urllib3
 from psycopg2.extras import execute_values
 
 from config.artemis import (
@@ -20,6 +21,7 @@ from src.connection.postgres import PostgresConnection
 from src.utils.vehicle_pass_mapper import map_record, UPSERT_SQL as VEHICLE_PASS_UPSERT_SQL
 from src.utils.vehicle_alarm_mapper import map_alarm_record, UPSERT_SQL as VEHICLE_ALARM_UPSERT_SQL
 from src.utils.vehicle_url_mapper import map_url_record, UPSERT_SQL as VEHICLE_URL_UPSERT_SQL
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = logging.getLogger(__name__)
 

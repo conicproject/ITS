@@ -195,11 +195,29 @@ function Overview() {
 
       {/* ================== Map ================== */}
       <div className="flex-1 relative rounded-lg overflow-hidden border border-gray-800">
-        <MapContainer center={center} zoom={13} className="h-full w-full">
+        <MapContainer
+          center={center}
+          zoom={13}
+          className="h-full w-full"
+          zoomSnap={1}
+          fadeAnimation={false}
+          preferCanvas={false}
+        >
           <MapInitializer center={center} />
+
+          {/*
+            ใช้ OpenStreetMap มาตรฐาน (ฟรี ไม่ต้องขอ key ครอบคลุมถนนในไทยเต็ม)
+            แล้วใส่ className="dark-tiles" เพื่อกลับสีเป็น dark mode ด้วย CSS filter
+            (ดู .dark-tiles ใน map-fix.css)
+            เหตุผลที่เปลี่ยนจาก Esri Dark Gray Canvas: ตัวนั้นไม่มีข้อมูลถนนละเอียด
+            ในโซนเอเชียตะวันออกเฉียงใต้ ทำให้แผนที่ในไทยว่างเปล่า ไม่เห็นเส้นทาง
+          */}
           <TileLayer
-            url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
-            attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; OpenStreetMap contributors'
+            className="dark-tiles"
+            maxZoom={19}
+            minZoom={5}
           />
 
           {checkpoints.map((point, index) => (
