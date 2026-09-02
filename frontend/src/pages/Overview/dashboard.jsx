@@ -44,7 +44,9 @@ function MapInitializer({ center }) {
     if (!center) return
     const timer = setTimeout(() => {
       map.invalidateSize()
-      map.setView(center, 13)
+      map.setView(center, 17)
+      // เลื่อนมุมมองแผนที่ขึ้นเล็กน้อยจากตำแหน่งกึ่งกลางเดิมตอนโหลดหน้าแรก (ปรับตัวเลข 60 ได้ตามต้องการ)
+      map.panBy([0, -60], { animate: false })
     }, 100)
 
     return () => clearTimeout(timer)
@@ -53,17 +55,47 @@ function MapInitializer({ center }) {
   return null
 }
 
+// ================== Live stream base ==================
+// สำคัญ: ต้องเป็น relative path ผ่าน backend proxy (/api/camera-stream/...)
+// ห้ามชี้ไป IP วง LAN ตรง ๆ (http://10.142.1.123:1984/...) เด็ดขาด เพราะเครื่อง
+// ที่อยู่นอก LAN (ผ่าน ddns/internet) จะต่อ IP นั้นไม่ติดเลย วิดีโอจะไม่ขึ้น
+// backend endpoint /api/camera-stream/{path} จะ proxy ต่อไปยัง go2rtc (10.142.1.123:1984)
+// ให้เอง ทั้ง HTTP asset และ WebSocket (ดู camera_stream_proxy.py)
+const STREAM_BASE = "/api/camera-stream/stream.html?src="
+
+// ================== Camera groups (by checkpoint location) ==================
+// หมายเหตุ: cam_08_big-c-out_c3(2) และ cam_08_big-c-out_c4(2) ใช้เลข 08 ซ้ำกันตามลิสต์ที่ให้มา
+// (น่าจะพิมพ์ผิด ตัวหลังควรเป็น cam_09) — แก้ src ด้านล่างให้ตรงถ้ามีการแก้ config จริง
+const cameraGroups = {
+  siha: [
+    { label: "กล้องขาเข้า 1", title: "กล้องขาเข้า 1", cameraName: "cam_01_siha-in_c1(2)", src: `${STREAM_BASE}cam_01_siha-in_c1(2)` },
+    { label: "กล้องขาเข้า 2", title: "กล้องขาเข้า 2", cameraName: "cam_02_siha-in_c2(2)", src: `${STREAM_BASE}cam_02_siha-in_c2(2)` },
+    { label: "กล้องขาเข้า 3", title: "กล้องขาเข้า 3", cameraName: "cam_03_siha-in_c3(2)", src: `${STREAM_BASE}cam_03_siha-in_c3(2)` },
+    { label: "กล้องขาออก 1", title: "กล้องขาออก 1", cameraName: "cam_04_siha-out_c4(2)", src: `${STREAM_BASE}cam_04_siha-out_c4(2)` },
+    { label: "กล้องขาออก 2", title: "กล้องขาออก 2", cameraName: "cam_05_siha-out_c5(2)", src: `${STREAM_BASE}cam_05_siha-out_c5(2)` },
+    { label: "กล้อง Incident 1", title: "กล้อง Incident 1", cameraName: "cam_10_siha-icd_c1(2)", src: `${STREAM_BASE}cam_10_siha-icd_c1(2)` },
+    { label: "กล้อง Incident 2", title: "กล้อง Incident 2", cameraName: "cam_11_siha-icd_c2(2)", src: `${STREAM_BASE}cam_11_siha-icd_c2(2)` },
+  ],
+  bigc: [
+    { label: "กล้องขาเข้า 1", title: "กล้องขาเข้า 1", cameraName: "cam_06_big-c-in_c1(2)", src: `${STREAM_BASE}cam_06_big-c-in_c1(2)` },
+    { label: "กล้องขาเข้า 2", title: "กล้องขาเข้า 2", cameraName: "cam_07_big-c-in_c2(2)", src: `${STREAM_BASE}cam_07_big-c-in_c2(2)` },
+    { label: "กล้องขาออก 1", title: "กล้องขาออก 1", cameraName: "cam_08_big-c-out_c3(2)", src: `${STREAM_BASE}cam_08_big-c-out_c3(2)` },
+    { label: "กล้องขาออก 2", title: "กล้องขาออก 2", cameraName: "cam_08_big-c-out_c4(2)", src: `${STREAM_BASE}cam_08_big-c-out_c4(2)` },
+    { label: "กล้อง Incident 1", title: "กล้อง Incident 1", cameraName: "cam_12_big-c-icd_c1(2)", src: `${STREAM_BASE}cam_12_big-c-icd_c1(2)` },
+    { label: "กล้อง Incident 2", title: "กล้อง Incident 2", cameraName: "cam_13_big-c-icd_c2(2)", src: `${STREAM_BASE}cam_13_big-c-icd_c2(2)` },
+  ],
+}
+
+// เลือกกลุ่มกล้องตามชื่อจุดตรวจ (nickname) — ปรับ keyword ตรงนี้ให้ตรงกับข้อมูลจริงจาก API
+const getCameraListForCheckpoint = (nickname = "") => {
+  const name = nickname.toLowerCase()
+  if (name.includes("บิ๊กซี") || name.includes("big")) return cameraGroups.bigc
+  if (name.includes("สีห") || name.includes("siha")) return cameraGroups.siha
+  return cameraGroups.siha // fallback กรณีไม่ match ชื่อใด ๆ
+}
+
 // ================== Camera Popup ==================
 function CameraPopup({ cam, selectedCam, cameraList, onCameraChange }) {
-  const videoRef = useRef(null)
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.currentTime = 0
-      videoRef.current.play().catch(() => {})
-    }
-  }, [selectedCam.video])
-
   return (
     <div className="w-[380px] bg-[#11161d] text-gray-100 -m-3 p-3 rounded">
       <h3 className="font-semibold mb-2">{selectedCam.title}</h3>
@@ -73,28 +105,45 @@ function CameraPopup({ cam, selectedCam, cameraList, onCameraChange }) {
         <div><b>ชื่อกล้อง:</b> {selectedCam.cameraName}</div>
       </div>
 
-      <div className="bg-black rounded overflow-hidden">
-        <video
-          ref={videoRef}
-          src={selectedCam.video}
-          controls
-          autoPlay
-          muted
-          playsInline
-          className="w-full h-[220px]"
+      <div className="relative bg-black rounded overflow-hidden group">
+        {/* stream.html เป็น live viewer (go2rtc) ต้องใช้ iframe ไม่ใช่ <video> ตรง ๆ */}
+        <iframe
+          key={selectedCam.src}
+          src={selectedCam.src}
+          className="w-full h-[220px] border-0"
+          allow="autoplay; fullscreen"
+          allowFullScreen
         />
+
+        {/* ปุ่มเปิดสตรีมแบบเต็มจอในแท็บใหม่ */}
+        <button
+          type="button"
+          onClick={() => window.open(selectedCam.src, "_blank", "noopener,noreferrer")}
+          title="ดูแบบเต็มจอในแท็บใหม่"
+          className="absolute top-1.5 right-1.5 bg-black/60 hover:bg-black/80 text-white rounded p-1.5 transition-colors"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path
+              d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
       </div>
 
       <select
         className="w-full border border-gray-700 bg-[#1a212b] text-gray-100 rounded p-1 mt-2 text-sm"
-        value={selectedCam.video}
+        value={selectedCam.src}
         onChange={(e) => {
-          const selected = cameraList.find((c) => c.video === e.target.value)
+          const selected = cameraList.find((c) => c.src === e.target.value)
           onCameraChange(selected)
         }}
       >
         {cameraList.map((c) => (
-          <option key={c.video} value={c.video}>
+          <option key={c.src} value={c.src}>
             {c.label}
           </option>
         ))}
@@ -105,15 +154,7 @@ function CameraPopup({ cam, selectedCam, cameraList, onCameraChange }) {
 
 // ================== MAIN ==================
 function Overview() {
-  const defaultCenter = [13.812657, 100.717611]
-
-  // ================== Camera List ==================
-  const cameraList = [
-    { label: "Camera 1", title: "Camera 1", cameraName: "TF7-KY-1-1-C2", video: "/assets/1.mp4" },
-    { label: "Camera 2", title: "Camera 2", cameraName: "TF7-KY-1-1-C3", video: "/assets/2.mp4" },
-    { label: "Camera 3", title: "Camera 3", cameraName: "TF7-KY-1-1-C4", video: "/assets/3.mp4" },
-    { label: "Camera 4", title: "Camera 4", cameraName: "TF7-KY-1-1-C5", video: "/assets/4.mp4" },
-  ]
+  const defaultCenter = [13.812657, 100.718611]
 
   const [checkpoints, setCheckpoints] = useState([])
   const [center, setCenter] = useState(defaultCenter)
@@ -144,8 +185,9 @@ function Overview() {
           }
 
           const camState = {}
-          parsed.forEach((_, i) => {
-            camState[i] = cameraList[0]
+          parsed.forEach((point, i) => {
+            const list = getCameraListForCheckpoint(point.nickname)
+            camState[i] = list[0]
           })
           setCheckpointCamera(camState)
         }
@@ -197,7 +239,7 @@ function Overview() {
       <div className="flex-1 relative rounded-lg overflow-hidden border border-gray-800">
         <MapContainer
           center={center}
-          zoom={13}
+          zoom={16}
           className="h-full w-full"
           zoomSnap={1}
           fadeAnimation={false}
@@ -205,13 +247,6 @@ function Overview() {
         >
           <MapInitializer center={center} />
 
-          {/*
-            ใช้ OpenStreetMap มาตรฐาน (ฟรี ไม่ต้องขอ key ครอบคลุมถนนในไทยเต็ม)
-            แล้วใส่ className="dark-tiles" เพื่อกลับสีเป็น dark mode ด้วย CSS filter
-            (ดู .dark-tiles ใน map-fix.css)
-            เหตุผลที่เปลี่ยนจาก Esri Dark Gray Canvas: ตัวนั้นไม่มีข้อมูลถนนละเอียด
-            ในโซนเอเชียตะวันออกเฉียงใต้ ทำให้แผนที่ในไทยว่างเปล่า ไม่เห็นเส้นทาง
-          */}
           <TileLayer
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             attribution='&copy; OpenStreetMap contributors'
@@ -220,27 +255,30 @@ function Overview() {
             minZoom={5}
           />
 
-          {checkpoints.map((point, index) => (
-            <Marker
-              key={index}
-              position={[point.latitude, point.longitude]}
-              icon={createStatusIcon(point.status)}
-            >
-              <Popup maxWidth={420}>
-                <CameraPopup
-                  cam={{ location: point.nickname }}
-                  selectedCam={checkpointCamera[index] || cameraList[0]}
-                  cameraList={cameraList}
-                  onCameraChange={(selected) =>
-                    setCheckpointCamera((prev) => ({
-                      ...prev,
-                      [index]: selected,
-                    }))
-                  }
-                />
-              </Popup>
-            </Marker>
-          ))}
+          {checkpoints.map((point, index) => {
+            const cameraList = getCameraListForCheckpoint(point.nickname)
+            return (
+              <Marker
+                key={index}
+                position={[point.latitude, point.longitude]}
+                icon={createStatusIcon(point.status)}
+              >
+                <Popup maxWidth={420}>
+                  <CameraPopup
+                    cam={{ location: point.nickname }}
+                    selectedCam={checkpointCamera[index] || cameraList[0]}
+                    cameraList={cameraList}
+                    onCameraChange={(selected) =>
+                      setCheckpointCamera((prev) => ({
+                        ...prev,
+                        [index]: selected,
+                      }))
+                    }
+                  />
+                </Popup>
+              </Marker>
+            )
+          })}
         </MapContainer>
       </div>
     </div>

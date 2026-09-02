@@ -13,6 +13,7 @@ from src.controller.blacklist import BlacklistController
 from src.controller.vehicle_alarm import VehicleAlarmController
 from src.controller.vehicle_type import VehicleTypeController
 from src.controller.image_proxy import ImageProxyController
+from src.controller.camera_stream_proxy import CameraStreamProxyController
 
 router = APIRouter()
 user_controller = UserController()
@@ -28,6 +29,7 @@ blacklist_controller = BlacklistController()
 vehicle_alarm_controller = VehicleAlarmController()
 vehicle_type_controller = VehicleTypeController()
 image_proxy_controller = ImageProxyController()
+camera_stream_proxy_controller = CameraStreamProxyController()
 
 # Auth endpoints
 router.add_api_route("/get_auth", open_api_controller.get_auth, methods=["GET"], tags=["Data"])   
@@ -76,3 +78,9 @@ router.add_api_route("/service_vehicle_5m", vehicle_controller.service_vehicle_5
 
 # api image proxy - ดึงรูปจากกล้อง (private IP) มา serve ผ่าน backend เอง
 router.add_api_route("/image-proxy", image_proxy_controller.get_image_proxy, methods=["GET"], tags=["Data"])
+
+
+# api stream - proxy ไปยัง go2rtc (private IP ในวง LAN) ผ่าน backend domain public
+# ทำให้เข้าดูวิดีโอได้ทั้งจากใน LAN และนอก LAN โดยไม่ต้องเปิดพอร์ต 1984 ออก internet
+router.add_api_route("/camera-stream/{path:path}", camera_stream_proxy_controller.proxy_http, methods=["GET", "POST", "HEAD"], tags=["Data"])
+router.add_api_websocket_route("/camera-stream/{path:path}", camera_stream_proxy_controller.proxy_websocket)

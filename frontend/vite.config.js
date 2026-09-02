@@ -18,6 +18,7 @@ export default defineConfig({
         target: 'http://backend:5411',
         changeOrigin: true,
         secure: false,
+        ws: true,
       },
     },
   },
